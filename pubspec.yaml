@@ -26,6 +26,7 @@ dependencies:
 
   # Keamanan PIN
   flutter_secure_storage: ^9.2.4
+  crypto: ^3.0.6
 
   # Grafik
   fl_chart: ^0.70.2
