@@ -32,6 +32,12 @@ class AppColors {
   static const Color warning = Color(0xFFE8A020);  // Peringatan stok → kuning
   static const Color info = Color(0xFF3B82F6);     // Informasi → biru
 
+  // --- Container Colors (background tint untuk area semantic) ---
+  static const Color primaryContainer = Color(0xFFDFF2E9);  // Hijau muda pudar
+  static const Color warningContainer = Color(0xFFFFF8E7);  // Kuning muda pudar
+  static const Color errorContainer = Color(0xFFFEECEC);    // Merah muda pudar
+  static const Color infoContainer = Color(0xFFEFF6FF);     // Biru muda pudar
+
   // --- Border & Divider ---
   static const Color border = Color(0xFFE5E7EB);
   static const Color divider = Color(0xFFF0F2F5);

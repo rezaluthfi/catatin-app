@@ -1,9 +1,11 @@
-/// Router terpusat menggunakan go_router.
-///
-/// Semua route aplikasi didefinisikan di sini agar navigasi mudah
-/// dilacak dan dimodifikasi dari satu tempat.
+// Router terpusat menggunakan go_router + Riverpod.
+//
+// [routerProvider] membuat GoRouter yang terhubung ke [RouterNotifier]
+// sehingga navigasi otomatis bereaksi terhadap perubahan auth state.
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/providers/router_notifier.dart';
 import '../features/auth/screens/pin_lock_screen.dart';
 import '../features/auth/screens/pin_setup_screen.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
@@ -16,8 +18,13 @@ import '../features/recap/screens/recap_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import 'shell/main_shell.dart';
 
-/// Nama path route yang digunakan di seluruh aplikasi.
-/// Gunakan konstanta ini (bukan string literal) saat navigasi.
+// ─────────────────────────────────────────────────────────────────────────────
+// Route Path Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Konstanta path route untuk seluruh aplikasi.
+/// Selalu gunakan konstanta ini (bukan string literal) saat navigasi
+/// agar perubahan path cukup di satu tempat.
 class AppRoutes {
   AppRoutes._(); // Prevent instantiation
 
@@ -34,81 +41,101 @@ class AppRoutes {
   static const String receivableAdd = '/receivable/add';
 }
 
-final appRouter = GoRouter(
-  initialLocation: AppRoutes.pinLock,
-  debugLogDiagnostics: true,
-  routes: [
-    // ── Auth ──────────────────────────────────────────────────
-    GoRoute(
-      path: AppRoutes.pinSetup,
-      name: 'pin-setup',
-      builder: (context, state) => const PinSetupScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.pinLock,
-      name: 'pin-lock',
-      builder: (context, state) => const PinLockScreen(),
-    ),
+// ─────────────────────────────────────────────────────────────────────────────
+// Router Provider
+// ─────────────────────────────────────────────────────────────────────────────
 
-    // ── Main Shell (BottomAppBar) ─────────────────────────────
-    ShellRoute(
-      builder: (context, state, child) => MainShell(child: child),
-      routes: [
-        GoRoute(
-          path: AppRoutes.dashboard,
-          name: 'dashboard',
-          builder: (context, state) => const DashboardScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.inventory,
-          name: 'inventory',
-          builder: (context, state) => const InventoryListScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.recap,
-          name: 'recap',
-          builder: (context, state) => const RecapScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.settings,
-          name: 'settings',
-          builder: (context, state) => const SettingsScreen(),
-        ),
-      ],
-    ),
+/// Provider yang menghasilkan instance GoRouter yang siap digunakan.
+///
+/// Menggunakan [RouterNotifier] sebagai [refreshListenable] agar router
+/// otomatis memanggil ulang [redirect] saat auth state berubah.
+final routerProvider = Provider<GoRouter>((ref) {
+  final notifier = ref.watch(routerNotifierProvider.notifier);
 
-    // ── Inventory Detail (di luar shell) ─────────────────────
-    GoRoute(
-      path: AppRoutes.productAdd,
-      name: 'product-add',
-      builder: (context, state) => const ProductFormScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.productEdit,
-      name: 'product-edit',
-      builder: (context, state) {
-        final productId = state.pathParameters['id']!;
-        return ProductFormScreen(productId: productId);
-      },
-    ),
+  return GoRouter(
+    initialLocation: AppRoutes.pinLock,
+    debugLogDiagnostics: false,
+    refreshListenable: notifier,
+    redirect: notifier.redirect,
+    routes: _routes,
+  );
+});
 
-    // ── POS ──────────────────────────────────────────────────
-    GoRoute(
-      path: AppRoutes.pos,
-      name: 'pos',
-      builder: (context, state) => const PosScreen(),
-    ),
+// ─────────────────────────────────────────────────────────────────────────────
+// Route Definitions
+// ─────────────────────────────────────────────────────────────────────────────
 
-    // ── Piutang ──────────────────────────────────────────────
-    GoRoute(
-      path: AppRoutes.receivables,
-      name: 'receivables',
-      builder: (context, state) => const ReceivablesListScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.receivableAdd,
-      name: 'receivable-add',
-      builder: (context, state) => const ReceivableFormScreen(),
-    ),
-  ],
-);
+final _routes = <RouteBase>[
+  // ── Auth ──────────────────────────────────────────────────────
+  GoRoute(
+    path: AppRoutes.pinSetup,
+    name: 'pin-setup',
+    builder: (context, state) => const PinSetupScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.pinLock,
+    name: 'pin-lock',
+    builder: (context, state) => const PinLockScreen(),
+  ),
+
+  // ── Main Shell (BottomAppBar) ──────────────────────────────────
+  ShellRoute(
+    builder: (context, state, child) => MainShell(child: child),
+    routes: [
+      GoRoute(
+        path: AppRoutes.dashboard,
+        name: 'dashboard',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.inventory,
+        name: 'inventory',
+        builder: (context, state) => const InventoryListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.recap,
+        name: 'recap',
+        builder: (context, state) => const RecapScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        name: 'settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+    ],
+  ),
+
+  // ── Inventory Detail (fullscreen, di luar shell) ───────────────
+  GoRoute(
+    path: AppRoutes.productAdd,
+    name: 'product-add',
+    builder: (context, state) => const ProductFormScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.productEdit,
+    name: 'product-edit',
+    builder: (context, state) {
+      final productId = state.pathParameters['id']!;
+      return ProductFormScreen(productId: productId);
+    },
+  ),
+
+  // ── POS ────────────────────────────────────────────────────────
+  GoRoute(
+    path: AppRoutes.pos,
+    name: 'pos',
+    builder: (context, state) => const PosScreen(),
+  ),
+
+  // ── Piutang ────────────────────────────────────────────────────
+  GoRoute(
+    path: AppRoutes.receivables,
+    name: 'receivables',
+    builder: (context, state) => const ReceivablesListScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.receivableAdd,
+    name: 'receivable-add',
+    builder: (context, state) => const ReceivableFormScreen(),
+  ),
+];

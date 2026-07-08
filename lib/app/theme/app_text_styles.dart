@@ -92,6 +92,11 @@ class AppTextStyles {
     letterSpacing: 0.5,
   );
 
+  // --- Headline aliases (Material 3 naming untuk konsistensi dengan screen) ---
+  static const TextStyle headlineLarge = headingLarge;
+  static const TextStyle headlineMedium = headingMedium;
+  static const TextStyle headlineSmall = headingSmall;
+
   // --- Angka Keuangan (khusus untuk nominal Rupiah) ---
   static const TextStyle currencyLarge = TextStyle(
     fontSize: 28,
