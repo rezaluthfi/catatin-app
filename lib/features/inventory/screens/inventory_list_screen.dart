@@ -1,17 +1,279 @@
-/// Inventory List Screen — daftar semua produk/stok.
-/// TODO (Sprint 3): Implementasi CRUD inventaris + price calculator.
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class InventoryListScreen extends StatelessWidget {
+import '../../../app/router.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_text_styles.dart';
+import '../providers/inventory_provider.dart';
+import '../providers/inventory_state.dart';
+import '../widgets/empty_inventory_widget.dart';
+import '../widgets/product_card.dart';
+
+class InventoryListScreen extends ConsumerWidget {
   const InventoryListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inventoryState = ref.watch(inventoryProvider);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Inventarisasi')),
-      body: const Center(
-        child: Text('Inventarisasi — Coming Soon (Sprint 3)'),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Inventaris', style: AppTextStyles.headlineMedium),
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sort_rounded, color: AppColors.textPrimary),
+            onPressed: () => _showSortModal(context, ref),
+          ),
+        ],
       ),
+      body: Column(
+        children: [
+          _buildSearchBar(context, ref),
+          Expanded(
+            child: inventoryState.when(
+              data: (state) {
+                if (state.products.isEmpty) {
+                  return EmptyInventoryWidget(
+                    isSearch: state.searchQuery.isNotEmpty,
+                  );
+                }
+                return RefreshIndicator(
+                  onRefresh: () =>
+                      ref.read(inventoryProvider.notifier).reload(),
+                  color: AppColors.primary,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.6,
+                    ),
+                    itemCount: state.products.length,
+                    itemBuilder: (context, index) {
+                      final product = state.products[index];
+                      return ProductCard(
+                        product: product,
+                        onTap: () {
+                          context.push(AppRoutes.productEdit.replaceFirst(':id', product.id));
+                        },
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+              error: (error, stack) => Center(
+                child: Text(
+                  'Gagal memuat produk:\n$error',
+                  style: AppTextStyles.bodyMediumSecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null
+          : FloatingActionButton(
+              onPressed: () => context.push(AppRoutes.productAdd),
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.add_rounded),
+            ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context, WidgetRef ref) {
+    return Container(
+      color: AppColors.surface,
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+      child: TextField(
+        onChanged: (val) {
+          ref.read(inventoryProvider.notifier).setSearchQuery(val);
+        },
+        decoration: InputDecoration(
+          hintText: 'Cari produk...',
+          hintStyle: AppTextStyles.bodyMediumSecondary,
+          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+          filled: true,
+          fillColor: AppColors.background,
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSortModal(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final currentState = ref.watch(inventoryProvider).valueOrNull;
+            if (currentState == null) return const SizedBox();
+
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Filter', style: AppTextStyles.headlineSmall),
+                        if (currentState.showLowStockOnly || currentState.showOutOfStockOnly)
+                          TextButton(
+                            onPressed: () {
+                              ref.read(inventoryProvider.notifier).clearFilters();
+                              Navigator.pop(context);
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text('Reset'),
+                          ),
+                      ],
+                    ),
+                  ),
+              const SizedBox(height: 8),
+              _buildFilterOption(
+                context,
+                ref,
+                title: 'Tampilkan Stok Menipis Saja',
+                value: currentState.showLowStockOnly,
+                onChanged: (_) {
+                  ref.read(inventoryProvider.notifier).toggleLowStockFilter();
+                  Navigator.pop(context);
+                },
+              ),
+              _buildFilterOption(
+                context,
+                ref,
+                title: 'Tampilkan Stok Habis Saja',
+                value: currentState.showOutOfStockOnly,
+                onChanged: (_) {
+                  ref.read(inventoryProvider.notifier).toggleOutOfStockFilter();
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text('Urutkan Berdasarkan', style: AppTextStyles.headlineSmall),
+              ),
+              const SizedBox(height: 8),
+              _buildSortOption(
+                context,
+                ref,
+                title: 'Nama (A-Z)',
+                value: ProductSortType.nameAsc,
+                groupValue: currentState.sortType,
+              ),
+              _buildSortOption(
+                context,
+                ref,
+                title: 'Nama (Z-A)',
+                value: ProductSortType.nameDesc,
+                groupValue: currentState.sortType,
+              ),
+              _buildSortOption(
+                context,
+                ref,
+                title: 'Stok Terbanyak',
+                value: ProductSortType.stockDesc,
+                groupValue: currentState.sortType,
+              ),
+              _buildSortOption(
+                context,
+                ref,
+                title: 'Stok Sedikit',
+                value: ProductSortType.stockAsc,
+                groupValue: currentState.sortType,
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterOption(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return CheckboxListTile(
+      value: value,
+      onChanged: onChanged,
+      title: Text(
+        title,
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontWeight: value ? FontWeight.w600 : FontWeight.w400,
+        ),
+      ),
+      activeColor: AppColors.primary,
+      controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+
+  Widget _buildSortOption(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required ProductSortType value,
+    required ProductSortType groupValue,
+  }) {
+    return RadioListTile<ProductSortType>(
+      value: value,
+      groupValue: groupValue,
+      onChanged: (val) {
+        if (val != null) {
+          ref.read(inventoryProvider.notifier).setSortType(val);
+          Navigator.pop(context);
+        }
+      },
+      title: Text(
+        title,
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontWeight: value == groupValue ? FontWeight.w600 : FontWeight.w400,
+        ),
+      ),
+      activeColor: AppColors.primary,
+      controlAffinity: ListTileControlAffinity.trailing,
     );
   }
 }
