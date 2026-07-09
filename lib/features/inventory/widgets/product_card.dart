@@ -91,6 +91,8 @@ class ProductCard extends StatelessWidget {
                         Text('Harga Jual', style: AppTextStyles.labelSmall),
                         Text(
                           product.sellingPrice.toRupiah(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.income,
@@ -106,6 +108,8 @@ class ProductCard extends StatelessWidget {
                         Text('Harga Modal', style: AppTextStyles.labelSmall),
                         Text(
                           product.purchasePrice.toRupiah(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.bodyMediumSecondary.copyWith(height: 1.2),
                         ),
                       ],
@@ -143,6 +147,8 @@ class ProductCard extends StatelessWidget {
       ),
       child: Text(
         isOutOfStock ? 'Habis' : 'Stok: ${product.stock}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: AppTextStyles.labelMedium.copyWith(
           color: textColor,
           fontWeight: FontWeight.w700,
