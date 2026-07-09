@@ -97,27 +97,7 @@ class InventoryListScreen extends ConsumerWidget {
   }
 
   Widget _buildSearchBar(BuildContext context, WidgetRef ref) {
-    return Container(
-      color: AppColors.surface,
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-      child: TextField(
-        onChanged: (val) {
-          ref.read(inventoryProvider.notifier).setSearchQuery(val);
-        },
-        decoration: InputDecoration(
-          hintText: 'Cari produk...',
-          hintStyle: AppTextStyles.bodyMediumSecondary,
-          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-          filled: true,
-          fillColor: AppColors.background,
-          contentPadding: const EdgeInsets.symmetric(vertical: 0),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
+    return const _SearchBar();
   }
 
   void _showSortModal(BuildContext context, WidgetRef ref) {
@@ -274,6 +254,65 @@ class InventoryListScreen extends ConsumerWidget {
       ),
       activeColor: AppColors.primary,
       controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+}
+
+class _SearchBar extends ConsumerStatefulWidget {
+  const _SearchBar();
+
+  @override
+  ConsumerState<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends ConsumerState<_SearchBar> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final searchQuery = ref.watch(inventoryProvider).valueOrNull?.searchQuery ?? '';
+    
+    // Sinkronisasi teks jika dikosongkan dari luar (opsional)
+    if (searchQuery.isEmpty && _controller.text.isNotEmpty) {
+      _controller.clear();
+    }
+
+    return Container(
+      color: AppColors.surface,
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+      child: TextField(
+        controller: _controller,
+        onChanged: (val) {
+          ref.read(inventoryProvider.notifier).setSearchQuery(val);
+        },
+        decoration: InputDecoration(
+          hintText: 'Cari produk...',
+          hintStyle: AppTextStyles.bodyMediumSecondary,
+          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+          suffixIcon: searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded, color: AppColors.textSecondary),
+                  onPressed: () {
+                    _controller.clear();
+                    ref.read(inventoryProvider.notifier).setSearchQuery('');
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: AppColors.background,
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
     );
   }
 }
