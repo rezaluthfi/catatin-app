@@ -52,41 +52,54 @@ class MainShell extends StatelessWidget {
         notchMargin: 8,
         padding: EdgeInsets.zero,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Tab 0: Dashboard
-            _NavItem(
-              icon: Icons.dashboard_outlined,
-              activeIcon: Icons.dashboard,
-              label: 'Dashboard',
-              isActive: currentIndex == 0,
-              onTap: () => context.go(_tabs[0]),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Tab 0: Dashboard
+                  _NavItem(
+                    icon: Icons.dashboard_outlined,
+                    activeIcon: Icons.dashboard,
+                    label: 'Dashboard',
+                    isActive: currentIndex == 0,
+                    onTap: () => context.go(_tabs[0]),
+                  ),
+                  // Tab 1: Inventaris
+                  _NavItem(
+                    icon: Icons.inventory_2_outlined,
+                    activeIcon: Icons.inventory_2,
+                    label: 'Inventaris',
+                    isActive: currentIndex == 1,
+                    onTap: () => context.go(_tabs[1]),
+                  ),
+                ],
+              ),
             ),
-            // Tab 1: Inventaris
-            _NavItem(
-              icon: Icons.inventory_2_outlined,
-              activeIcon: Icons.inventory_2,
-              label: 'Inventaris',
-              isActive: currentIndex == 1,
-              onTap: () => context.go(_tabs[1]),
-            ),
-            // Ruang kosong untuk FAB
-            const SizedBox(width: 48),
-            // Tab 2: Rekap
-            _NavItem(
-              icon: Icons.bar_chart_outlined,
-              activeIcon: Icons.bar_chart,
-              label: 'Rekap',
-              isActive: currentIndex == 2,
-              onTap: () => context.go(_tabs[2]),
-            ),
-            // Tab 3: Profil
-            _NavItem(
-              icon: Icons.person_outline,
-              activeIcon: Icons.person,
-              label: 'Profil',
-              isActive: currentIndex == 3,
-              onTap: () => context.go(_tabs[3]),
+            // Ruang kosong untuk FAB agar benar-benar di tengah
+            const SizedBox(width: 64),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Tab 2: Rekap
+                  _NavItem(
+                    icon: Icons.bar_chart_outlined,
+                    activeIcon: Icons.bar_chart,
+                    label: 'Rekap',
+                    isActive: currentIndex == 2,
+                    onTap: () => context.go(_tabs[2]),
+                  ),
+                  // Tab 3: Profil
+                  _NavItem(
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    label: 'Profil',
+                    isActive: currentIndex == 3,
+                    onTap: () => context.go(_tabs[3]),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
