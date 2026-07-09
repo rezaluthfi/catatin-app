@@ -37,6 +37,7 @@ class MainShell extends StatelessWidget {
     final currentIndex = _currentIndex(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: child,
       // FAB di tengah untuk akses cepat POS
       floatingActionButton: FloatingActionButton(
