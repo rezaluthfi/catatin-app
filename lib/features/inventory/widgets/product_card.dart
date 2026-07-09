@@ -45,25 +45,28 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 120,
-              width: double.infinity,
-              color: isOutOfStock
-                  ? AppColors.expense.withValues(alpha: 0.1)
-                  : isLowStock
-                      ? AppColors.warning.withValues(alpha: 0.1)
-                      : AppColors.primary.withValues(alpha: 0.05),
-              child: Icon(
-                Icons.inventory_2_rounded,
-                size: 48,
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
                 color: isOutOfStock
-                    ? AppColors.expense.withValues(alpha: 0.5)
+                    ? AppColors.expense.withValues(alpha: 0.1)
                     : isLowStock
-                        ? AppColors.warning.withValues(alpha: 0.5)
-                        : AppColors.primary.withValues(alpha: 0.3),
+                        ? AppColors.warning.withValues(alpha: 0.1)
+                        : AppColors.primary.withValues(alpha: 0.05),
+                child: Icon(
+                  Icons.inventory_2_rounded,
+                  size: 40,
+                  color: isOutOfStock
+                      ? AppColors.expense.withValues(alpha: 0.5)
+                      : isLowStock
+                          ? AppColors.warning.withValues(alpha: 0.5)
+                          : AppColors.primary.withValues(alpha: 0.3),
+                ),
               ),
             ),
             Expanded(
+              flex: 4,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
