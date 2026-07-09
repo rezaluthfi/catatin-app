@@ -216,17 +216,15 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
               letterSpacing: 0.5,
             ),
           ),
-          if (authState.businessName.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              authState.businessName,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Colors.white.withAlpha(200),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          const SizedBox(height: 4),
+          Text(
+            authState.businessName.isNotEmpty ? authState.businessName : ' ',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Colors.white.withAlpha(200),
             ),
-          ],
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
