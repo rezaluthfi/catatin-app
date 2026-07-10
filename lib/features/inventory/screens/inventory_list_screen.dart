@@ -88,6 +88,7 @@ class InventoryListScreen extends ConsumerWidget {
       floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
           ? null
           : FloatingActionButton(
+              heroTag: null,
               onPressed: () => context.push(AppRoutes.productAdd),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
