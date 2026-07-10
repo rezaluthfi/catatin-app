@@ -1,7 +1,6 @@
 /// Definisi tipografi (text styles) untuk seluruh aplikasi Catatin.
 ///
-/// Menggunakan font 'Plus Jakarta Sans' dari Google Fonts (via package)
-/// atau fallback ke 'Roboto' jika tidak tersedia.
+/// Menggunakan custom font 'GoogleSans' yang dilampirkan via assets/fonts.
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
