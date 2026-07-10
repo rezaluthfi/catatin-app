@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
+import '../models/cart_item_model.dart';
 import '../providers/pos_provider.dart';
 
 class CartBottomSheet extends ConsumerWidget {
-  const CartBottomSheet({
-    super.key,
-    required this.onCheckout,
-  });
+  const CartBottomSheet({super.key, required this.onCheckout});
 
   final VoidCallback onCheckout;
 
@@ -36,22 +34,35 @@ class CartBottomSheet extends ConsumerWidget {
         children: [
           // Handle drag / header
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            child: Stack(
+              alignment: Alignment
+                  .centerLeft, // Menggunakan alignment kiri untuk menyamakan dengan Checkout
               children: [
                 Text(
                   'Keranjang Belanja',
-                  style: AppTextStyles.headingSmall.copyWith(fontWeight: FontWeight.bold),
+                  style: AppTextStyles.headingMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    ref.read(posProvider.notifier).clearCart();
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Kosongkan',
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.expense),
+                Positioned(
+                  right: 0,
+                  child: TextButton(
+                    onPressed: () {
+                      ref.read(posProvider.notifier).clearCart();
+                      Navigator.pop(context);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Kosongkan',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.expense,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -67,53 +78,7 @@ class CartBottomSheet extends ConsumerWidget {
               separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final item = cartItems[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Row(
-                    children: [
-                      // Info produk
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.product.name,
-                              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item.subtotal.toRupiah(),
-                              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.income),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Kontrol Kuantitas
-                      Row(
-                        children: [
-                          _buildQtyButton(
-                            icon: Icons.remove,
-                            onTap: () => ref.read(posProvider.notifier).decrementQuantity(item.product),
-                          ),
-                          SizedBox(
-                            width: 32,
-                            child: Text(
-                              '${item.quantity}',
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                          _buildQtyButton(
-                            icon: Icons.add,
-                            onTap: () => ref.read(posProvider.notifier).addToCart(item.product),
-                            isDisabled: item.quantity >= item.product.stock,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
+                return _CartItemRow(item: item);
               },
             ),
           ),
@@ -130,7 +95,9 @@ class CartBottomSheet extends ConsumerWidget {
                     Text('Total Tagihan', style: AppTextStyles.headingSmall),
                     Text(
                       posState.totalAmount.toRupiah(),
-                      style: AppTextStyles.headingMedium.copyWith(color: AppColors.income),
+                      style: AppTextStyles.headingMedium.copyWith(
+                        color: AppColors.income,
+                      ),
                     ),
                   ],
                 ),
@@ -142,13 +109,6 @@ class CartBottomSheet extends ConsumerWidget {
                           Navigator.pop(context);
                           onCheckout();
                         },
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 56),
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
                   child: const Text('Lanjut Pembayaran'),
                 ),
               ],
@@ -157,6 +117,49 @@ class CartBottomSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class _CartItemRow extends ConsumerStatefulWidget {
+  const _CartItemRow({required this.item});
+  final CartItemModel item;
+
+  @override
+  ConsumerState<_CartItemRow> createState() => _CartItemRowState();
+}
+
+class _CartItemRowState extends ConsumerState<_CartItemRow> {
+  late TextEditingController _qtyController;
+
+  @override
+  void initState() {
+    super.initState();
+    _qtyController = TextEditingController(
+      text: widget.item.quantity.toString(),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _CartItemRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.quantity != widget.item.quantity) {
+      _qtyController.text = widget.item.quantity.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _qtyController.dispose();
+    super.dispose();
+  }
+
+  void _submitQty() {
+    final newQty = int.tryParse(_qtyController.text) ?? 0;
+    if (newQty > 0) {
+      ref.read(posProvider.notifier).setQuantity(widget.item.product, newQty);
+    } else {
+      _qtyController.text = widget.item.quantity.toString();
+    }
   }
 
   Widget _buildQtyButton({
@@ -178,6 +181,88 @@ class CartBottomSheet extends ConsumerWidget {
             color: isDisabled ? AppColors.textSecondary : AppColors.primary,
           ),
         ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: [
+          // Info produk
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.item.product.name,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.item.subtotal.toRupiah(),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.income,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Kontrol Kuantitas
+          Row(
+            children: [
+              _buildQtyButton(
+                icon: Icons.remove,
+                onTap: () => ref
+                    .read(posProvider.notifier)
+                    .decrementQuantity(widget.item.product),
+              ),
+              Container(
+                width: 44,
+                height: 32,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                alignment: Alignment.center,
+                child: TextField(
+                  controller: _qtyController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  textAlignVertical: TextAlignVertical.center,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.only(
+                      bottom: 2,
+                    ), // sedikit offset agar pas tengah
+                    border: InputBorder.none,
+                  ),
+                  onSubmitted: (_) => _submitQty(),
+                  onTapOutside: (_) {
+                    FocusScope.of(context).unfocus();
+                    _submitQty();
+                  },
+                ),
+              ),
+              _buildQtyButton(
+                icon: Icons.add,
+                onTap: () => ref
+                    .read(posProvider.notifier)
+                    .addToCart(widget.item.product),
+                isDisabled: widget.item.quantity >= widget.item.product.stock,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

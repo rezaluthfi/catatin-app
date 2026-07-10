@@ -69,6 +69,29 @@ class PosNotifier extends Notifier<PosState> {
     state = state.copyWith(cartItems: cartItems);
   }
 
+  void setQuantity(ProductModel product, int quantity) {
+    if (quantity <= 0) {
+      removeFromCart(product);
+      return;
+    }
+    
+    // Batasi maksimum sesuai stok
+    final finalQuantity = quantity > product.stock ? product.stock : quantity;
+    
+    final cartItems = List<CartItemModel>.from(state.cartItems);
+    final index = cartItems.indexWhere((item) => item.product.id == product.id);
+
+    if (index >= 0) {
+      cartItems[index] = cartItems[index].copyWith(quantity: finalQuantity);
+      state = state.copyWith(cartItems: cartItems);
+    } else {
+      if (product.stock > 0) {
+        cartItems.add(CartItemModel(product: product, quantity: finalQuantity));
+        state = state.copyWith(cartItems: cartItems);
+      }
+    }
+  }
+
   void clearCart() {
     state = state.copyWith(cartItems: []);
   }

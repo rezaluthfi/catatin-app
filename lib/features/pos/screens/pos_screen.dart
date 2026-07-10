@@ -43,7 +43,12 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CheckoutBottomSheet(),
+      builder: (context) => CheckoutBottomSheet(
+        onBackToCart: () {
+          Navigator.pop(context);
+          _showCartSheet();
+        },
+      ),
     ).then((_) {
       // Jika kembali dari checkout, kita bisa invalidate data transaksi dll
       ref.invalidate(inventoryProvider); // Segarkan stok di inventaris

@@ -8,10 +8,13 @@ import '../../../data/models/transaction_enums.dart';
 import '../providers/pos_provider.dart';
 
 class CheckoutBottomSheet extends ConsumerStatefulWidget {
-  const CheckoutBottomSheet({super.key});
+  const CheckoutBottomSheet({super.key, this.onBackToCart});
+
+  final VoidCallback? onBackToCart;
 
   @override
-  ConsumerState<CheckoutBottomSheet> createState() => _CheckoutBottomSheetState();
+  ConsumerState<CheckoutBottomSheet> createState() =>
+      _CheckoutBottomSheetState();
 }
 
 class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
@@ -31,7 +34,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
     // Menghapus format non-digit
     final numericString = value.replaceAll(RegExp(r'[^0-9]'), '');
     final intValue = int.tryParse(numericString) ?? 0;
-    
+
     if (numericString.isNotEmpty) {
       final formatted = intValue.toRupiahNoSymbol();
       _cashController.value = TextEditingValue(
@@ -64,9 +67,13 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
       return;
     }
 
-    final success = await ref.read(posProvider.notifier).checkout(
+    final success = await ref
+        .read(posProvider.notifier)
+        .checkout(
           paymentMethod: _paymentMethod,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          notes: _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
         );
 
     if (!mounted) return;
@@ -100,141 +107,175 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
     final isSuccess = hasEnteredCash && change >= 0;
 
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Pembayaran',
-              style: AppTextStyles.headingMedium.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            
-            // Tipe Pembayaran
-            Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            child: Row(
               children: [
-                Expanded(
-                  child: RadioListTile<PaymentMethod>(
-                    title: const Text('Tunai'),
-                    value: PaymentMethod.cash,
-                    groupValue: _paymentMethod,
-                    onChanged: (val) {
-                      setState(() {
-                        _paymentMethod = val!;
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero,
+                if (widget.onBackToCart != null) ...[
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    onPressed: widget.onBackToCart,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
-                ),
-                Expanded(
-                  child: RadioListTile<PaymentMethod>(
-                    title: const Text('Kasbon'),
-                    value: PaymentMethod.credit,
-                    groupValue: _paymentMethod,
-                    onChanged: (val) {
-                      setState(() {
-                        _paymentMethod = val!;
-                        _cashReceived = 0;
-                        _cashController.clear();
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero,
+                  const SizedBox(width: 12),
+                ],
+                Text(
+                  'Pembayaran',
+                  style: AppTextStyles.headingMedium.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            
-            const SizedBox(height: 16),
-            
-            if (_paymentMethod == PaymentMethod.cash) ...[
-              TextField(
-                controller: _cashController,
-                keyboardType: TextInputType.number,
-                onChanged: _onCashChanged,
-                decoration: InputDecoration(
-                  labelText: 'Nominal Uang Diterima (Rp)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixText: 'Rp ',
-                ),
-              ),
-              const SizedBox(height: 16),
+          ),
+          const Divider(height: 1),
 
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isSuccess 
-                      ? AppColors.income.withValues(alpha: 0.1) 
-                      : (isError ? AppColors.expense.withValues(alpha: 0.1) : AppColors.surfaceVariant.withValues(alpha: 0.5)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Kembalian', style: AppTextStyles.headingSmall),
-                    Text(
-                      !hasEnteredCash 
-                          ? 'Rp 0' 
-                          : (isSuccess ? change.toRupiah() : 'Uang Kurang'),
-                      style: AppTextStyles.headingMedium.copyWith(
-                        color: isSuccess 
-                            ? AppColors.income 
-                            : (isError ? AppColors.expense : AppColors.textSecondary),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Tipe Pembayaran
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<PaymentMethod>(
+                          title: const Text('Tunai'),
+                          value: PaymentMethod.cash,
+                          groupValue: _paymentMethod,
+                          onChanged: (val) {
+                            setState(() {
+                              _paymentMethod = val!;
+                            });
+                          },
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<PaymentMethod>(
+                          title: const Text('Kasbon'),
+                          value: PaymentMethod.credit,
+                          groupValue: _paymentMethod,
+                          onChanged: (val) {
+                            setState(() {
+                              _paymentMethod = val!;
+                              _cashReceived = 0;
+                              _cashController.clear();
+                            });
+                          },
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  if (_paymentMethod == PaymentMethod.cash) ...[
+                    TextField(
+                      controller: _cashController,
+                      keyboardType: TextInputType.number,
+                      onChanged: _onCashChanged,
+                      decoration: InputDecoration(
+                        labelText: 'Nominal Uang Diterima (Rp)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixText: 'Rp ',
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                    const SizedBox(height: 16),
 
-            TextField(
-              controller: _notesController,
-              decoration: InputDecoration(
-                labelText: 'Catatan (Opsional)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                hintText: 'Misal: Nama pelanggan',
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSuccess
+                            ? AppColors.income.withValues(alpha: 0.1)
+                            : (isError
+                                  ? AppColors.expense.withValues(alpha: 0.1)
+                                  : AppColors.surfaceVariant.withValues(
+                                      alpha: 0.5,
+                                    )),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Kembalian', style: AppTextStyles.headingSmall),
+                          Text(
+                            !hasEnteredCash
+                                ? 'Rp 0'
+                                : (isSuccess
+                                      ? change.toRupiah()
+                                      : 'Uang Kurang'),
+                            style: AppTextStyles.headingMedium.copyWith(
+                              color: isSuccess
+                                  ? AppColors.income
+                                  : (isError
+                                        ? AppColors.expense
+                                        : AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  TextField(
+                    controller: _notesController,
+                    decoration: InputDecoration(
+                      labelText: 'Catatan (Opsional)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: 'Misal: Nama pelanggan',
+                    ),
+                    maxLines: 2,
+                  ),
+
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Total Tagihan', style: AppTextStyles.headingSmall),
+                      Text(
+                        totalAmount.toRupiah(),
+                        style: AppTextStyles.headlineSmall.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: posState.isLoading ? null : _submitTransaction,
+                    child: posState.isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Selesaikan Transaksi'),
+                  ),
+                ],
               ),
-              maxLines: 2,
             ),
-            
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Total Tagihan', style: AppTextStyles.headingSmall),
-                Text(
-                  totalAmount.toRupiah(),
-                  style: AppTextStyles.headlineSmall.copyWith(color: AppColors.primary),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: posState.isLoading ? null : _submitTransaction,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: posState.isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Selesaikan Transaksi'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
