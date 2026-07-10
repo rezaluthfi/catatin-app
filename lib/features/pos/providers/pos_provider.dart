@@ -8,6 +8,8 @@ import '../../../data/models/product_model.dart';
 import '../../../data/models/receivable_model.dart';
 import '../../inventory/providers/inventory_provider.dart';
 import '../../receivables/providers/receivable_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
+import '../../recap/providers/recap_provider.dart';
 import '../models/cart_item_model.dart';
 import 'pos_state.dart';
 
@@ -163,6 +165,10 @@ class PosNotifier extends Notifier<PosState> {
       if (paymentMethod == PaymentMethod.credit) {
         ref.invalidate(receivableProvider);
       }
+
+      // Refresh data dashboard & rekap
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(recapProvider);
 
       // Kosongkan keranjang setelah berhasil
       state = const PosState();
