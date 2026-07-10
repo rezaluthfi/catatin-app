@@ -30,8 +30,23 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
   void _onCashChanged(String value) {
     // Menghapus format non-digit
     final numericString = value.replaceAll(RegExp(r'[^0-9]'), '');
+    final intValue = int.tryParse(numericString) ?? 0;
+    
+    if (numericString.isNotEmpty) {
+      final formatted = intValue.toRupiahNoSymbol();
+      _cashController.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    } else {
+      _cashController.value = const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
     setState(() {
-      _cashReceived = int.tryParse(numericString) ?? 0;
+      _cashReceived = intValue;
     });
   }
 
@@ -80,6 +95,9 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
     final posState = ref.watch(posProvider);
     final totalAmount = posState.totalAmount;
     final change = _cashReceived - totalAmount;
+    final hasEnteredCash = _cashController.text.isNotEmpty;
+    final isError = hasEnteredCash && change < 0;
+    final isSuccess = hasEnteredCash && change >= 0;
 
     return Container(
       padding: EdgeInsets.only(
@@ -152,10 +170,13 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                 ),
               ),
               const SizedBox(height: 16),
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: change >= 0 ? AppColors.income.withValues(alpha: 0.1) : AppColors.expense.withValues(alpha: 0.1),
+                  color: isSuccess 
+                      ? AppColors.income.withValues(alpha: 0.1) 
+                      : (isError ? AppColors.expense.withValues(alpha: 0.1) : AppColors.surfaceVariant.withValues(alpha: 0.5)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -163,9 +184,13 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                   children: [
                     Text('Kembalian', style: AppTextStyles.headingSmall),
                     Text(
-                      change >= 0 ? change.toRupiah() : 'Uang Kurang',
+                      !hasEnteredCash 
+                          ? 'Rp 0' 
+                          : (isSuccess ? change.toRupiah() : 'Uang Kurang'),
                       style: AppTextStyles.headingMedium.copyWith(
-                        color: change >= 0 ? AppColors.income : AppColors.expense,
+                        color: isSuccess 
+                            ? AppColors.income 
+                            : (isError ? AppColors.expense : AppColors.textSecondary),
                       ),
                     ),
                   ],

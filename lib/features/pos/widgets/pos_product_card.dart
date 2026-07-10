@@ -36,9 +36,11 @@ class PosProductCard extends ConsumerWidget {
           // Konten utama kartu
           InkWell(
             onTap: canAdd ? () => ref.read(posProvider.notifier).addToCart(product) : null,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: Opacity(
+              opacity: isOutOfStock ? 0.5 : 1.0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Expanded(
                   flex: 3,
                   child: Container(
@@ -98,6 +100,7 @@ class PosProductCard extends ConsumerWidget {
               ],
             ),
           ),
+        ),
           
           // Badge kuantitas jika ada di keranjang
           if (qtyInCart > 0)

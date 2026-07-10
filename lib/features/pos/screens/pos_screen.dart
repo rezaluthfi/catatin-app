@@ -5,6 +5,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
 import '../../inventory/providers/inventory_provider.dart';
+import '../../inventory/widgets/empty_inventory_widget.dart';
 import '../providers/pos_provider.dart';
 import '../widgets/cart_bottom_sheet.dart';
 import '../widgets/checkout_bottom_sheet.dart';
@@ -113,7 +114,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           // Daftar Produk (Grid)
           Expanded(
             child: displayedProducts.isEmpty
-                ? const Center(child: Text('Produk tidak ditemukan.'))
+                ? EmptyInventoryWidget(isSearch: searchQuery.isNotEmpty)
                 : GridView.builder(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 100), // padding bawah untuk bottom bar
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

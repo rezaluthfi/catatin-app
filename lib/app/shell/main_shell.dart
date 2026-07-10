@@ -41,7 +41,7 @@ class MainShell extends StatelessWidget {
       body: child,
       // FAB di tengah untuk akses cepat POS
       floatingActionButton: FloatingActionButton(
-        heroTag: 'fab-pos',
+        heroTag: null,
         onPressed: () => context.push(AppRoutes.pos),
         tooltip: 'Catat Transaksi',
         child: const Icon(Icons.add_shopping_cart, size: 26),
