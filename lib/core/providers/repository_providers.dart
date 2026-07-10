@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/product_repository.dart';
 import '../../data/repositories/receivable_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
+import '../../data/repositories/operational_cost_repository.dart';
 import '../../domain/repositories/i_product_repository.dart';
 import '../../domain/repositories/i_receivable_repository.dart';
 import '../../domain/repositories/i_transaction_repository.dart';
+import '../../domain/repositories/i_operational_cost_repository.dart';
 
 /// Provider untuk instance [IProductRepository].
 /// Karena SQLite (DatabaseHelper) dikelola secara singleton atau diakses langsung,
@@ -22,4 +24,9 @@ final transactionRepositoryProvider = Provider<ITransactionRepository>((ref) {
 /// Provider untuk instance [IReceivableRepository].
 final receivableRepositoryProvider = Provider<IReceivableRepository>((ref) {
   return ReceivableRepository();
+});
+
+/// Provider untuk instance [IOperationalCostRepository].
+final operationalCostRepositoryProvider = Provider<IOperationalCostRepository>((ref) {
+  return OperationalCostRepository();
 });
