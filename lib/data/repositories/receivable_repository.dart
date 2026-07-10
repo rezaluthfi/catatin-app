@@ -128,13 +128,32 @@ class ReceivableRepository implements IReceivableRepository {
         '''SELECT COALESCE(
               SUM(${DbConstants.colReceivableAmount} - ${DbConstants.colReceivablePaidAmount}),
               0
-           ) as total
+            ) as total
            FROM ${DbConstants.tableReceivables}
            WHERE ${DbConstants.colReceivableStatus} IN ('unpaid', 'partial')''',
       );
-      return (result.first['total'] as int?) ?? 0;
+      final raw = result.first['total'];
+      return raw is num ? raw.toInt() : 0;
     } catch (e) {
       throw DatabaseException('Gagal menghitung total piutang', originalError: e);
+    }
+  }
+
+  @override
+  Future<void> resetPayment(String id) async {
+    try {
+      await _db.update(
+        DbConstants.tableReceivables,
+        {
+          DbConstants.colReceivablePaidAmount: 0,
+          DbConstants.colReceivableStatus: ReceivableStatus.unpaid.value,
+          DbConstants.colReceivableUpdatedAt: DateTime.now().toIso8601String(),
+        },
+        where: '${DbConstants.colReceivableId} = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw DatabaseException('Gagal mereset pembayaran piutang', originalError: e);
     }
   }
 

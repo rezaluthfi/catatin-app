@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/repository_providers.dart';
 import '../../../data/models/receivable_model.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import 'receivable_state.dart';
 
 final receivableProvider =
@@ -67,6 +68,7 @@ class ReceivableNotifier extends AsyncNotifier<ReceivableState> {
       );
       
       await repo.insert(receivable);
+      ref.invalidate(dashboardProvider);
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {
@@ -84,6 +86,7 @@ class ReceivableNotifier extends AsyncNotifier<ReceivableState> {
     try {
       final repo = ref.read(receivableRepositoryProvider);
       await repo.addPartialPayment(id, amount);
+      ref.invalidate(dashboardProvider);
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {
@@ -101,6 +104,25 @@ class ReceivableNotifier extends AsyncNotifier<ReceivableState> {
     try {
       final repo = ref.read(receivableRepositoryProvider);
       await repo.markAsPaid(id);
+      ref.invalidate(dashboardProvider);
+      state = AsyncData(await _loadData(state.value!));
+      return true;
+    } catch (e) {
+      state = AsyncData(state.value!.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Reset Pembayaran ke Belum Lunas
+  Future<bool> resetPayment(String id) async {
+    state = AsyncData(state.value!.copyWith(isLoading: true, errorMessage: null));
+    try {
+      final repo = ref.read(receivableRepositoryProvider);
+      await repo.resetPayment(id);
+      ref.invalidate(dashboardProvider);
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {
@@ -118,6 +140,7 @@ class ReceivableNotifier extends AsyncNotifier<ReceivableState> {
     try {
       final repo = ref.read(receivableRepositoryProvider);
       await repo.delete(id);
+      ref.invalidate(dashboardProvider);
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {

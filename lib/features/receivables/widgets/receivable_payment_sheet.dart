@@ -24,6 +24,7 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
   final _amountController = TextEditingController();
   bool _submitted = false;
   int _paymentAmount = 0;
+  bool _payInFull = true;
 
   @override
   void initState() {
@@ -65,6 +66,10 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
     setState(() {
       _submitted = true;
     });
+
+    if (_payInFull) {
+      _paymentAmount = widget.receivable.remainingAmount;
+    }
 
     if (_paymentAmount <= 0) {
       return;
@@ -199,50 +204,88 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
 
                   const SizedBox(height: 24),
 
-                  // Input Nominal
-                  TextField(
-                    controller: _amountController,
-                    keyboardType: TextInputType.number,
-                    onChanged: _onAmountChanged,
-                    decoration: InputDecoration(
-                      labelText: 'Nominal Pembayaran (Rp)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  // Segmented Button untuk Mode Pembayaran
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(
+                        value: true,
+                        label: Text('Bayar Lunas'),
                       ),
-                      prefixText: 'Rp ',
-                      errorText: _submitted && _paymentAmount <= 0
-                          ? 'Nominal pembayaran tidak valid'
-                          : null,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Quick Action Buttons (Bayar Lunas vs Cicil)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              _paymentAmount = widget.receivable.remainingAmount;
-                              _amountController.text =
-                                  _paymentAmount.toRupiahNoSymbol();
-                            });
-                          },
-                          child: const Text('Bayar Lunas'),
-                        ),
+                      ButtonSegment(
+                        value: false,
+                        label: Text('Cicil / Sebagian'),
                       ),
                     ],
+                    selected: {_payInFull},
+                    onSelectionChanged: (val) {
+                      setState(() {
+                        _payInFull = val.first;
+                        if (_payInFull) {
+                          _paymentAmount = widget.receivable.remainingAmount;
+                          _amountController.text = _paymentAmount.toRupiahNoSymbol();
+                        } else {
+                          _paymentAmount = 0;
+                          _amountController.clear();
+                        }
+                        _submitted = false;
+                      });
+                    },
+                    showSelectedIcon: false,
                   ),
 
                   const SizedBox(height: 24),
 
-                  FilledButton(
+                  if (_payInFull) ...[
+                    // Info Bayar Lunas
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.income.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.income.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_outline, color: AppColors.income),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Akan dicatat pembayaran lunas sebesar ${widget.receivable.remainingAmount.toRupiah()}',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.income,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else ...[
+                    // Input Nominal Cicilan
+                    TextField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      onChanged: _onAmountChanged,
+                      decoration: InputDecoration(
+                        labelText: 'Nominal Cicilan (Rp)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixText: 'Rp ',
+                        errorText: _submitted && _paymentAmount <= 0
+                            ? 'Nominal pembayaran tidak valid'
+                            : null,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 32),
+
+                   FilledButton(
                     onPressed: isLoading ? null : _submitPayment,
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Simpan Pembayaran'),
+                        : Text(_payInFull ? 'Lunasi Piutang' : 'Simpan Pembayaran Cicilan'),
                   ),
                 ],
               ),

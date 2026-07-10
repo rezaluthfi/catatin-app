@@ -20,6 +20,9 @@ abstract interface class IReceivableRepository {
   /// Ambil total keseluruhan piutang yang belum tertagih.
   Future<int> getTotalOutstanding();
 
+  /// Reset status pembayaran piutang kembali ke belum lunas.
+  Future<void> resetPayment(String id);
+
   /// Hapus piutang berdasarkan ID.
   Future<void> delete(String id);
 }

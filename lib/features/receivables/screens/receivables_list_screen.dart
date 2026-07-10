@@ -37,27 +37,72 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
   void _showPaymentSheet(ReceivableModel receivable) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ReceivablePaymentSheet(receivable: receivable),
     );
   }
 
+  void _showPaidOptionsDialog(ReceivableModel item) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ubah Status Piutang'),
+        content: Text(
+          'Piutang atas nama "${item.customerName}" sudah lunas. Apakah Anda ingin mengembalikan status piutang ini menjadi Belum Lunas (reset pembayaran)?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              final success = await ref
+                  .read(receivableProvider.notifier)
+                  .resetPayment(item.id);
+              if (!mounted) return;
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Pembayaran berhasil di-reset menjadi Belum Lunas'),
+                    backgroundColor: AppColors.income,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Gagal mereset pembayaran'),
+                    backgroundColor: AppColors.expense,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.expense),
+            child: const Text('Reset Pembayaran'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _confirmDelete(ReceivableModel receivable) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Hapus Piutang'),
         content: Text(
           'Apakah Anda yakin ingin menghapus piutang atas nama ${receivable.customerName} sebesar ${receivable.amount.toRupiah()}?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.expense),
             child: const Text('Hapus'),
           ),
@@ -70,22 +115,21 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
           .read(receivableProvider.notifier)
           .deleteReceivable(receivable.id);
 
-      if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Piutang berhasil dihapus'),
-              backgroundColor: AppColors.income,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Gagal menghapus piutang'),
-              backgroundColor: AppColors.expense,
-            ),
-          );
-        }
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Piutang berhasil dihapus'),
+            backgroundColor: AppColors.income,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal menghapus piutang'),
+            backgroundColor: AppColors.expense,
+          ),
+        );
       }
     }
   }
@@ -112,17 +156,13 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                 margin: const EdgeInsets.fromLTRB(24, 16, 24, 8),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.secondary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -333,9 +373,25 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                               onSelected: (val) {
                                                 if (val == 'delete') {
                                                   _confirmDelete(item);
+                                                } else if (val == 'reset') {
+                                                  _showPaidOptionsDialog(item);
                                                 }
                                               },
                                               itemBuilder: (context) => [
+                                                if (item.paidAmount > 0)
+                                                  const PopupMenuItem(
+                                                    value: 'reset',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.restart_alt_outlined,
+                                                          color: AppColors.primary,
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Text('Reset Pembayaran'),
+                                                      ],
+                                                    ),
+                                                  ),
                                                 const PopupMenuItem(
                                                   value: 'delete',
                                                   child: Row(
