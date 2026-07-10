@@ -151,7 +151,8 @@ class TransactionRepository implements ITransactionRepository {
              AND ${DbConstants.colTransactionType} = 'income' ''',
         [startDate.toIso8601String(), endDate.toIso8601String()],
       );
-      return (result.first['total'] as int?) ?? 0;
+      final raw = result.first['total'];
+      return raw is num ? raw.toInt() : 0;
     } catch (e) {
       throw app_errors.DatabaseException(
         'Gagal menghitung total pendapatan',
@@ -171,7 +172,7 @@ class TransactionRepository implements ITransactionRepository {
               SUM((ti.${DbConstants.colTxItemSellingPriceAtTime} -
                    ti.${DbConstants.colTxItemPurchasePriceAtTime}) *
                    ti.${DbConstants.colTxItemQuantity}), 0
-           ) as total_profit
+            ) as total_profit
            FROM ${DbConstants.tableTransactionItems} ti
            INNER JOIN ${DbConstants.tableTransactions} t
              ON ti.${DbConstants.colTxItemTransactionId} = t.${DbConstants.colTransactionId}
@@ -179,7 +180,8 @@ class TransactionRepository implements ITransactionRepository {
              AND t.${DbConstants.colTransactionType} = 'income' ''',
         [startDate.toIso8601String(), endDate.toIso8601String()],
       );
-      return (result.first['total_profit'] as int?) ?? 0;
+      final raw = result.first['total_profit'];
+      return raw is num ? raw.toInt() : 0;
     } catch (e) {
       throw app_errors.DatabaseException(
         'Gagal menghitung total keuntungan',
