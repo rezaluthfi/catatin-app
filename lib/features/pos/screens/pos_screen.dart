@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
@@ -46,13 +47,12 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       builder: (context) => CheckoutBottomSheet(
         onBackToCart: () {
           Navigator.pop(context);
-          _showCartSheet();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showCartSheet();
+          });
         },
       ),
-    ).then((_) {
-      // Jika kembali dari checkout, kita bisa invalidate data transaksi dll
-      ref.invalidate(inventoryProvider); // Segarkan stok di inventaris
-    });
+    );
   }
 
   @override
@@ -76,6 +76,10 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
         title: Text('Catat Transaksi', style: AppTextStyles.headlineMedium),
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,

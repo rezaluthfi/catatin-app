@@ -5,6 +5,9 @@ import '../../../data/models/transaction_enums.dart';
 import '../../../data/models/transaction_item_model.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../../data/models/product_model.dart';
+import '../../../data/models/receivable_model.dart';
+import '../../inventory/providers/inventory_provider.dart';
+import '../../receivables/providers/receivable_provider.dart';
 import '../models/cart_item_model.dart';
 import 'pos_state.dart';
 
@@ -100,6 +103,8 @@ class PosNotifier extends Notifier<PosState> {
   Future<bool> checkout({
     required PaymentMethod paymentMethod,
     String? notes,
+    String? customerName,
+    DateTime? dueDate,
   }) async {
     if (state.cartItems.isEmpty) return false;
 
@@ -131,11 +136,33 @@ class PosNotifier extends Notifier<PosState> {
         items: transactionItems,
       );
 
-      await repo.saveTransaction(transaction);
+      final savedTransaction = await repo.saveTransaction(transaction);
+
+      // Jika kasbon, catat piutang
+      if (paymentMethod == PaymentMethod.credit && customerName != null && customerName.isNotEmpty) {
+        final receivableRepo = ref.read(receivableRepositoryProvider);
+        await receivableRepo.insert(
+          ReceivableModel(
+            id: '',
+            transactionId: savedTransaction.id,
+            customerName: customerName,
+            amount: state.totalAmount,
+            paidAmount: 0,
+            status: ReceivableStatus.unpaid,
+            dueDate: dueDate,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+      }
 
       // Refresh data inventaris karena stok berkurang
-      // Note: Idealnya kita memanggil invalidate provider inventory jika ada
-      // ref.invalidate(inventoryProvider); // Nanti ditangani
+      ref.invalidate(inventoryProvider);
+      
+      // Refresh data piutang jika ada penambahan kasbon
+      if (paymentMethod == PaymentMethod.credit) {
+        ref.invalidate(receivableProvider);
+      }
 
       // Kosongkan keranjang setelah berhasil
       state = const PosState();

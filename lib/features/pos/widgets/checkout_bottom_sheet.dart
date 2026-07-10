@@ -22,11 +22,24 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
   int _cashReceived = 0;
   final _notesController = TextEditingController();
   final _cashController = TextEditingController();
+  final _customerNameController = TextEditingController();
+  final _dueDateController = TextEditingController();
+  DateTime? _dueDate;
+  bool _submitted = false;
+
+  String _getMonthName(int month) {
+    return const [
+      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ][month];
+  }
 
   @override
   void dispose() {
     _notesController.dispose();
     _cashController.dispose();
+    _customerNameController.dispose();
+    _dueDateController.dispose();
     super.dispose();
   }
 
@@ -57,13 +70,17 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
     final posState = ref.read(posProvider);
     final total = posState.totalAmount;
 
-    if (_paymentMethod == PaymentMethod.cash && _cashReceived < total) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Uang tunai kurang dari total tagihan'),
-          backgroundColor: AppColors.expense,
-        ),
-      );
+    setState(() {
+      _submitted = true;
+    });
+
+    if (_paymentMethod == PaymentMethod.cash) {
+      if (_cashController.text.trim().isEmpty || _cashReceived < total) {
+        return;
+      }
+    }
+
+    if (_paymentMethod == PaymentMethod.credit && _customerNameController.text.trim().isEmpty) {
       return;
     }
 
@@ -71,6 +88,10 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
         .read(posProvider.notifier)
         .checkout(
           paymentMethod: _paymentMethod,
+          customerName: _paymentMethod == PaymentMethod.credit
+              ? _customerNameController.text.trim()
+              : null,
+          dueDate: _paymentMethod == PaymentMethod.credit ? _dueDate : null,
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
@@ -162,6 +183,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                           onChanged: (val) {
                             setState(() {
                               _paymentMethod = val!;
+                              _submitted = false;
                             });
                           },
                           contentPadding: EdgeInsets.zero,
@@ -175,6 +197,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                           onChanged: (val) {
                             setState(() {
                               _paymentMethod = val!;
+                              _submitted = false;
                               _cashReceived = 0;
                               _cashController.clear();
                             });
@@ -191,13 +214,23 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                     TextField(
                       controller: _cashController,
                       keyboardType: TextInputType.number,
-                      onChanged: _onCashChanged,
+                      onChanged: (val) {
+                        _onCashChanged(val);
+                        if (_submitted) {
+                          setState(() {});
+                        }
+                      },
                       decoration: InputDecoration(
                         labelText: 'Nominal Uang Diterima (Rp)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         prefixText: 'Rp ',
+                        errorText: _submitted && _cashController.text.trim().isEmpty
+                            ? 'Nominal uang diterima wajib diisi'
+                            : (_submitted && _cashReceived < totalAmount
+                                ? 'Uang tunai kurang dari total tagihan'
+                                : null),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -233,6 +266,64 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  if (_paymentMethod == PaymentMethod.credit) ...[
+                    TextField(
+                      controller: _customerNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Nama Pelanggan (Wajib)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorText: _submitted && _customerNameController.text.trim().isEmpty
+                            ? 'Nama pelanggan wajib diisi'
+                            : null,
+                      ),
+                      onChanged: (val) {
+                        if (_submitted) {
+                          setState(() {});
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _dueDateController,
+                      readOnly: true,
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: _dueDate ?? DateTime.now().add(const Duration(days: 7)),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (date != null) {
+                          setState(() {
+                            _dueDate = date;
+                            _dueDateController.text =
+                                '${date.day} ${_getMonthName(date.month)} ${date.year}';
+                          });
+                        }
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Jatuh Tempo (Opsional)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        suffixIcon: _dueDate != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 20),
+                                onPressed: () {
+                                  setState(() {
+                                    _dueDate = null;
+                                    _dueDateController.clear();
+                                  });
+                                },
+                              )
+                            : const Icon(Icons.calendar_today, size: 20),
                       ),
                     ),
                     const SizedBox(height: 16),
