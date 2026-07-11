@@ -111,10 +111,14 @@ class DashboardScreen extends ConsumerWidget {
                                           size: 14,
                                         ),
                                         const SizedBox(width: 2),
-                                        Text(
-                                          'Masuk',
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
+                                        Expanded(
+                                          child: Text(
+                                            'Masuk',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -122,6 +126,8 @@ class DashboardScreen extends ConsumerWidget {
                                     const SizedBox(height: 6),
                                     Text(
                                       state.incomeToday.toRupiah(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: AppTextStyles.bodyMedium.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.income,
@@ -149,10 +155,14 @@ class DashboardScreen extends ConsumerWidget {
                                           size: 14,
                                         ),
                                         const SizedBox(width: 2),
-                                        Text(
-                                          'Keluar',
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
+                                        Expanded(
+                                          child: Text(
+                                            'Keluar',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -160,6 +170,8 @@ class DashboardScreen extends ConsumerWidget {
                                     const SizedBox(height: 6),
                                     Text(
                                       state.expenseToday.toRupiah(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: AppTextStyles.bodyMedium.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.expense,
@@ -189,10 +201,14 @@ class DashboardScreen extends ConsumerWidget {
                                           size: 14,
                                         ),
                                         const SizedBox(width: 2),
-                                        Text(
-                                          'Laba (Hari Ini)',
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
+                                        Expanded(
+                                          child: Text(
+                                            'Laba',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -200,6 +216,8 @@ class DashboardScreen extends ConsumerWidget {
                                     const SizedBox(height: 6),
                                     Text(
                                       state.netProfitToday.toRupiah(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: AppTextStyles.bodyMedium.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: isNetProfitPositive
@@ -457,6 +475,8 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -464,6 +484,8 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.bold,
                   color: valueColor ?? AppColors.textPrimary,

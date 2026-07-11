@@ -158,10 +158,15 @@ class RecapScreen extends ConsumerWidget {
                               ref.read(recapProvider.notifier).changeDate(newDate);
                             },
                           ),
-                          Text(
-                            formattedPeriod,
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              formattedPeriod,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           IconButton(
@@ -480,11 +485,17 @@ class RecapScreen extends ConsumerWidget {
             color: AppColors.textSecondary,
           ),
         ),
-        Text(
-          value,
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: valueColor ?? AppColors.textPrimary,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? AppColors.textPrimary,
+            ),
           ),
         ),
       ],

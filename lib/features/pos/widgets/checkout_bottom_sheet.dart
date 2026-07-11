@@ -173,39 +173,30 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Tipe Pembayaran
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<PaymentMethod>(
-                          title: const Text('Tunai'),
-                          value: PaymentMethod.cash,
-                          groupValue: _paymentMethod,
-                          onChanged: (val) {
-                            setState(() {
-                              _paymentMethod = val!;
-                              _submitted = false;
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                  SegmentedButton<PaymentMethod>(
+                    segments: const [
+                      ButtonSegment(
+                        value: PaymentMethod.cash,
+                        label: Text('Tunai'),
+                        icon: Icon(Icons.money_rounded),
                       ),
-                      Expanded(
-                        child: RadioListTile<PaymentMethod>(
-                          title: const Text('Kasbon'),
-                          value: PaymentMethod.credit,
-                          groupValue: _paymentMethod,
-                          onChanged: (val) {
-                            setState(() {
-                              _paymentMethod = val!;
-                              _submitted = false;
-                              _cashReceived = 0;
-                              _cashController.clear();
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                      ButtonSegment(
+                        value: PaymentMethod.credit,
+                        label: Text('Kasbon'),
+                        icon: Icon(Icons.menu_book_rounded),
                       ),
                     ],
+                    selected: {_paymentMethod},
+                    onSelectionChanged: (newSelection) {
+                      setState(() {
+                        _paymentMethod = newSelection.first;
+                        _submitted = false;
+                        if (_paymentMethod == PaymentMethod.credit) {
+                          _cashReceived = 0;
+                          _cashController.clear();
+                        }
+                      });
+                    },
                   ),
 
                   const SizedBox(height: 16),
@@ -251,18 +242,24 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Kembalian', style: AppTextStyles.headingSmall),
-                          Text(
-                            !hasEnteredCash
-                                ? 'Rp 0'
-                                : (isSuccess
-                                      ? change.toRupiah()
-                                      : 'Uang Kurang'),
-                            style: AppTextStyles.headingMedium.copyWith(
-                              color: isSuccess
-                                  ? AppColors.income
-                                  : (isError
-                                        ? AppColors.expense
-                                        : AppColors.textSecondary),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              !hasEnteredCash
+                                  ? 'Rp 0'
+                                  : (isSuccess
+                                        ? change.toRupiah()
+                                        : 'Uang Kurang'),
+                              textAlign: TextAlign.end,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.headingMedium.copyWith(
+                                color: isSuccess
+                                    ? AppColors.income
+                                    : (isError
+                                          ? AppColors.expense
+                                          : AppColors.textSecondary),
+                              ),
                             ),
                           ),
                         ],

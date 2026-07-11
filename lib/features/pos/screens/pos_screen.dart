@@ -168,36 +168,43 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '$totalItems',
-                                style: AppTextStyles.headingSmall.copyWith(color: Colors.white),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Total Belanja',
-                                  style: AppTextStyles.labelSmall.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                Text(
-                                  totalAmount.toRupiah(),
-                                  style: AppTextStyles.headingSmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                                child: Text(
+                                  '$totalItems',
+                                  style: AppTextStyles.headingSmall.copyWith(color: Colors.white),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Total Belanja',
+                                      style: AppTextStyles.labelSmall.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                                    ),
+                                    Text(
+                                      totalAmount.toRupiah(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.headingSmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 12),
                         Row(
                           children: [
                             Text(
