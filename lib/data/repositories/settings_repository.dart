@@ -1,8 +1,10 @@
-// Implementasi [ISettingsRepository] menggunakan kombinasi SQLite dan
+﻿// Implementasi [ISettingsRepository] menggunakan kombinasi SQLite dan
 // flutter_secure_storage (untuk PIN hash).
 //
 // Data sensitif (PIN hash, jawaban keamanan) disimpan di secure storage,
 // sedangkan data non-sensitif (nama usaha) disimpan di SQLite biasa.
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -35,7 +37,6 @@ class SettingsRepository implements ISettingsRepository {
             row[DbConstants.colSettingValue] as String;
       }
 
-      // Tambahkan data dari secure storage
       final pinHash = await _secureStorage.read(key: AppConstants.keyPinHash);
       final securityQuestion =
           await _secureStorage.read(key: AppConstants.keySecurityQuestion);
@@ -116,20 +117,79 @@ class SettingsRepository implements ISettingsRepository {
 
   @override
   Future<String> exportToJson() async {
-    // TODO: Implementasi di Sprint 8 (Settings)
-    // Akan mengumpulkan semua data dari semua tabel dan serialize ke JSON
-    throw UnimplementedError('Export belum diimplementasikan');
+    try {
+      final products = await _db.queryAll(DbConstants.tableProducts);
+      final transactions = await _db.queryAll(DbConstants.tableTransactions);
+      final transactionItems =
+          await _db.queryAll(DbConstants.tableTransactionItems);
+      final receivables = await _db.queryAll(DbConstants.tableReceivables);
+      final operationalCosts =
+          await _db.queryAll(DbConstants.tableOperationalCosts);
+      final settings = await _db.queryAll(DbConstants.tableSettings);
+
+      final backupData = {
+        'version': AppConstants.appVersion,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'data': {
+          'products': products,
+          'transactions': transactions,
+          'transaction_items': transactionItems,
+          'receivables': receivables,
+          'operational_costs': operationalCosts,
+          'settings': settings,
+        },
+      };
+
+      return jsonEncode(backupData);
+    } catch (e) {
+      throw DatabaseException('Gagal mengekspor data', originalError: e);
+    }
   }
 
   @override
   Future<void> importFromJson(String jsonString) async {
-    // TODO: Implementasi di Sprint 8 (Settings)
-    throw UnimplementedError('Import belum diimplementasikan');
-  }
+    try {
+      final Map<String, dynamic> backup =
+          jsonDecode(jsonString) as Map<String, dynamic>;
+      final data = backup['data'] as Map<String, dynamic>;
 
-  // ─────────────────────────────────────────────────────────────
-  // Private helpers
-  // ─────────────────────────────────────────────────────────────
+      await _db.runInTransaction((txn) async {
+        await txn.delete(DbConstants.tableTransactionItems);
+        await txn.delete(DbConstants.tableReceivables);
+        await txn.delete(DbConstants.tableOperationalCosts);
+        await txn.delete(DbConstants.tableTransactions);
+        await txn.delete(DbConstants.tableProducts);
+        await txn.delete(DbConstants.tableSettings);
+
+        for (final row in (data['products'] as List<dynamic>)) {
+          await txn.insert(DbConstants.tableProducts,
+              Map<String, dynamic>.from(row as Map));
+        }
+        for (final row in (data['transactions'] as List<dynamic>)) {
+          await txn.insert(DbConstants.tableTransactions,
+              Map<String, dynamic>.from(row as Map));
+        }
+        for (final row in (data['transaction_items'] as List<dynamic>)) {
+          await txn.insert(DbConstants.tableTransactionItems,
+              Map<String, dynamic>.from(row as Map));
+        }
+        for (final row in (data['receivables'] as List<dynamic>)) {
+          await txn.insert(DbConstants.tableReceivables,
+              Map<String, dynamic>.from(row as Map));
+        }
+        for (final row in (data['operational_costs'] as List<dynamic>)) {
+          await txn.insert(DbConstants.tableOperationalCosts,
+              Map<String, dynamic>.from(row as Map));
+        }
+        for (final row in (data['settings'] as List<dynamic>)) {
+          await txn.insert(DbConstants.tableSettings,
+              Map<String, dynamic>.from(row as Map));
+        }
+      });
+    } catch (e) {
+      throw DatabaseException('Gagal mengimpor data', originalError: e);
+    }
+  }
 
   Future<void> _upsertSetting(String key, String value) async {
     try {
