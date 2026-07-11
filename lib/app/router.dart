@@ -16,6 +16,7 @@ import '../features/receivables/screens/receivables_list_screen.dart';
 import '../features/receivables/screens/receivable_form_screen.dart';
 import '../features/recap/screens/recap_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
+import '../features/settings/screens/change_pin_screen.dart';
 import 'shell/main_shell.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ class AppRoutes {
   static const String pos = '/pos';
   static const String receivables = '/receivables';
   static const String receivableAdd = '/receivable/add';
+  static const String changePin = '/settings/change-pin';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -137,5 +139,12 @@ final _routes = <RouteBase>[
     path: AppRoutes.receivableAdd,
     name: 'receivable-add',
     builder: (context, state) => const ReceivableFormScreen(),
+  ),
+
+  // ── Settings ───────────────────────────────────────────────
+  GoRoute(
+    path: AppRoutes.changePin,
+    name: 'change-pin',
+    builder: (context, state) => const ChangePinScreen(),
   ),
 ];
