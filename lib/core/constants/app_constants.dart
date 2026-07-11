@@ -5,7 +5,8 @@ class AppConstants {
   // --- App Info ---
   static const String appName = 'Catatin';
   static const String appVersion = '1.0.0';
-  static const String appTagline = 'Catat Keuangan, Tenang Berbisnis';
+  static const String appDeveloper =
+      'Dikembangkan oleh Tim KKN-PPM UGM Alor Carita 2026';
 
   // --- PIN ---
   static const int pinMinLength = 4;
