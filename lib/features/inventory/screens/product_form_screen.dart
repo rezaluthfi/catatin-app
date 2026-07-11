@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
+import '../../../core/utils/currency_input_formatter.dart';
 import '../../../data/models/product_model.dart';
 import '../providers/inventory_provider.dart';
 
@@ -43,8 +44,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       if (match.isNotEmpty) {
         _existingProduct = match.first;
         _nameController.text = _existingProduct!.name;
-        _purchasePriceController.text = _existingProduct!.purchasePrice.toString();
-        _sellingPriceController.text = _existingProduct!.sellingPrice.toString();
+        _purchasePriceController.text = _existingProduct!.purchasePrice.toRupiahNoSymbol();
+        _sellingPriceController.text = _existingProduct!.sellingPrice.toRupiahNoSymbol();
         _stockController.text = _existingProduct!.stock.toString();
       }
     }
@@ -66,8 +67,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
     try {
       final name = _nameController.text.trim();
-      final purchasePrice = int.parse(_purchasePriceController.text.trim());
-      final sellingPrice = int.parse(_sellingPriceController.text.trim());
+      final purchasePrice = int.parse(_purchasePriceController.text.replaceAll('.', '').trim());
+      final sellingPrice = int.parse(_sellingPriceController.text.replaceAll('.', '').trim());
       final stock = int.parse(_stockController.text.trim());
       final now = DateTime.now();
       if (_existingProduct != null) {
@@ -177,6 +178,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         TextFormField(
                           controller: _purchasePriceController,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
                           decoration: InputDecoration(
                             hintText: '0',
                             prefixIcon: Padding(
@@ -192,7 +194,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                           ),
                           validator: (val) {
                             if (val == null || val.isEmpty) return 'Wajib diisi';
-                            if (int.tryParse(val) == null) return 'Harus angka';
+                            if (int.tryParse(val.replaceAll('.', '')) == null) return 'Harus angka';
                             return null;
                           },
                         ),
@@ -209,6 +211,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         TextFormField(
                           controller: _sellingPriceController,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
                           decoration: InputDecoration(
                             hintText: '0',
                             prefixIcon: Padding(
@@ -224,7 +227,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                           ),
                           validator: (val) {
                             if (val == null || val.isEmpty) return 'Wajib diisi';
-                            if (int.tryParse(val) == null) return 'Harus angka';
+                            if (int.tryParse(val.replaceAll('.', '')) == null) return 'Harus angka';
                             return null;
                           },
                         ),
@@ -236,7 +239,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: _purchasePriceController,
                 builder: (context, value, child) {
-                  final purchasePrice = int.tryParse(value.text);
+                  final purchasePrice = int.tryParse(value.text.replaceAll('.', ''));
                   if (purchasePrice == null || purchasePrice <= 0) {
                     return const SizedBox(height: 20);
                   }
@@ -247,7 +250,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     padding: const EdgeInsets.only(top: 8, bottom: 20),
                     child: InkWell(
                       onTap: () {
-                        _sellingPriceController.text = recommended.toString();
+                        _sellingPriceController.text = recommended.toRupiahNoSymbol();
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
