@@ -139,8 +139,12 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
     final stateAsync = ref.watch(receivableProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Piutang Pelanggan'),
+        title: const Text('Piutang Pelanggan', style: AppTextStyles.headlineMedium),
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
       ),
       body: stateAsync.when(
         data: (state) {
@@ -188,8 +192,9 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
               ),
 
               // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              Container(
+                color: AppColors.surface,
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (val) {
@@ -197,10 +202,11 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: 'Cari nama pelanggan...',
-                    prefixIcon: const Icon(Icons.search),
+                    hintStyle: AppTextStyles.bodyMediumSecondary,
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const Icon(Icons.clear_rounded, color: AppColors.textSecondary),
                             onPressed: () {
                               _searchController.clear();
                               ref
@@ -209,8 +215,12 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                             },
                           )
                         : null,
+                    filled: true,
+                    fillColor: AppColors.background,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
                 ),
@@ -228,6 +238,8 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                       child: ChoiceChip(
                         selected: isSelected,
                         label: Text(filter.label),
+                        showCheckmark: true,
+                        checkmarkColor: AppColors.primary,
                         onSelected: (val) {
                           if (val) {
                             ref.read(receivableProvider.notifier).setFilter(filter);
