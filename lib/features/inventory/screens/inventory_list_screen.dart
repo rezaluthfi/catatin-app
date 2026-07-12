@@ -129,10 +129,9 @@ class InventoryListScreen extends ConsumerWidget {
                         children: [
                           Text('Filter', style: AppTextStyles.headlineSmall),
                           (() {
-                            final isDirty = currentState.showLowStockOnly ||
-                                currentState.showOutOfStockOnly ||
-                                currentState.sortTypes.length > 1 ||
-                                currentState.sortTypes.first != ProductSortType.nameAsc;
+                            final hasFilters = currentState.showLowStockOnly || currentState.showOutOfStockOnly;
+                            final hasDefaultSort = currentState.sortTypes.length == 1 && currentState.sortTypes.first == ProductSortType.nameAsc;
+                            final isDirty = hasFilters || !hasDefaultSort;
                             if (isDirty) {
                               return TextButton(
                                 onPressed: () {
