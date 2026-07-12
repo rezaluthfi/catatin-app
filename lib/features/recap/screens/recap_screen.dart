@@ -329,100 +329,125 @@ class RecapScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(12),
                                 side: const BorderSide(color: AppColors.border),
                               ),
-                              child: ListTile(
+                              child: InkWell(
                                 onTap: () => _showAddExpense(context, expense: item),
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.expense.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.arrow_outward_rounded,
-                                    color: AppColors.expense,
-                                    size: 18,
-                                  ),
-                                ),
-                                title: Text(
-                                  item.description,
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  '${item.date.day} ${_getMonthName(item.date.month)} ${item.date.year}',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '- ${item.amount.toRupiah()}',
-                                      style: AppTextStyles.bodyLarge.copyWith(
-                                        color: AppColors.expense,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    PopupMenuButton<String>(
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      icon: const Icon(
-                                        Icons.more_vert,
-                                        color: AppColors.textSecondary,
-                                        size: 20,
-                                      ),
-                                      onSelected: (value) {
-                                        if (value == 'edit') {
-                                          _showAddExpense(context, expense: item);
-                                        } else if (value == 'delete') {
-                                          _confirmDeleteExpense(context, ref, item);
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        PopupMenuItem(
-                                          value: 'edit',
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.edit_outlined,
-                                                size: 20,
-                                                color: AppColors.textPrimary,
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Text(
-                                                'Edit',
-                                                style: AppTextStyles.bodyMedium,
-                                              ),
-                                            ],
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  child: Row(
+                                    children: [
+                                      // Leading Icon
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.expense.withValues(
+                                            alpha: 0.1,
                                           ),
+                                          shape: BoxShape.circle,
                                         ),
-                                        PopupMenuItem(
-                                          value: 'delete',
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.delete_outline,
-                                                color: AppColors.expense,
-                                                size: 20,
+                                        child: const Icon(
+                                          Icons.arrow_outward_rounded,
+                                          color: AppColors.expense,
+                                          size: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      
+                                      // Title & Subtitle (Expanded)
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.description,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTextStyles.bodyLarge.copyWith(
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                              const SizedBox(width: 12),
-                                              Text(
-                                                'Hapus',
-                                                style: AppTextStyles.bodyMedium.copyWith(
-                                                  color: AppColors.expense,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '${item.date.day} ${_getMonthName(item.date.month)} ${item.date.year}',
+                                              style: AppTextStyles.bodySmall.copyWith(
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      
+                                      // Trailing Price & Menu
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            '- ${item.amount.toRupiah()}',
+                                            style: AppTextStyles.bodyLarge.copyWith(
+                                              color: AppColors.expense,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          PopupMenuButton<String>(
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            icon: const Icon(
+                                              Icons.more_vert,
+                                              color: AppColors.textSecondary,
+                                              size: 20,
+                                            ),
+                                            onSelected: (value) {
+                                              if (value == 'edit') {
+                                                _showAddExpense(context, expense: item);
+                                              } else if (value == 'delete') {
+                                                _confirmDeleteExpense(context, ref, item);
+                                              }
+                                            },
+                                            itemBuilder: (context) => [
+                                              PopupMenuItem(
+                                                value: 'edit',
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.edit_outlined,
+                                                      size: 20,
+                                                      color: AppColors.textPrimary,
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Text(
+                                                      'Edit',
+                                                      style: AppTextStyles.bodyMedium,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuItem(
+                                                value: 'delete',
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.delete_outline,
+                                                      color: AppColors.expense,
+                                                      size: 20,
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Text(
+                                                      'Hapus',
+                                                      style: AppTextStyles.bodyMedium.copyWith(
+                                                        color: AppColors.expense,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
