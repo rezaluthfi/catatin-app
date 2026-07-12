@@ -11,8 +11,36 @@ import '../providers/recap_provider.dart';
 import '../providers/recap_state.dart';
 import '../widgets/add_expense_sheet.dart';
 
-class RecapScreen extends ConsumerWidget {
+class RecapScreen extends ConsumerStatefulWidget {
   const RecapScreen({super.key});
+
+  @override
+  ConsumerState<RecapScreen> createState() => _RecapScreenState();
+}
+
+class _RecapScreenState extends ConsumerState<RecapScreen> {
+  int _selectedTab = 0; // 0: Transaksi, 1: Pengeluaran, 2: Produk Terjual
+
+  Widget _buildTabChip(int index, String label) {
+    final isSelected = _selectedTab == index;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (val) {
+        if (val) {
+          setState(() => _selectedTab = index);
+        }
+      },
+      selectedColor: AppColors.primary.withValues(alpha: 0.1),
+      labelStyle: AppTextStyles.bodyMedium.copyWith(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+      ),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary : AppColors.border,
+      ),
+    );
+  }
 
   void _showTransactionDetailSheet(BuildContext context, TransactionModel tx) {
     final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
@@ -247,7 +275,7 @@ class RecapScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final stateAsync = ref.watch(recapProvider);
 
     return Scaffold(
@@ -408,413 +436,434 @@ class RecapScreen extends ConsumerWidget {
                         _buildChartSection(state),
                       ],
 
+                      // Tab Selector Section
                       const SizedBox(height: 24),
-
-                      // Section Biaya Operasional / Pengeluaran
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Catatan Pengeluaran',
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextButton.icon(
-                            onPressed: () => _showAddExpense(context),
-                            icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Tambah'),
-                          ),
-                        ],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            _buildTabChip(0, 'Transaksi (${state.transactions.length})'),
+                            const SizedBox(width: 8),
+                            _buildTabChip(1, 'Pengeluaran (${state.operationalCosts.length})'),
+                            const SizedBox(width: 8),
+                            _buildTabChip(2, 'Produk Terjual (${state.soldProducts.length})'),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                      if (state.operationalCosts.isEmpty)
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: AppColors.border),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 32),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.money_off_rounded,
-                                  size: 48,
-                                  color: AppColors.textSecondary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Tidak ada pengeluaran operasional',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: state.operationalCosts.length,
-                          itemBuilder: (context, index) {
-                            final item = state.operationalCosts[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: AppColors.border),
+                      // Tab Contents
+                      if (_selectedTab == 0) ...[
+                        // Section Riwayat Transaksi
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Riwayat Transaksi',
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
-                              child: InkWell(
-                                onTap: () => _showAddExpense(context, expense: item),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  child: Row(
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (state.transactions.isEmpty)
+                          Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.receipt_long_rounded,
+                                    size: 48,
+                                    color: AppColors.textSecondary.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Belum ada transaksi dalam periode ini',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: state.transactions.length,
+                            itemBuilder: (context, index) {
+                              // Tampilkan dari yang terbaru (descending)
+                              final tx = state.transactions[state.transactions.length - 1 - index];
+                              final isCredit = tx.isCredit;
+                              final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
+                              final minStr = tx.createdAt.minute.toString().padLeft(2, '0');
+                              final formattedTime = '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} - $hourStr:$minStr';
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: const BorderSide(color: AppColors.border),
+                                ),
+                                child: ListTile(
+                                  onTap: () => _showTransactionDetailSheet(context, tx),
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: (isCredit
+                                              ? AppColors.secondary
+                                              : AppColors.income)
+                                          .withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      isCredit
+                                          ? Icons.payments_outlined
+                                          : Icons.shopping_bag_outlined,
+                                      color: isCredit
+                                          ? AppColors.secondary
+                                          : AppColors.income,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    isCredit
+                                        ? 'Kasbon (Piutang)'
+                                        : 'Penjualan Langsung',
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Leading Icon
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.expense.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.arrow_outward_rounded,
-                                          color: AppColors.expense,
-                                          size: 18,
+                                      Text(
+                                        formattedTime,
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
-                                      
-                                      // Title & Subtitle (Expanded)
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item.description,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.bodyLarge.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              '${item.date.day} ${_getMonthName(item.date.month)} ${item.date.year}',
-                                              style: AppTextStyles.bodySmall.copyWith(
-                                                color: AppColors.textSecondary,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      
-                                      // Trailing Price & Menu
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            '- ${item.amount.toRupiah()}',
-                                            style: AppTextStyles.bodyLarge.copyWith(
-                                              color: AppColors.expense,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                      if (tx.notes != null && tx.notes!.isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          tx.notes!,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTextStyles.bodySmall.copyWith(
+                                            color: AppColors.textSecondary,
+                                            fontStyle: FontStyle.italic,
                                           ),
-                                          const SizedBox(width: 4),
-                                          PopupMenuButton<String>(
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                            icon: const Icon(
-                                              Icons.more_vert,
-                                              color: AppColors.textSecondary,
-                                              size: 20,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  trailing: Text(
+                                    tx.totalAmount.toRupiah(),
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      color: isCredit
+                                          ? AppColors.secondary
+                                          : AppColors.income,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ] else if (_selectedTab == 1) ...[
+                        // Section Biaya Operasional / Pengeluaran
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Catatan Pengeluaran',
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () => _showAddExpense(context),
+                              icon: const Icon(Icons.add, size: 18),
+                              label: const Text('Tambah'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (state.operationalCosts.isEmpty)
+                          Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.money_off_rounded,
+                                    size: 48,
+                                    color: AppColors.textSecondary.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Tidak ada pengeluaran operasional',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: state.operationalCosts.length,
+                            itemBuilder: (context, index) {
+                              final item = state.operationalCosts[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: const BorderSide(color: AppColors.border),
+                                ),
+                                child: InkWell(
+                                  onTap: () => _showAddExpense(context, expense: item),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    child: Row(
+                                      children: [
+                                        // Leading Icon
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.expense.withValues(
+                                              alpha: 0.1,
                                             ),
-                                            onSelected: (value) {
-                                              if (value == 'edit') {
-                                                _showAddExpense(context, expense: item);
-                                              } else if (value == 'delete') {
-                                                _confirmDeleteExpense(context, ref, item);
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                              PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.edit_outlined,
-                                                      size: 20,
-                                                      color: AppColors.textPrimary,
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    Text(
-                                                      'Edit',
-                                                      style: AppTextStyles.bodyMedium,
-                                                    ),
-                                                  ],
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_outward_rounded,
+                                            color: AppColors.expense,
+                                            size: 18,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        
+                                        // Title & Subtitle (Expanded)
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.description,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: AppTextStyles.bodyLarge.copyWith(
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              PopupMenuItem(
-                                                value: 'delete',
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.delete_outline,
-                                                      color: AppColors.expense,
-                                                      size: 20,
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    Text(
-                                                      'Hapus',
-                                                      style: AppTextStyles.bodyMedium.copyWith(
-                                                        color: AppColors.expense,
-                                                      ),
-                                                    ),
-                                                  ],
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '${item.date.day} ${_getMonthName(item.date.month)} ${item.date.year}',
+                                                style: AppTextStyles.bodySmall.copyWith(
+                                                  color: AppColors.textSecondary,
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Section Produk Terjual
-                      Text(
-                        'Produk Terjual',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      if (state.soldProducts.isEmpty)
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: AppColors.border),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 32),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 48,
-                                  color: AppColors.textSecondary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Belum ada produk terjual',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: state.soldProducts.length,
-                          itemBuilder: (context, index) {
-                            final item = state.soldProducts[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: AppColors.border),
-                              ),
-                              child: ListTile(
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.income.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.shopping_bag_rounded,
-                                    color: AppColors.income,
-                                    size: 18,
-                                  ),
-                                ),
-                                title: Text(
-                                  item.name,
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  'Terjual: ${item.quantity} pcs',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                trailing: Text(
-                                  item.totalAmount.toRupiah(),
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    color: AppColors.income,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Section Riwayat Transaksi
-                      Text(
-                        'Riwayat Transaksi',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      if (state.transactions.isEmpty)
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: AppColors.border),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 32),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.receipt_long_rounded,
-                                  size: 48,
-                                  color: AppColors.textSecondary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Belum ada transaksi dalam periode ini',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: state.transactions.length,
-                          itemBuilder: (context, index) {
-                            // Tampilkan dari yang terbaru (descending)
-                            final tx = state.transactions[state.transactions.length - 1 - index];
-                            final isCredit = tx.isCredit;
-                            final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
-                            final minStr = tx.createdAt.minute.toString().padLeft(2, '0');
-                            final formattedTime = '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} - $hourStr:$minStr';
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: AppColors.border),
-                              ),
-                              child: ListTile(
-                                onTap: () => _showTransactionDetailSheet(context, tx),
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: (isCredit
-                                            ? AppColors.secondary
-                                            : AppColors.income)
-                                        .withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    isCredit
-                                        ? Icons.payments_outlined
-                                        : Icons.shopping_bag_outlined,
-                                    color: isCredit
-                                        ? AppColors.secondary
-                                        : AppColors.income,
-                                    size: 18,
-                                  ),
-                                ),
-                                title: Text(
-                                  isCredit
-                                      ? 'Kasbon (Piutang)'
-                                      : 'Penjualan Langsung',
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      formattedTime,
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                    if (tx.notes != null && tx.notes!.isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        tx.notes!,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.textSecondary,
-                                          fontStyle: FontStyle.italic,
                                         ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                trailing: Text(
-                                  tx.totalAmount.toRupiah(),
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    color: isCredit
-                                        ? AppColors.secondary
-                                        : AppColors.income,
-                                    fontWeight: FontWeight.bold,
+                                        const SizedBox(width: 12),
+                                        
+                                        // Trailing Price & Menu
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '- ${item.amount.toRupiah()}',
+                                              style: AppTextStyles.bodyLarge.copyWith(
+                                                color: AppColors.expense,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            PopupMenuButton<String>(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                              icon: const Icon(
+                                                Icons.more_vert,
+                                                color: AppColors.textSecondary,
+                                                size: 20,
+                                              ),
+                                              onSelected: (value) {
+                                                if (value == 'edit') {
+                                                  _showAddExpense(context, expense: item);
+                                                } else if (value == 'delete') {
+                                                  _confirmDeleteExpense(context, ref, item);
+                                                }
+                                              },
+                                              itemBuilder: (context) => [
+                                                PopupMenuItem(
+                                                  value: 'edit',
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.edit_outlined,
+                                                        size: 20,
+                                                        color: AppColors.textPrimary,
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      Text(
+                                                        'Edit',
+                                                        style: AppTextStyles.bodyMedium,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                PopupMenuItem(
+                                                  value: 'delete',
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.delete_outline,
+                                                        color: AppColors.expense,
+                                                        size: 20,
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      Text(
+                                                        'Hapus',
+                                                        style: AppTextStyles.bodyMedium.copyWith(
+                                                          color: AppColors.expense,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
+                              );
+                            },
+                          ),
+                      ] else ...[
+                        // Section Produk Terjual
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Produk Terjual',
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 12),
+                        if (state.soldProducts.isEmpty)
+                          Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.shopping_bag_outlined,
+                                    size: 48,
+                                    color: AppColors.textSecondary.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Belum ada produk terjual',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: state.soldProducts.length,
+                            itemBuilder: (context, index) {
+                              final item = state.soldProducts[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: const BorderSide(color: AppColors.border),
+                                ),
+                                child: ListTile(
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.income.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.shopping_bag_rounded,
+                                      color: AppColors.income,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    item.name,
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Terjual: ${item.quantity} pcs',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    item.totalAmount.toRupiah(),
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      color: AppColors.income,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
                     ],
                   ),
                 ),
