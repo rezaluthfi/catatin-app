@@ -12,20 +12,38 @@ import '../providers/recap_state.dart';
 import '../widgets/add_expense_sheet.dart';
 
 class RecapScreen extends ConsumerStatefulWidget {
-  const RecapScreen({super.key});
+  const RecapScreen({super.key, this.initialTab = 0});
+
+  final int initialTab;
 
   @override
   ConsumerState<RecapScreen> createState() => _RecapScreenState();
 }
 
 class _RecapScreenState extends ConsumerState<RecapScreen> {
-  int _selectedTab = 0; // 0: Transaksi, 1: Pengeluaran, 2: Produk Terjual
+  late int _selectedTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = widget.initialTab;
+  }
+
+  @override
+  void didUpdateWidget(covariant RecapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != oldWidget.initialTab) {
+      _selectedTab = widget.initialTab;
+    }
+  }
 
   Widget _buildTabChip(int index, String label) {
     final isSelected = _selectedTab == index;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
+      showCheckmark: true,
+      checkmarkColor: AppColors.primary,
       onSelected: (val) {
         if (val) {
           setState(() => _selectedTab = index);

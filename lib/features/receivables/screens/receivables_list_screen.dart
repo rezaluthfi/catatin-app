@@ -15,7 +15,8 @@ class ReceivablesListScreen extends ConsumerStatefulWidget {
   const ReceivablesListScreen({super.key});
 
   @override
-  ConsumerState<ReceivablesListScreen> createState() => _ReceivablesListScreenState();
+  ConsumerState<ReceivablesListScreen> createState() =>
+      _ReceivablesListScreenState();
 }
 
 class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
@@ -29,8 +30,19 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
 
   String _getMonthName(int month) {
     return const [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agt',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ][month];
   }
 
@@ -67,7 +79,9 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Pembayaran berhasil di-reset menjadi Belum Lunas'),
+                    content: Text(
+                      'Pembayaran berhasil di-reset menjadi Belum Lunas',
+                    ),
                     backgroundColor: AppColors.income,
                   ),
                 );
@@ -141,7 +155,10 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Piutang Pelanggan', style: AppTextStyles.headlineMedium),
+        title: const Text(
+          'Piutang Pelanggan',
+          style: AppTextStyles.headlineMedium,
+        ),
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -192,6 +209,7 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
               ),
 
               // Search Bar
+              const SizedBox(height: 12),
               Container(
                 color: AppColors.surface,
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
@@ -203,10 +221,16 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                   decoration: InputDecoration(
                     hintText: 'Cari nama pelanggan...',
                     hintStyle: AppTextStyles.bodyMediumSecondary,
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: AppColors.textSecondary,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, color: AppColors.textSecondary),
+                            icon: const Icon(
+                              Icons.clear_rounded,
+                              color: AppColors.textSecondary,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               ref
@@ -229,7 +253,10 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
               // Filter Chips
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: ReceivableFilter.values.map((filter) {
                     final isSelected = state.filter == filter;
@@ -242,7 +269,9 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                         checkmarkColor: AppColors.primary,
                         onSelected: (val) {
                           if (val) {
-                            ref.read(receivableProvider.notifier).setFilter(filter);
+                            ref
+                                .read(receivableProvider.notifier)
+                                .setFilter(filter);
                           }
                         },
                         selectedColor: AppColors.primary.withValues(alpha: 0.1),
@@ -250,8 +279,9 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                           color: isSelected
                               ? AppColors.primary
                               : AppColors.textSecondary,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                         side: BorderSide(
                           color: isSelected
@@ -274,7 +304,9 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                             Icon(
                               Icons.description_outlined,
                               size: 64,
-                              color: AppColors.textSecondary.withValues(alpha: 0.5),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -316,17 +348,18 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
-                              side: const BorderSide(
-                                color: AppColors.border,
-                              ),
+                              side: const BorderSide(color: AppColors.border),
                             ),
                             child: InkWell(
-                              onTap: item.isPaid ? null : () => _showPaymentSheet(item),
+                              onTap: item.isPaid
+                                  ? null
+                                  : () => _showPaymentSheet(item),
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     Row(
                                       mainAxisAlignment:
@@ -341,27 +374,35 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                 item.customerName,
                                                 style: AppTextStyles.bodyLarge
                                                     .copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Dibuat: ${createdDate.day} ${_getMonthName(createdDate.month)} ${createdDate.year}',
                                                 style: AppTextStyles.bodySmall
                                                     .copyWith(
-                                                  color: AppColors.textSecondary,
-                                                ),
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
                                               ),
-                                              if (item.notes != null && item.notes!.isNotEmpty) ...[
+                                              if (item.notes != null &&
+                                                  item.notes!.isNotEmpty) ...[
                                                 const SizedBox(height: 8),
                                                 Text(
                                                   item.notes!,
                                                   maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: AppTextStyles.bodyMedium.copyWith(
-                                                    fontStyle: FontStyle.italic,
-                                                    color: AppColors.textSecondary,
-                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: AppTextStyles
+                                                      .bodyMedium
+                                                      .copyWith(
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
                                                 ),
                                               ],
                                             ],
@@ -371,10 +412,11 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                         Row(
                                           children: [
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                                vertical: 4,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
                                               decoration: BoxDecoration(
                                                 color: statusColor.withValues(
                                                   alpha: 0.1,
@@ -386,9 +428,10 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                 statusLabel,
                                                 style: AppTextStyles.labelSmall
                                                     .copyWith(
-                                                  color: statusColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                                      color: statusColor,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                               ),
                                             ),
                                             PopupMenuButton<String>(
@@ -406,11 +449,15 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                     child: Row(
                                                       children: [
                                                         Icon(
-                                                          Icons.restart_alt_outlined,
-                                                          color: AppColors.primary,
+                                                          Icons
+                                                              .restart_alt_outlined,
+                                                          color:
+                                                              AppColors.primary,
                                                         ),
                                                         SizedBox(width: 8),
-                                                        Text('Reset Pembayaran'),
+                                                        Text(
+                                                          'Reset Pembayaran',
+                                                        ),
                                                       ],
                                                     ),
                                                   ),
@@ -420,7 +467,8 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                     children: [
                                                       Icon(
                                                         Icons.delete_outline,
-                                                        color: AppColors.expense,
+                                                        color:
+                                                            AppColors.expense,
                                                       ),
                                                       SizedBox(width: 8),
                                                       Text('Hapus'),
@@ -447,8 +495,9 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                 'Total Tagihan',
                                                 style: AppTextStyles.bodySmall
                                                     .copyWith(
-                                                  color: AppColors.textSecondary,
-                                                ),
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
                                               ),
                                               const SizedBox(height: 2),
                                               FittedBox(
@@ -456,10 +505,12 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                 alignment: Alignment.centerLeft,
                                                 child: Text(
                                                   item.amount.toRupiah(),
-                                                  style: AppTextStyles.bodyMedium
+                                                  style: AppTextStyles
+                                                      .bodyMedium
                                                       .copyWith(
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                 ),
                                               ),
                                             ],
@@ -477,25 +528,28 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                     : 'Sisa Utang',
                                                 style: AppTextStyles.bodySmall
                                                     .copyWith(
-                                                  color: AppColors.textSecondary,
-                                                ),
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
                                               ),
                                               const SizedBox(height: 2),
                                               FittedBox(
                                                 fit: BoxFit.scaleDown,
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   item.isPaid
                                                       ? item.amount.toRupiah()
                                                       : item.remainingAmount
-                                                          .toRupiah(),
+                                                            .toRupiah(),
                                                   style: AppTextStyles.bodyLarge
                                                       .copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: item.isPaid
-                                                        ? AppColors.income
-                                                        : AppColors.expense,
-                                                  ),
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: item.isPaid
+                                                            ? AppColors.income
+                                                            : AppColors.expense,
+                                                      ),
                                                 ),
                                               ),
                                             ],
@@ -515,9 +569,7 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Terjadi kesalahan: $err'),
-        ),
+        error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: null, // Mencegah crash hero animation

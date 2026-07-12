@@ -106,7 +106,11 @@ final _routes = <RouteBase>[
       GoRoute(
         path: AppRoutes.recap,
         name: 'recap',
-        builder: (context, state) => const RecapScreen(),
+        builder: (context, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          final initialTab = int.tryParse(tabStr ?? '') ?? 0;
+          return RecapScreen(initialTab: initialTab);
+        },
       ),
       GoRoute(
         path: AppRoutes.settings,

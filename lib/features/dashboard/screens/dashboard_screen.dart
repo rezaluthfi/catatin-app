@@ -8,11 +8,26 @@ import '../../../app/theme/app_text_styles.dart';
 import '../../../app/router.dart';
 import '../../../core/extensions/currency_extension.dart';
 import '../../../data/models/transaction_model.dart';
+import '../../settings/providers/settings_provider.dart';
+import '../../recap/widgets/add_expense_sheet.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/dashboard_state.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 11) {
+      return 'Selamat Pagi';
+    } else if (hour < 15) {
+      return 'Selamat Siang';
+    } else if (hour < 18) {
+      return 'Selamat Sore';
+    } else {
+      return 'Selamat Malam';
+    }
+  }
 
   String _getMonthName(int month) {
     return const [
@@ -35,7 +50,8 @@ class DashboardScreen extends ConsumerWidget {
   void _showTransactionDetailSheet(BuildContext context, TransactionModel tx) {
     final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
     final minStr = tx.createdAt.minute.toString().padLeft(2, '0');
-    final formattedTime = '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} pukul $hourStr:$minStr';
+    final formattedTime =
+        '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} pukul $hourStr:$minStr';
 
     showModalBottomSheet(
       context: context,
@@ -65,25 +81,47 @@ class DashboardScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Waktu', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-                  Text(formattedTime, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Waktu',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    formattedTime,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Metode Pembayaran', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  Text(
+                    'Metode Pembayaran',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: (tx.isCredit ? AppColors.secondary : AppColors.income).withValues(alpha: 0.1),
+                      color:
+                          (tx.isCredit ? AppColors.secondary : AppColors.income)
+                              .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       tx.isCredit ? 'Kasbon (Piutang)' : 'Tunai',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: tx.isCredit ? AppColors.secondary : AppColors.income,
+                        color: tx.isCredit
+                            ? AppColors.secondary
+                            : AppColors.income,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -91,10 +129,17 @@ class DashboardScreen extends ConsumerWidget {
                 ],
               ),
               const Divider(height: 24),
-              Text('Daftar Produk', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Daftar Produk',
+                style: AppTextStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.25),
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.25,
+                ),
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: tx.items.length,
@@ -109,15 +154,27 @@ class DashboardScreen extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item.productName, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                                Text(
+                                  item.productName,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                                 Text(
                                   '${item.quantity} x ${item.sellingPriceAtTime.toRupiah()}',
-                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          Text(item.subtotal.toRupiah(), style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            item.subtotal.toRupiah(),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -128,11 +185,18 @@ class DashboardScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Total Pembayaran', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Total Pembayaran',
+                    style: AppTextStyles.headlineMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Text(
                     tx.totalAmount.toRupiah(),
                     style: AppTextStyles.headlineLarge.copyWith(
-                      color: tx.isCredit ? AppColors.secondary : AppColors.income,
+                      color: tx.isCredit
+                          ? AppColors.secondary
+                          : AppColors.income,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -161,7 +225,9 @@ class DashboardScreen extends ConsumerWidget {
                       const SizedBox(height: 4),
                       Text(
                         tx.notes!,
-                        style: AppTextStyles.bodyMedium.copyWith(fontStyle: FontStyle.italic),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ],
                   ),
@@ -177,6 +243,8 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stateAsync = ref.watch(dashboardProvider);
+    final settingsState = ref.watch(settingsProvider).valueOrNull;
+    final ownerName = settingsState?.ownerName ?? 'Pemilik';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -184,7 +252,10 @@ class DashboardScreen extends ConsumerWidget {
         child: stateAsync.when(
           data: (state) {
             final isLowStock = state.lowStockProducts.isNotEmpty;
-            final isNetProfitPositive = state.netProfitToday >= 0;
+            final businessName = state.businessName;
+            final initial = businessName.isNotEmpty
+                ? businessName[0].toUpperCase()
+                : 'U';
 
             return RefreshIndicator(
               onRefresh: () => ref.read(dashboardProvider.notifier).reload(),
@@ -201,15 +272,26 @@ class DashboardScreen extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Selamat Datang di',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${_getGreeting()}, ',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  Text(
+                                    ownerName,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                state.businessName,
+                                businessName,
                                 style: AppTextStyles.headlineMedium.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textPrimary,
@@ -219,43 +301,76 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.storefront_rounded,
                             color: AppColors.primary,
-                            size: 28,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            initial,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
 
-                    // Ringkasan Keuangan Hari Ini
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: const BorderSide(color: AppColors.border),
+                    // Ringkasan Keuangan Hari Ini (Hero Card Solid)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Keuangan Hari Ini',
+                              'Keuntungan Bersih Hari Ini',
                               style: AppTextStyles.labelLarge.copyWith(
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
+                            Text(
+                              state.netProfitToday.toRupiah(),
+                              style: AppTextStyles.headlineLarge.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 32,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Container(
+                              height: 1,
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
+                            const SizedBox(height: 20),
                             Row(
                               children: [
-                                // Kas Masuk
+                                // Pemasukan
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -265,36 +380,27 @@ class DashboardScreen extends ConsumerWidget {
                                         children: [
                                           const Icon(
                                             Icons.arrow_downward_rounded,
-                                            color: AppColors.income,
+                                            color: Colors.white70,
                                             size: 14,
                                           ),
-                                          const SizedBox(width: 2),
-                                          Expanded(
-                                            child: Text(
-                                              'Masuk',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                  ),
-                                            ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Pemasukan',
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                  color: Colors.white70,
+                                                ),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 6),
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          state.incomeToday.toRupiah(),
-                                          style: AppTextStyles.bodyMedium
-                                              .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: AppColors.income,
-                                              ),
-                                        ),
+                                      Text(
+                                        state.incomeToday.toRupiah(),
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -302,10 +408,10 @@ class DashboardScreen extends ConsumerWidget {
                                 Container(
                                   width: 1,
                                   height: 32,
-                                  color: AppColors.border,
+                                  color: Colors.white.withValues(alpha: 0.15),
                                 ),
-                                const SizedBox(width: 8),
-                                // Kas Keluar
+                                const SizedBox(width: 16),
+                                // Pengeluaran
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -315,90 +421,27 @@ class DashboardScreen extends ConsumerWidget {
                                         children: [
                                           const Icon(
                                             Icons.arrow_upward_rounded,
-                                            color: AppColors.expense,
+                                            color: Colors.white70,
                                             size: 14,
                                           ),
-                                          const SizedBox(width: 2),
-                                          Expanded(
-                                            child: Text(
-                                              'Keluar',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                  ),
-                                            ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Pengeluaran',
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                  color: Colors.white70,
+                                                ),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 6),
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          state.expenseToday.toRupiah(),
-                                          style: AppTextStyles.bodyMedium
-                                              .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: AppColors.expense,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  width: 1,
-                                  height: 32,
-                                  color: AppColors.border,
-                                ),
-                                const SizedBox(width: 8),
-                                // Laba Bersih
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.monetization_on_outlined,
-                                            color: isNetProfitPositive
-                                                ? AppColors.income
-                                                : AppColors.expense,
-                                            size: 14,
-                                          ),
-                                          const SizedBox(width: 2),
-                                          Expanded(
-                                            child: Text(
-                                              'Laba',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                  ),
+                                      Text(
+                                        state.expenseToday.toRupiah(),
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          state.netProfitToday.toRupiah(),
-                                          style: AppTextStyles.bodyMedium
-                                              .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: isNetProfitPositive
-                                                    ? AppColors.income
-                                                    : AppColors.expense,
-                                              ),
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -410,39 +453,141 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    // Alert Stok Menipis
+                    if (isLowStock) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.expense.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.expense.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              color: AppColors.expense,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Peringatan Stok Menipis!',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.expense,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Ada ${state.lowStockProducts.length} produk yang hampir habis.',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () =>
+                                  context.push(AppRoutes.inventory),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.expense,
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Lihat',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.expense,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
 
-                    // Grid Kartu Piutang & Stok Menipis
+                    const SizedBox(height: 24),
+
+                    // Akses Cepat (Quick Actions Grid 2x2)
+                    Text(
+                      'Akses Cepat',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
                     Row(
                       children: [
-                        // Piutang
                         Expanded(
-                          child: _buildInfoCard(
+                          child: _buildQuickActionCard(
                             context,
-                            title: 'Piutang Aktif',
-                            value: state.receivablesOutstanding.toRupiah(),
+                            title: 'Catat POS',
+                            subtitle: 'Transaksi kasir cepat',
+                            icon: Icons.add_shopping_cart_rounded,
+                            iconColor: AppColors.primary,
+                            bgColor: AppColors.primary.withValues(alpha: 0.1),
+                            onTap: () => context.push(AppRoutes.pos),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildQuickActionCard(
+                            context,
+                            title: 'Buku Piutang',
+                            subtitle: 'Kasbon pelanggan',
                             icon: Icons.payments_outlined,
                             iconColor: AppColors.secondary,
+                            bgColor: AppColors.secondary.withValues(alpha: 0.1),
                             onTap: () => context.push(AppRoutes.receivables),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        // Stok Menipis Ringkasan
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
                         Expanded(
-                          child: _buildInfoCard(
+                          child: _buildQuickActionCard(
                             context,
-                            title: 'Status Stok',
-                            value: isLowStock
-                                ? '${state.lowStockProducts.length} Menipis'
-                                : 'Aman',
-                            valueColor: isLowStock
-                                ? AppColors.expense
-                                : AppColors.income,
+                            title: 'Kelola Produk',
+                            subtitle: 'Stok & harga produk',
                             icon: Icons.inventory_2_outlined,
-                            iconColor: isLowStock
-                                ? AppColors.expense
-                                : AppColors.income,
+                            iconColor: AppColors.info,
+                            bgColor: AppColors.info.withValues(alpha: 0.1),
                             onTap: () => context.push(AppRoutes.inventory),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildQuickActionCard(
+                            context,
+                            title: 'Catat Biaya',
+                            subtitle: 'Operasional toko',
+                            icon: Icons.arrow_outward_rounded,
+                            iconColor: AppColors.expense,
+                            bgColor: AppColors.expense.withValues(alpha: 0.1),
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                useRootNavigator: true,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const AddExpenseSheet(),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -450,71 +595,6 @@ class DashboardScreen extends ConsumerWidget {
 
                     const SizedBox(height: 24),
                     _buildWeeklyTrendChart(state),
-
-                    const SizedBox(height: 32),
-
-                    // Akses Cepat (Quick Actions)
-                    Text(
-                      'Akses Cepat',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Tombol POS Utama
-                    FilledButton.icon(
-                      onPressed: () => context.push(AppRoutes.pos),
-                      icon: const Icon(Icons.add_shopping_cart, size: 20),
-                      label: const Text('Catat Transaksi (POS)'),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Menu Sekunder Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => context.push(AppRoutes.inventory),
-                            icon: const Icon(
-                              Icons.inventory_2_outlined,
-                              size: 20,
-                            ),
-                            label: const Text('Inventaris'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () =>
-                                context.push(AppRoutes.receivables),
-                            icon: const Icon(
-                              Icons.description_outlined,
-                              size: 20,
-                            ),
-                            label: const Text('Buku Piutang'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
 
                     const SizedBox(height: 32),
 
@@ -586,7 +666,8 @@ class DashboardScreen extends ConsumerWidget {
                             side: const BorderSide(color: AppColors.border),
                           ),
                           child: ListTile(
-                            onTap: () => _showTransactionDetailSheet(context, tx),
+                            onTap: () =>
+                                _showTransactionDetailSheet(context, tx),
                             leading: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -624,7 +705,8 @@ class DashboardScreen extends ConsumerWidget {
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
-                                if (tx.notes != null && tx.notes!.isNotEmpty) ...[
+                                if (tx.notes != null &&
+                                    tx.notes!.isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Text(
                                     tx.notes!,
@@ -641,10 +723,10 @@ class DashboardScreen extends ConsumerWidget {
                             trailing: Text(
                               tx.totalAmount.toRupiah(),
                               style: AppTextStyles.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: isCredit
-                                      ? AppColors.secondary
-                                      : AppColors.income,
+                                fontWeight: FontWeight.bold,
+                                color: isCredit
+                                    ? AppColors.secondary
+                                    : AppColors.income,
                               ),
                             ),
                           ),
@@ -662,56 +744,51 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoCard(
+  Widget _buildQuickActionCard(
     BuildContext context, {
     required String title,
-    required String value,
-    Color? valueColor,
+    required String subtitle,
     required IconData icon,
     required Color iconColor,
+    required Color bgColor,
     required VoidCallback onTap,
   }) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: AppColors.border),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Text(
                 title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
                 ),
               ),
-              const SizedBox(height: 4),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: valueColor ?? AppColors.textPrimary,
-                  ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
                 ),
               ),
             ],
@@ -900,7 +977,7 @@ class DashboardScreen extends ConsumerWidget {
                       dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.income.withValues(alpha: 0.05),
+                        color: AppColors.income.withValues(alpha: 0.1),
                       ),
                     ),
                     LineChartBarData(
@@ -911,7 +988,7 @@ class DashboardScreen extends ConsumerWidget {
                       dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.info.withValues(alpha: 0.05),
+                        color: AppColors.info.withValues(alpha: 0.1),
                       ),
                     ),
                   ],

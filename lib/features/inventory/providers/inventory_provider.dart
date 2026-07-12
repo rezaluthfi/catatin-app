@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/repository_providers.dart';
 import '../../../data/models/product_model.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import 'inventory_state.dart';
 
 final inventoryProvider =
@@ -155,18 +156,21 @@ class InventoryNotifier extends AsyncNotifier<InventoryState> {
   Future<void> addProduct(ProductModel product) async {
     final repo = ref.read(productRepositoryProvider);
     await repo.insert(product);
+    ref.invalidate(dashboardProvider);
     await reload();
   }
 
   Future<void> updateProduct(ProductModel product) async {
     final repo = ref.read(productRepositoryProvider);
     await repo.update(product);
+    ref.invalidate(dashboardProvider);
     await reload();
   }
 
   Future<void> deleteProduct(String id) async {
     final repo = ref.read(productRepositoryProvider);
     await repo.delete(id);
+    ref.invalidate(dashboardProvider);
     await reload();
   }
 }

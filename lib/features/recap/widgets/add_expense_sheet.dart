@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../app/router.dart';
 import '../../../core/extensions/currency_extension.dart';
 import '../../../data/models/operational_cost_model.dart';
 import '../providers/recap_provider.dart';
@@ -97,13 +100,22 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     if (!mounted) return;
 
     if (success) {
+      final router = GoRouter.of(context);
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(widget.expense != null
               ? 'Pengeluaran berhasil diubah!'
               : 'Pengeluaran berhasil dicatat!'),
           backgroundColor: AppColors.income,
+          action: SnackBarAction(
+            label: 'LIHAT',
+            textColor: Colors.white,
+            onPressed: () {
+              router.go('${AppRoutes.recap}?tab=1');
+            },
+          ),
         ),
       );
     } else {
