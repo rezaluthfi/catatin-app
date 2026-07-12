@@ -124,47 +124,40 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Column(
-                children: [
-                  // ── Top Brand Area ──────────────────────────────────
-                  _buildTopArea(authState),
+        child: Column(
+          children: [
+            // ── Top Brand Area ──────────────────────────────────
+            _buildTopArea(authState),
 
-                  const Spacer(),
+            const Spacer(),
 
-                  // ── PIN Input Area ──────────────────────────────────
-                  _buildPinArea(failedAttempts),
+            // ── PIN Input Area ──────────────────────────────────
+            _buildPinArea(failedAttempts),
 
-                  const Spacer(),
+            const Spacer(),
 
-                  // ── Keypad ─────────────────────────────────────────
-                  PinKeypadWidget(
-                    onDigitPressed: _onDigitPressed,
-                    onBackspacePressed: _onBackspacePressed,
-                    enabled: !_isLoading && !_isSuccess,
-                  ),
+            // ── Keypad ─────────────────────────────────────────
+            PinKeypadWidget(
+              onDigitPressed: _onDigitPressed,
+              onBackspacePressed: _onBackspacePressed,
+              enabled: !_isLoading && !_isSuccess,
+            ),
 
-                  const SizedBox(height: 24),
+            const SizedBox(height: 12),
 
-                  // ── Forgot PIN ─────────────────────────────────────
-                  TextButton(
-                    onPressed: () => _showForgotPinDialog(authState),
-                    child: Text(
-                      'Lupa PIN?',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                ],
+            // ── Forgot PIN ─────────────────────────────────────
+            TextButton(
+              onPressed: () => _showForgotPinDialog(authState),
+              child: Text(
+                'Lupa PIN?',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
+
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -174,7 +167,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
   Widget _buildTopArea(AuthState authState) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -191,18 +184,14 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
       ),
       child: Column(
         children: [
-          // Logo icon
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(30),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.receipt_long_rounded,
-              size: 36,
-              color: Colors.white,
+          // Logo image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              'assets/images/logo.jpeg',
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 16),
