@@ -259,20 +259,28 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Filter', style: AppTextStyles.headlineSmall),
-                          if (currentState.showLowStockOnly || currentState.showOutOfStockOnly)
-                            TextButton(
-                              onPressed: () {
-                                ref.read(inventoryProvider.notifier).clearFilters();
-                                Navigator.pop(context);
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text('Reset'),
-                            ),
+                          (() {
+                            final isDirty = currentState.showLowStockOnly ||
+                                currentState.showOutOfStockOnly ||
+                                currentState.sortTypes.length > 1 ||
+                                currentState.sortTypes.first != ProductSortType.nameAsc;
+                            if (isDirty) {
+                              return TextButton(
+                                onPressed: () {
+                                  ref.read(inventoryProvider.notifier).clearFilters();
+                                  Navigator.pop(context);
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text('Reset'),
+                              );
+                            }
+                            return const SizedBox();
+                          })(),
                         ],
                       ),
                     ),

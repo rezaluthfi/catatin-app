@@ -147,6 +147,7 @@ class InventoryNotifier extends AsyncNotifier<InventoryState> {
     final newState = state.value!.copyWith(
       showLowStockOnly: false,
       showOutOfStockOnly: false,
+      sortTypes: const [ProductSortType.nameAsc],
     );
     state = await AsyncValue.guard(() => _loadData(newState));
   }
