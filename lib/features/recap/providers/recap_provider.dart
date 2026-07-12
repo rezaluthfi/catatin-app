@@ -109,6 +109,7 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
         operationalCosts: opCostsList,
         chartData: chartData,
         soldProducts: soldProductsList,
+        transactions: transactionsList,
         isLoading: false,
         errorMessage: null,
       );

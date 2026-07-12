@@ -1,4 +1,5 @@
 import '../../../data/models/operational_cost_model.dart';
+import '../../../data/models/transaction_model.dart';
 
 enum RecapPeriod {
   daily('Harian'),
@@ -21,6 +22,7 @@ class RecapState {
     this.operationalCosts = const [],
     this.chartData = const {},
     this.soldProducts = const [],
+    this.transactions = const [],
     this.isLoading = false,
     this.errorMessage,
   });
@@ -39,6 +41,9 @@ class RecapState {
 
   // Produk Terjual: (Nama, Kuantitas, Subtotal)
   final List<({String name, int quantity, int totalAmount})> soldProducts;
+
+  // Daftar Transaksi dalam periode
+  final List<TransactionModel> transactions;
   
   final bool isLoading;
   final String? errorMessage;
@@ -54,6 +59,7 @@ class RecapState {
     List<OperationalCostModel>? operationalCosts,
     Map<String, ({int revenue, int netProfit})>? chartData,
     List<({String name, int quantity, int totalAmount})>? soldProducts,
+    List<TransactionModel>? transactions,
     bool? isLoading,
     String? errorMessage,
   }) {
@@ -68,6 +74,7 @@ class RecapState {
       operationalCosts: operationalCosts ?? this.operationalCosts,
       chartData: chartData ?? this.chartData,
       soldProducts: soldProducts ?? this.soldProducts,
+      transactions: transactions ?? this.transactions,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );
