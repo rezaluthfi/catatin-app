@@ -7,11 +7,172 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/router.dart';
 import '../../../core/extensions/currency_extension.dart';
+import '../../../data/models/transaction_model.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/dashboard_state.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  String _getMonthName(int month) {
+    return const [
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ][month];
+  }
+
+  void _showTransactionDetailSheet(BuildContext context, TransactionModel tx) {
+    final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
+    final minStr = tx.createdAt.minute.toString().padLeft(2, '0');
+    final formattedTime = '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} pukul $hourStr:$minStr';
+
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Detail Transaksi', style: AppTextStyles.headlineSmall),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Waktu', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  Text(formattedTime, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Metode Pembayaran', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: (tx.isCredit ? AppColors.secondary : AppColors.income).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      tx.isCredit ? 'Kasbon (Piutang)' : 'Tunai',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: tx.isCredit ? AppColors.secondary : AppColors.income,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              Text('Daftar Produk', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.25),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: tx.items.length,
+                  itemBuilder: (context, index) {
+                    final item = tx.items[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.productName, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                                Text(
+                                  '${item.quantity} x ${item.sellingPriceAtTime.toRupiah()}',
+                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(item.subtotal.toRupiah(), style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Total Pembayaran', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    tx.totalAmount.toRupiah(),
+                    style: AppTextStyles.headlineLarge.copyWith(
+                      color: tx.isCredit ? AppColors.secondary : AppColors.income,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              if (tx.notes != null && tx.notes!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Catatan:',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        tx.notes!,
+                        style: AppTextStyles.bodyMedium.copyWith(fontStyle: FontStyle.italic),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -425,6 +586,7 @@ class DashboardScreen extends ConsumerWidget {
                             side: const BorderSide(color: AppColors.border),
                           ),
                           child: ListTile(
+                            onTap: () => _showTransactionDetailSheet(context, tx),
                             leading: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -453,19 +615,36 @@ class DashboardScreen extends ConsumerWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            subtitle: Text(
-                              formattedTime,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  formattedTime,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                if (tx.notes != null && tx.notes!.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    tx.notes!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             trailing: Text(
                               tx.totalAmount.toRupiah(),
                               style: AppTextStyles.bodyLarge.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isCredit
-                                    ? AppColors.secondary
-                                    : AppColors.income,
+                                  fontWeight: FontWeight.bold,
+                                  color: isCredit
+                                      ? AppColors.secondary
+                                      : AppColors.income,
                               ),
                             ),
                           ),
