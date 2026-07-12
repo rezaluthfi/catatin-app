@@ -530,8 +530,16 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
               ),
               hint: const Text('Pilih pertanyaan...'),
               isExpanded: true,
+              itemHeight: null,
               items: AppConstants.securityQuestions.map((q) {
-                return DropdownMenuItem(value: q, child: Text(q));
+                return DropdownMenuItem(
+                  value: q,
+                  child: Text(
+                    q,
+                    maxLines: 2,
+                    overflow: TextOverflow.visible,
+                  ),
+                );
               }).toList(),
               onChanged: (val) => setState(() => _selectedQuestion = val),
             ),

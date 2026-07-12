@@ -588,12 +588,14 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ),
                       isExpanded: true,
+                      itemHeight: null,
                       items: AppConstants.securityQuestions.map((q) {
                         return DropdownMenuItem<String>(
                           value: q,
                           child: Text(
                             q,
-                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            overflow: TextOverflow.visible,
                             style: AppTextStyles.bodyMedium,
                           ),
                         );
