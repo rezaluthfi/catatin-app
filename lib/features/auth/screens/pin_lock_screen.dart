@@ -99,8 +99,9 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Tidak Ada Pertanyaan Keamanan'),
         content: const Text(
-          'Kamu tidak mengatur pertanyaan keamanan saat setup.\n\n'
-          'Hapus dan install ulang aplikasi untuk mengatur ulang PIN.',
+          'Anda tidak mengatur pertanyaan keamanan saat pendaftaran PIN.\n\n'
+          'Untuk mengatur ulang PIN, Anda harus menghapus dan menginstall ulang aplikasi.\n\n'
+          'Catatan: Jika Anda memiliki file cadangan data (backup .json), Anda dapat memulihkan seluruh data Anda setelah menginstall ulang aplikasi.',
         ),
         actions: [
           TextButton(

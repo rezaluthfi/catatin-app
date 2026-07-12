@@ -12,6 +12,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/constants/app_constants.dart';
 import '../providers/settings_provider.dart';
+import '../providers/settings_state.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -76,12 +77,12 @@ class SettingsScreen extends ConsumerWidget {
             _buildTile(
               icon: Icons.percent_rounded,
               iconColor: AppColors.primary,
-              title: 'Margin Keuntungan Default',
+              title: 'Margin Keuntungan',
               subtitle: '${state.defaultMargin}%',
               onTap: () => _showEditDialog(
                 context,
                 ref,
-                title: 'Margin Keuntungan Default (%)',
+                title: 'Atur Margin Keuntungan (%)',
                 currentValue: state.defaultMargin.toString(),
                 hint: 'Masukkan persentase margin (mis: 30)',
                 keyboardType: TextInputType.number,
@@ -104,6 +105,15 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Ubah PIN',
               subtitle: 'Ganti PIN untuk membuka aplikasi',
               onTap: () => context.push(AppRoutes.changePin),
+            ),
+            _buildTile(
+              icon: Icons.security_rounded,
+              iconColor: state.hasSecurityQuestion ? AppColors.info : AppColors.expense,
+              title: 'Pertanyaan Keamanan',
+              subtitle: state.hasSecurityQuestion
+                  ? 'Pertanyaan aktif: "${state.securityQuestion}"'
+                  : 'Belum diatur! Atur sekarang untuk memulihkan PIN jika lupa.',
+              onTap: () => _showSecurityQuestionDialog(context, ref, state),
             ),
 
             const SizedBox(height: 8),
@@ -433,7 +443,10 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text('Pilih Metode Backup', style: AppTextStyles.headlineSmall),
+                child: Text(
+                  'Pilih Metode Backup',
+                  style: AppTextStyles.headlineSmall,
+                ),
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -444,10 +457,20 @@ class SettingsScreen extends ConsumerWidget {
                     color: AppColors.income.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.save_alt_rounded, color: AppColors.income),
+                  child: const Icon(
+                    Icons.save_alt_rounded,
+                    color: AppColors.income,
+                  ),
                 ),
-                title: Text('Simpan di Perangkat (Lokal)', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
-                subtitle: const Text('Simpan file backup secara lokal ke memori perangkat'),
+                title: Text(
+                  'Simpan di Perangkat (Lokal)',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Simpan file backup secara lokal ke memori perangkat',
+                ),
                 onTap: () async {
                   Navigator.pop(context);
                   _doSaveLocal(context, ref);
@@ -462,10 +485,20 @@ class SettingsScreen extends ConsumerWidget {
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.share_rounded, color: AppColors.primary),
+                  child: const Icon(
+                    Icons.share_rounded,
+                    color: AppColors.primary,
+                  ),
                 ),
-                title: Text('Bagikan Berkas (Share)', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
-                subtitle: const Text('Kirim file backup melalui WhatsApp, Email, Drive, dll.'),
+                title: Text(
+                  'Bagikan Berkas (Share)',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Kirim file backup melalui WhatsApp, Email, Drive, dll.',
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _doExport(context, ref);
@@ -480,7 +513,9 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _doSaveLocal(BuildContext context, WidgetRef ref) async {
     try {
-      final jsonString = await ref.read(settingsProvider.notifier).getBackupJson();
+      final jsonString = await ref
+          .read(settingsProvider.notifier)
+          .getBackupJson();
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
@@ -513,5 +548,114 @@ class SettingsScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<void> _showSecurityQuestionDialog(
+    BuildContext context,
+    WidgetRef ref,
+    SettingsState state,
+  ) async {
+    String selectedQuestion = state.securityQuestion ?? AppConstants.securityQuestions.first;
+    final answerController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Atur Pertanyaan Keamanan'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Pilih pertanyaan keamanan yang mudah Anda ingat untuk memulihkan PIN jika suatu saat lupa.',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedQuestion,
+                      decoration: InputDecoration(
+                        labelText: 'Pertanyaan',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      isExpanded: true,
+                      items: AppConstants.securityQuestions.map((q) {
+                        return DropdownMenuItem<String>(
+                          value: q,
+                          child: Text(
+                            q,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            selectedQuestion = val;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: answerController,
+                      decoration: InputDecoration(
+                        labelText: 'Jawaban Keamanan',
+                        hintText: 'Masukkan jawaban Anda',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Jawaban tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Batal'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (formKey.currentState?.validate() ?? false) {
+                      final answer = answerController.text.trim();
+                      await ref
+                          .read(settingsProvider.notifier)
+                          .updateSecurityInfo(selectedQuestion, answer);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Pertanyaan keamanan berhasil disimpan!'),
+                            backgroundColor: AppColors.primary,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

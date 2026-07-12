@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/pin_hasher.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/dashboard/providers/dashboard_provider.dart';
 import '../../inventory/providers/inventory_provider.dart';
@@ -31,6 +32,8 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
       businessName: settings.businessName,
       ownerName: settings.ownerName,
       defaultMargin: settings.defaultMargin,
+      securityQuestion: settings.securityQuestion,
+      hasSecurityQuestion: settings.hasSecurityQuestion,
     );
   }
 
@@ -54,6 +57,20 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     await repo.saveDefaultMargin(margin);
     final current = state.valueOrNull ?? const SettingsState();
     state = AsyncData(current.copyWith(defaultMargin: margin));
+  }
+
+  Future<void> updateSecurityInfo(String question, String answer) async {
+    final repo = ref.read(settingsRepositoryProvider);
+    await repo.saveSecurityInfo(
+      question: question,
+      answerHash: PinHasher.hashSecurityAnswer(answer),
+    );
+    final current = state.valueOrNull ?? const SettingsState();
+    state = AsyncData(current.copyWith(
+      securityQuestion: question,
+      hasSecurityQuestion: true,
+    ));
+    ref.read(authProvider.notifier).reload(); // Reload auth status so lock screen is updated
   }
   Future<String> getBackupJson() async {
     final repo = ref.read(settingsRepositoryProvider);
