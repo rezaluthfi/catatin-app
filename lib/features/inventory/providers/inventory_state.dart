@@ -5,34 +5,36 @@ enum ProductSortType {
   nameDesc,
   stockAsc,
   stockDesc,
+  priceAsc,
+  priceDesc,
 }
 
 class InventoryState {
   const InventoryState({
     this.products = const [],
     this.searchQuery = '',
-    this.sortType = ProductSortType.nameAsc,
+    this.sortTypes = const [ProductSortType.nameAsc],
     this.showLowStockOnly = false,
     this.showOutOfStockOnly = false,
   });
 
   final List<ProductModel> products;
   final String searchQuery;
-  final ProductSortType sortType;
+  final List<ProductSortType> sortTypes;
   final bool showLowStockOnly;
   final bool showOutOfStockOnly;
 
   InventoryState copyWith({
     List<ProductModel>? products,
     String? searchQuery,
-    ProductSortType? sortType,
+    List<ProductSortType>? sortTypes,
     bool? showLowStockOnly,
     bool? showOutOfStockOnly,
   }) {
     return InventoryState(
       products: products ?? this.products,
       searchQuery: searchQuery ?? this.searchQuery,
-      sortType: sortType ?? this.sortType,
+      sortTypes: sortTypes ?? this.sortTypes,
       showLowStockOnly: showLowStockOnly ?? this.showLowStockOnly,
       showOutOfStockOnly: showOutOfStockOnly ?? this.showOutOfStockOnly,
     );

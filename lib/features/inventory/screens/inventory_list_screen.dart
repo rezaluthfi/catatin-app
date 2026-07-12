@@ -22,7 +22,7 @@ class InventoryListScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Inventaris', style: AppTextStyles.headlineMedium),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -119,90 +119,115 @@ class InventoryListScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Filter', style: AppTextStyles.headlineSmall),
-                        if (currentState.showLowStockOnly || currentState.showOutOfStockOnly)
-                          TextButton(
-                            onPressed: () {
-                              ref.read(inventoryProvider.notifier).clearFilters();
-                              Navigator.pop(context);
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Filter', style: AppTextStyles.headlineSmall),
+                          if (currentState.showLowStockOnly || currentState.showOutOfStockOnly)
+                            TextButton(
+                              onPressed: () {
+                                ref.read(inventoryProvider.notifier).clearFilters();
+                                Navigator.pop(context);
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text('Reset'),
                             ),
-                            child: const Text('Reset'),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-              const SizedBox(height: 8),
-              _buildFilterOption(
-                context,
-                ref,
-                title: 'Tampilkan Stok Menipis Saja',
-                value: currentState.showLowStockOnly,
-                onChanged: (_) {
-                  ref.read(inventoryProvider.notifier).toggleLowStockFilter();
-                  Navigator.pop(context);
-                },
-              ),
-              _buildFilterOption(
-                context,
-                ref,
-                title: 'Tampilkan Stok Habis Saja',
-                value: currentState.showOutOfStockOnly,
-                onChanged: (_) {
-                  ref.read(inventoryProvider.notifier).toggleOutOfStockFilter();
-                  Navigator.pop(context);
-                },
-              ),
-              const Divider(height: 32),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text('Urutkan Berdasarkan', style: AppTextStyles.headlineSmall),
-              ),
-              const SizedBox(height: 8),
-              _buildSortOption(
-                context,
-                ref,
-                title: 'Nama (A-Z)',
-                value: ProductSortType.nameAsc,
-                groupValue: currentState.sortType,
-              ),
-              _buildSortOption(
-                context,
-                ref,
-                title: 'Nama (Z-A)',
-                value: ProductSortType.nameDesc,
-                groupValue: currentState.sortType,
-              ),
-              _buildSortOption(
-                context,
-                ref,
-                title: 'Stok Terbanyak',
-                value: ProductSortType.stockDesc,
-                groupValue: currentState.sortType,
-              ),
-              _buildSortOption(
-                context,
-                ref,
-                title: 'Stok Sedikit',
-                value: ProductSortType.stockAsc,
-                groupValue: currentState.sortType,
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+                    const SizedBox(height: 8),
+                    _buildFilterOption(
+                      context,
+                      ref,
+                      title: 'Tampilkan Stok Menipis Saja',
+                      value: currentState.showLowStockOnly,
+                      onChanged: (_) {
+                        ref.read(inventoryProvider.notifier).toggleLowStockFilter();
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildFilterOption(
+                      context,
+                      ref,
+                      title: 'Tampilkan Stok Habis Saja',
+                      value: currentState.showOutOfStockOnly,
+                      onChanged: (_) {
+                        ref.read(inventoryProvider.notifier).toggleOutOfStockFilter();
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const Divider(height: 32),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text('Urutkan Berdasarkan', style: AppTextStyles.headlineSmall),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Nama (A-Z)',
+                      value: ProductSortType.nameAsc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Nama (Z-A)',
+                      value: ProductSortType.nameDesc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Stok Terbanyak',
+                      value: ProductSortType.stockDesc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Stok Sedikit',
+                      value: ProductSortType.stockAsc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Harga Tertinggi',
+                      value: ProductSortType.priceDesc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Harga Terendah',
+                      value: ProductSortType.priceAsc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Terapkan'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             );
           },
@@ -237,22 +262,43 @@ class InventoryListScreen extends ConsumerWidget {
     WidgetRef ref, {
     required String title,
     required ProductSortType value,
-    required ProductSortType groupValue,
+    required List<ProductSortType> sortTypes,
   }) {
-    return RadioListTile<ProductSortType>(
-      value: value,
-      groupValue: groupValue,
-      onChanged: (val) {
-        if (val != null) {
-          ref.read(inventoryProvider.notifier).setSortType(val);
-          Navigator.pop(context);
-        }
+    final index = sortTypes.indexOf(value);
+    final isSelected = index >= 0;
+
+    return CheckboxListTile(
+      value: isSelected,
+      onChanged: (_) {
+        ref.read(inventoryProvider.notifier).toggleSortType(value);
       },
-      title: Text(
-        title,
-        style: AppTextStyles.bodyMedium.copyWith(
-          fontWeight: value == groupValue ? FontWeight.w600 : FontWeight.w400,
-        ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+          if (isSelected)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Prioritas ${index + 1}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
       ),
       activeColor: AppColors.primary,
       controlAffinity: ListTileControlAffinity.trailing,

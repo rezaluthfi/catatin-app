@@ -37,16 +37,31 @@ class InventoryNotifier extends AsyncNotifier<InventoryState> {
     // Apply sorting
     products = List.from(products); // make mutable copy for sorting
     products.sort((a, b) {
-      switch (currentState.sortType) {
-        case ProductSortType.nameAsc:
-          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-        case ProductSortType.nameDesc:
-          return b.name.toLowerCase().compareTo(a.name.toLowerCase());
-        case ProductSortType.stockAsc:
-          return a.stock.compareTo(b.stock);
-        case ProductSortType.stockDesc:
-          return b.stock.compareTo(a.stock);
+      for (final sort in currentState.sortTypes) {
+        int cmp = 0;
+        switch (sort) {
+          case ProductSortType.nameAsc:
+            cmp = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+            break;
+          case ProductSortType.nameDesc:
+            cmp = b.name.toLowerCase().compareTo(a.name.toLowerCase());
+            break;
+          case ProductSortType.stockAsc:
+            cmp = a.stock.compareTo(b.stock);
+            break;
+          case ProductSortType.stockDesc:
+            cmp = b.stock.compareTo(a.stock);
+            break;
+          case ProductSortType.priceAsc:
+            cmp = a.sellingPrice.compareTo(b.sellingPrice);
+            break;
+          case ProductSortType.priceDesc:
+            cmp = b.sellingPrice.compareTo(a.sellingPrice);
+            break;
+        }
+        if (cmp != 0) return cmp;
       }
+      return 0;
     });
 
     return currentState.copyWith(products: products);
@@ -65,9 +80,45 @@ class InventoryNotifier extends AsyncNotifier<InventoryState> {
     state = await AsyncValue.guard(() => _loadData(newState));
   }
 
-  Future<void> setSortType(ProductSortType sortType) async {
+  Future<void> toggleSortType(ProductSortType sortType) async {
     if (state.value == null) return;
-    final newState = state.value!.copyWith(sortType: sortType);
+    
+    final currentList = List<ProductSortType>.from(state.value!.sortTypes);
+    
+    ProductSortType? conflictingType;
+    switch (sortType) {
+      case ProductSortType.nameAsc:
+        conflictingType = ProductSortType.nameDesc;
+        break;
+      case ProductSortType.nameDesc:
+        conflictingType = ProductSortType.nameAsc;
+        break;
+      case ProductSortType.stockAsc:
+        conflictingType = ProductSortType.stockDesc;
+        break;
+      case ProductSortType.stockDesc:
+        conflictingType = ProductSortType.stockAsc;
+        break;
+      case ProductSortType.priceAsc:
+        conflictingType = ProductSortType.priceDesc;
+        break;
+      case ProductSortType.priceDesc:
+        conflictingType = ProductSortType.priceAsc;
+        break;
+    }
+    
+    if (currentList.contains(sortType)) {
+      currentList.remove(sortType);
+    } else {
+      currentList.remove(conflictingType);
+      currentList.insert(0, sortType);
+    }
+    
+    if (currentList.isEmpty) {
+      currentList.add(ProductSortType.nameAsc);
+    }
+    
+    final newState = state.value!.copyWith(sortTypes: currentList);
     state = await AsyncValue.guard(() => _loadData(newState));
   }
 

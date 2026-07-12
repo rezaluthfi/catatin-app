@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import '../../inventory/widgets/empty_inventory_widget.dart';
 import '../providers/pos_provider.dart';
 import '../widgets/cart_bottom_sheet.dart';
 import '../widgets/checkout_bottom_sheet.dart';
+import '../../inventory/providers/inventory_state.dart';
 import '../widgets/pos_product_card.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
@@ -77,13 +79,19 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text('Catat Transaksi', style: AppTextStyles.headlineMedium),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sort_rounded, color: AppColors.textPrimary),
+            onPressed: () => _showSortModal(context, ref),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -221,6 +229,210 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                 ),
               ),
             ),
+    );
+  }
+
+  void _showSortModal(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final currentState = ref.watch(inventoryProvider).valueOrNull;
+            if (currentState == null) return const SizedBox();
+
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Filter', style: AppTextStyles.headlineSmall),
+                          if (currentState.showLowStockOnly || currentState.showOutOfStockOnly)
+                            TextButton(
+                              onPressed: () {
+                                ref.read(inventoryProvider.notifier).clearFilters();
+                                Navigator.pop(context);
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text('Reset'),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildFilterOption(
+                      context,
+                      ref,
+                      title: 'Tampilkan Stok Menipis Saja',
+                      value: currentState.showLowStockOnly,
+                      onChanged: (_) {
+                        ref.read(inventoryProvider.notifier).toggleLowStockFilter();
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildFilterOption(
+                      context,
+                      ref,
+                      title: 'Tampilkan Stok Habis Saja',
+                      value: currentState.showOutOfStockOnly,
+                      onChanged: (_) {
+                        ref.read(inventoryProvider.notifier).toggleOutOfStockFilter();
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const Divider(height: 32),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text('Urutkan Berdasarkan', style: AppTextStyles.headlineSmall),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Nama (A-Z)',
+                      value: ProductSortType.nameAsc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Nama (Z-A)',
+                      value: ProductSortType.nameDesc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Stok Terbanyak',
+                      value: ProductSortType.stockDesc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Stok Sedikit',
+                      value: ProductSortType.stockAsc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Harga Tertinggi',
+                      value: ProductSortType.priceDesc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    _buildSortOption(
+                      context,
+                      ref,
+                      title: 'Harga Terendah',
+                      value: ProductSortType.priceAsc,
+                      sortTypes: currentState.sortTypes,
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Terapkan'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterOption(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return CheckboxListTile(
+      value: value,
+      onChanged: onChanged,
+      title: Text(
+        title,
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontWeight: value ? FontWeight.w600 : FontWeight.w400,
+        ),
+      ),
+      activeColor: AppColors.primary,
+      controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+
+  Widget _buildSortOption(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required ProductSortType value,
+    required List<ProductSortType> sortTypes,
+  }) {
+    final index = sortTypes.indexOf(value);
+    final isSelected = index >= 0;
+
+    return CheckboxListTile(
+      value: isSelected,
+      onChanged: (_) {
+        ref.read(inventoryProvider.notifier).toggleSortType(value);
+      },
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+          if (isSelected)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Prioritas ${index + 1}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+      activeColor: AppColors.primary,
+      controlAffinity: ListTileControlAffinity.trailing,
     );
   }
 }
