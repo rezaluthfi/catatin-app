@@ -1,4 +1,5 @@
 /// Settings Screen — Profil Usaha, Keamanan, Backup & Restore, Tentang.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -115,7 +116,7 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Backup Data',
               subtitle: 'Ekspor semua data ke file JSON',
               isLoading: state.isExporting,
-              onTap: () => _doExport(context, ref),
+              onTap: () => _showBackupOptions(context, ref),
             ),
             _buildTile(
               icon: Icons.download_rounded,
@@ -412,6 +413,105 @@ class SettingsScreen extends ConsumerWidget {
           backgroundColor: AppColors.expense,
         ),
       );
+    }
+  }
+
+  void _showBackupOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text('Pilih Metode Backup', style: AppTextStyles.headlineSmall),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.income.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.save_alt_rounded, color: AppColors.income),
+                ),
+                title: Text('Simpan di Perangkat (Lokal)', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Simpan file backup secara lokal ke memori perangkat'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  _doSaveLocal(context, ref);
+                },
+              ),
+              const Divider(height: 16),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: AppColors.primary),
+                ),
+                title: Text('Bagikan Berkas (Share)', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Kirim file backup melalui WhatsApp, Email, Drive, dll.'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _doExport(context, ref);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _doSaveLocal(BuildContext context, WidgetRef ref) async {
+    try {
+      final jsonString = await ref.read(settingsProvider.notifier).getBackupJson();
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .substring(0, 19);
+      final fileName =
+          '${AppConstants.exportFileName}_$timestamp${AppConstants.exportFileExtension}';
+
+      final bytes = utf8.encode(jsonString);
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: 'Simpan Backup Data',
+        fileName: fileName,
+        bytes: bytes,
+      );
+
+      if (path != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Backup berhasil disimpan di perangkat!'),
+            backgroundColor: AppColors.income,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyimpan backup: $e'),
+            backgroundColor: AppColors.expense,
+          ),
+        );
+      }
     }
   }
 }

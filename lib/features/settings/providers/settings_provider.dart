@@ -55,7 +55,10 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     final current = state.valueOrNull ?? const SettingsState();
     state = AsyncData(current.copyWith(defaultMargin: margin));
   }
-
+  Future<String> getBackupJson() async {
+    final repo = ref.read(settingsRepositoryProvider);
+    return await repo.exportToJson();
+  }
   /// Export semua data ke file JSON dan tawarkan share sheet.
   /// Kembalikan path file jika berhasil, null jika gagal.
   Future<String?> exportData() async {
