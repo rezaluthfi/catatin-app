@@ -8,6 +8,9 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/dashboard/providers/dashboard_provider.dart';
+import '../../inventory/providers/inventory_provider.dart';
+import '../../receivables/providers/receivable_provider.dart';
+import '../../recap/providers/recap_provider.dart';
 import 'settings_state.dart';
 
 final settingsProvider =
@@ -104,7 +107,15 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
       final repo = ref.read(settingsRepositoryProvider);
       await repo.importFromJson(jsonContent);
 
-      state = AsyncData(current.copyWith(isImporting: false));
+      // Invalidate provider data lainnya
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(inventoryProvider);
+      ref.invalidate(recapProvider);
+      ref.invalidate(receivableProvider);
+
+      // Reload settings state secara langsung
+      final newSettings = await _loadSettings();
+      state = AsyncData(newSettings);
       return true;
     } catch (e) {
       state = AsyncData(current.copyWith(
