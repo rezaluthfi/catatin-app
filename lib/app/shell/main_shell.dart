@@ -84,8 +84,8 @@ class MainShell extends StatelessWidget {
                 children: [
                   // Tab 2: Rekap
                   _NavItem(
-                    icon: Icons.bar_chart_outlined,
-                    activeIcon: Icons.bar_chart,
+                    icon: Icons.insert_chart_outlined,
+                    activeIcon: Icons.insert_chart,
                     label: 'Rekap',
                     isActive: currentIndex == 2,
                     onTap: () => context.go(_tabs[2]),

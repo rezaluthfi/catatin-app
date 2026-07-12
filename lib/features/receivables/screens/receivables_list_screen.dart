@@ -225,14 +225,15 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                     final isSelected = state.filter == filter;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
+                      child: ChoiceChip(
                         selected: isSelected,
                         label: Text(filter.label),
-                        onSelected: (_) {
-                          ref.read(receivableProvider.notifier).setFilter(filter);
+                        onSelected: (val) {
+                          if (val) {
+                            ref.read(receivableProvider.notifier).setFilter(filter);
+                          }
                         },
-                        selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                        checkmarkColor: AppColors.primary,
+                        selectedColor: AppColors.primary.withValues(alpha: 0.1),
                         labelStyle: AppTextStyles.bodyMedium.copyWith(
                           color: isSelected
                               ? AppColors.primary
@@ -240,13 +241,10 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                           fontWeight:
                               isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.border,
-                          ),
+                        side: BorderSide(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.border,
                         ),
                       ),
                     );
