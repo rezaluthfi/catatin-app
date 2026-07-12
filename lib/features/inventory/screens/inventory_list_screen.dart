@@ -272,33 +272,11 @@ class InventoryListScreen extends ConsumerWidget {
       onChanged: (_) {
         ref.read(inventoryProvider.notifier).toggleSortType(value);
       },
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ),
-          if (isSelected)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Prioritas ${index + 1}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-        ],
+      title: Text(
+        title,
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        ),
       ),
       activeColor: AppColors.primary,
       controlAffinity: ListTileControlAffinity.trailing,
