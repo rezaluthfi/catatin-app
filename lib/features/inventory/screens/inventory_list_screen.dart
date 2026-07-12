@@ -22,7 +22,7 @@ class InventoryListScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Inventaris', style: AppTextStyles.headlineMedium),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -318,7 +318,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
     return Container(
       color: AppColors.surface,
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       child: TextField(
         controller: _controller,
         onChanged: (val) {

@@ -83,7 +83,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text('Catat Transaksi', style: AppTextStyles.headlineMedium),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -98,7 +98,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           // Search Bar
           Container(
             color: AppColors.surface,
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
             child: TextField(
               controller: _searchController,
               onChanged: (val) {
