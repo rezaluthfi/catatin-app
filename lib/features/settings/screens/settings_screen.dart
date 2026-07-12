@@ -24,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Profil & Pengaturan'),
         elevation: 0,
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
       body: stateAsync.when(
@@ -70,6 +70,26 @@ class SettingsScreen extends ConsumerWidget {
                 hint: 'Masukkan nama pemilik usaha',
                 onSave: (val) =>
                     ref.read(settingsProvider.notifier).updateOwnerName(val),
+              ),
+            ),
+            _buildTile(
+              icon: Icons.percent_rounded,
+              iconColor: AppColors.primary,
+              title: 'Margin Keuntungan Default',
+              subtitle: '${state.defaultMargin}%',
+              onTap: () => _showEditDialog(
+                context,
+                ref,
+                title: 'Margin Keuntungan Default (%)',
+                currentValue: state.defaultMargin.toString(),
+                hint: 'Masukkan persentase margin (mis: 30)',
+                keyboardType: TextInputType.number,
+                onSave: (val) async {
+                  final margin = int.tryParse(val) ?? 30;
+                  await ref
+                      .read(settingsProvider.notifier)
+                      .updateDefaultMargin(margin);
+                },
               ),
             ),
 
@@ -275,6 +295,7 @@ class SettingsScreen extends ConsumerWidget {
     required String currentValue,
     required String hint,
     required Future<void> Function(String) onSave,
+    TextInputType keyboardType = TextInputType.text,
   }) async {
     final controller = TextEditingController(text: currentValue);
     final result = await showDialog<String>(
@@ -284,6 +305,7 @@ class SettingsScreen extends ConsumerWidget {
         content: TextField(
           controller: controller,
           autofocus: true,
+          keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

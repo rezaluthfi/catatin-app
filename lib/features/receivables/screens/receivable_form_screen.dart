@@ -155,7 +155,7 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixText: 'Rp ',
+                  prefixText: 'Rp',
                 ),
                 validator: (val) {
                   if (_amount <= 0) {

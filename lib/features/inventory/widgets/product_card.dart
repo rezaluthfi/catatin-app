@@ -88,18 +88,20 @@ class ProductCard extends StatelessWidget {
                       ],
                     ),
                     const Spacer(),
-                    Column(
+                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Harga Jual', style: AppTextStyles.labelSmall),
-                        Text(
-                          product.sellingPrice.toRupiah(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.income,
-                            height: 1.2,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            product.sellingPrice.toRupiah(),
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.income,
+                              height: 1.2,
+                            ),
                           ),
                         ),
                       ],
@@ -109,11 +111,13 @@ class ProductCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Harga Modal', style: AppTextStyles.labelSmall),
-                        Text(
-                          product.purchasePrice.toRupiah(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodyMediumSecondary.copyWith(height: 1.2),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            product.purchasePrice.toRupiah(),
+                            style: AppTextStyles.bodyMediumSecondary.copyWith(height: 1.2),
+                          ),
                         ),
                       ],
                     ),

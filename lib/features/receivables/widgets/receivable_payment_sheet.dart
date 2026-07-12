@@ -198,6 +198,10 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
                                 : null,
                           ),
                         ],
+                        if (widget.receivable.notes != null && widget.receivable.notes!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          _buildRowInfo('Catatan', widget.receivable.notes!),
+                        ],
                       ],
                     ),
                   ),
@@ -271,7 +275,7 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        prefixText: 'Rp ',
+                        prefixText: 'Rp',
                         errorText: _submitted && _paymentAmount <= 0
                             ? 'Nominal pembayaran tidak valid'
                             : null,

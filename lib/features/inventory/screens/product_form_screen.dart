@@ -9,6 +9,7 @@ import '../../../core/extensions/currency_extension.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 import '../../../data/models/product_model.dart';
 import '../providers/inventory_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   const ProductFormScreen({super.key, this.productId});
@@ -123,6 +124,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = _existingProduct != null;
+    final settings = ref.watch(settingsProvider).valueOrNull;
+    final defaultMargin = settings?.defaultMargin ?? 30;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -179,18 +182,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                           controller: _purchasePriceController,
                           keyboardType: TextInputType.number,
                           inputFormatters: [CurrencyInputFormatter()],
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: '0',
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 12, right: 8, top: 14, bottom: 14),
-                              child: Text(
-                                'Rp',
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
+                            prefixText: 'Rp',
                           ),
                           validator: (val) {
                             if (val == null || val.isEmpty) return 'Wajib diisi';
@@ -212,18 +206,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                           controller: _sellingPriceController,
                           keyboardType: TextInputType.number,
                           inputFormatters: [CurrencyInputFormatter()],
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: '0',
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 12, right: 8, top: 14, bottom: 14),
-                              child: Text(
-                                'Rp',
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
+                            prefixText: 'Rp',
                           ),
                           validator: (val) {
                             if (val == null || val.isEmpty) return 'Wajib diisi';
@@ -243,7 +228,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   if (purchasePrice == null || purchasePrice <= 0) {
                     return const SizedBox(height: 20);
                   }
-                  final margin = purchasePrice * 0.3;
+                  final margin = purchasePrice * (defaultMargin / 100);
                   final recommended = ((purchasePrice + margin) / 100).ceil() * 100;
 
                   return Padding(
@@ -261,7 +246,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Rekomendasi Harga Jual: ${recommended.toRupiah()} (Margin 30%)',
+                                'Rekomendasi Harga Jual: ${recommended.toRupiah()} (Margin $defaultMargin%)',
                                 style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
                               ),
                             ),

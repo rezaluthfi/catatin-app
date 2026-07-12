@@ -1,4 +1,4 @@
-﻿// Implementasi [ISettingsRepository] menggunakan kombinasi SQLite dan
+// Implementasi [ISettingsRepository] menggunakan kombinasi SQLite dan
 // flutter_secure_storage (untuk PIN hash).
 //
 // Data sensitif (PIN hash, jawaban keamanan) disimpan di secure storage,
@@ -65,6 +65,11 @@ class SettingsRepository implements ISettingsRepository {
   @override
   Future<void> saveOwnerName(String name) async {
     await _upsertSetting(AppConstants.keyOwnerName, name);
+  }
+
+  @override
+  Future<void> saveDefaultMargin(int margin) async {
+    await _upsertSetting(AppConstants.keyDefaultMargin, margin.toString());
   }
 
   @override

@@ -6,6 +6,7 @@ class SettingsModel {
   const SettingsModel({
     this.businessName = '',
     this.ownerName = '',
+    this.defaultMargin = 30,
     this.pinHash,
     this.securityQuestion,
     this.securityAnswerHash,
@@ -13,6 +14,7 @@ class SettingsModel {
 
   final String businessName;
   final String ownerName;
+  final int defaultMargin;
 
   /// Hash PIN (tersimpan via flutter_secure_storage, bukan di SQLite).
   final String? pinHash;
@@ -43,6 +45,7 @@ class SettingsModel {
     return SettingsModel(
       businessName: map['business_name'] ?? '',
       ownerName: map['owner_name'] ?? '',
+      defaultMargin: int.tryParse(map['default_margin'] ?? '') ?? 30,
       pinHash: map['pin_hash'],
       securityQuestion: map['security_question'],
       securityAnswerHash: map['security_answer_hash'],
@@ -54,6 +57,7 @@ class SettingsModel {
     final map = <String, String>{
       'business_name': businessName,
       'owner_name': ownerName,
+      'default_margin': defaultMargin.toString(),
     };
     if (pinHash != null) map['pin_hash'] = pinHash!;
     if (securityQuestion != null) map['security_question'] = securityQuestion!;
@@ -66,6 +70,7 @@ class SettingsModel {
   SettingsModel copyWith({
     String? businessName,
     String? ownerName,
+    int? defaultMargin,
     String? pinHash,
     String? securityQuestion,
     String? securityAnswerHash,
@@ -73,6 +78,7 @@ class SettingsModel {
     return SettingsModel(
       businessName: businessName ?? this.businessName,
       ownerName: ownerName ?? this.ownerName,
+      defaultMargin: defaultMargin ?? this.defaultMargin,
       pinHash: pinHash ?? this.pinHash,
       securityQuestion: securityQuestion ?? this.securityQuestion,
       securityAnswerHash: securityAnswerHash ?? this.securityAnswerHash,
@@ -81,5 +87,5 @@ class SettingsModel {
 
   @override
   String toString() =>
-      'SettingsModel(businessName: $businessName, ownerName: $ownerName)';
+      'SettingsModel(businessName: $businessName, ownerName: $ownerName, defaultMargin: $defaultMargin)';
 }

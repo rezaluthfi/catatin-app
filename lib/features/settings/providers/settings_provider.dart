@@ -27,6 +27,7 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     return SettingsState(
       businessName: settings.businessName,
       ownerName: settings.ownerName,
+      defaultMargin: settings.defaultMargin,
     );
   }
 
@@ -43,6 +44,13 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     await repo.saveOwnerName(name);
     final current = state.valueOrNull ?? const SettingsState();
     state = AsyncData(current.copyWith(ownerName: name));
+  }
+
+  Future<void> updateDefaultMargin(int margin) async {
+    final repo = ref.read(settingsRepositoryProvider);
+    await repo.saveDefaultMargin(margin);
+    final current = state.valueOrNull ?? const SettingsState();
+    state = AsyncData(current.copyWith(defaultMargin: margin));
   }
 
   /// Export semua data ke file JSON dan tawarkan share sheet.

@@ -11,6 +11,9 @@ abstract interface class ISettingsRepository {
   /// Simpan nama pemilik.
   Future<void> saveOwnerName(String name);
 
+  /// Simpan margin keuntungan default.
+  Future<void> saveDefaultMargin(int margin);
+
   /// Simpan hash PIN (melalui flutter_secure_storage).
   Future<void> savePinHash(String pinHash);
 

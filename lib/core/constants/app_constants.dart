@@ -35,6 +35,7 @@ class AppConstants {
   static const String keySecurityQuestion = 'security_question';
   static const String keySecurityAnswerHash = 'security_answer_hash';
   static const String keyIsFirstRun = 'is_first_run';
+  static const String keyDefaultMargin = 'default_margin';
 
   // --- Export / Import ---
   static const String exportFileName = 'catatin_backup';

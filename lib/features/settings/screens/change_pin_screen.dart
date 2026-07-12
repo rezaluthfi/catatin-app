@@ -1,4 +1,4 @@
-﻿/// Layar Ganti PIN — alur 3 langkah:
+/// Layar Ganti PIN — alur 3 langkah:
 ///   1. Masukkan PIN lama (verifikasi)
 ///   2. Masukkan PIN baru
 ///   3. Konfirmasi PIN baru ? simpan
@@ -145,6 +145,9 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallScreen = screenHeight < 680;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -158,7 +161,7 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
           children: [
             // Progress indicator
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: isSmallScreen ? 10 : 20),
               child: Row(
                 children: List.generate(3, (index) {
                   final stepIndex = _step.index;
@@ -184,19 +187,19 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
                 children: [
                   // Icon
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: isSmallScreen ? 48 : 72,
+                    height: isSmallScreen ? 48 : 72,
                     decoration: BoxDecoration(
                       color: AppColors.primaryContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock_outline_rounded,
                       color: AppColors.primary,
-                      size: 36,
+                      size: isSmallScreen ? 24 : 36,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: isSmallScreen ? 12 : 24),
 
                   // Title
                   Text(
@@ -213,7 +216,7 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: isSmallScreen ? 20 : 40),
 
                   // Dots
                   PinDotsWidget(
@@ -250,10 +253,11 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
               )
             else
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                padding: EdgeInsets.fromLTRB(24, 0, 24, isSmallScreen ? 8 : 24),
                 child: PinKeypadWidget(
                   onDigitPressed: _onKeyPressed,
                   onBackspacePressed: () => _onKeyPressed('del'),
+                  keySize: isSmallScreen ? 56.0 : 72.0,
                 ),
               ),
           ],

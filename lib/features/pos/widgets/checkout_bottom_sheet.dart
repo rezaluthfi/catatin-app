@@ -216,7 +216,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        prefixText: 'Rp ',
+                        prefixText: 'Rp',
                         errorText: _submitted && _cashController.text.trim().isEmpty
                             ? 'Nominal uang diterima wajib diisi'
                             : (_submitted && _cashReceived < totalAmount

@@ -19,6 +19,17 @@ class CatatinApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
+      builder: (context, child) {
+        final mediaQueryData = MediaQuery.of(context);
+        final textScaler = mediaQueryData.textScaler.clamp(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.15,
+        );
+        return MediaQuery(
+          data: mediaQueryData.copyWith(textScaler: textScaler),
+          child: child!,
+        );
+      },
     );
   }
 }

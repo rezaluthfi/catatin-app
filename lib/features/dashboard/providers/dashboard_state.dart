@@ -1,6 +1,18 @@
 import '../../../data/models/product_model.dart';
 import '../../../data/models/transaction_model.dart';
 
+class DashboardChartPoint {
+  const DashboardChartPoint({
+    required this.date,
+    required this.income,
+    required this.netProfit,
+  });
+
+  final DateTime date;
+  final int income;
+  final int netProfit;
+}
+
 class DashboardState {
   const DashboardState({
     this.businessName = 'Toko UMKM',
@@ -10,6 +22,7 @@ class DashboardState {
     this.receivablesOutstanding = 0,
     this.lowStockProducts = const [],
     this.recentTransactions = const [],
+    this.weeklyTrend = const [],
     this.isLoading = false,
     this.errorMessage,
   });
@@ -21,6 +34,7 @@ class DashboardState {
   final int receivablesOutstanding;
   final List<ProductModel> lowStockProducts;
   final List<TransactionModel> recentTransactions;
+  final List<DashboardChartPoint> weeklyTrend;
   final bool isLoading;
   final String? errorMessage;
 
@@ -32,6 +46,7 @@ class DashboardState {
     int? receivablesOutstanding,
     List<ProductModel>? lowStockProducts,
     List<TransactionModel>? recentTransactions,
+    List<DashboardChartPoint>? weeklyTrend,
     bool? isLoading,
     String? errorMessage,
   }) {
@@ -43,6 +58,7 @@ class DashboardState {
       receivablesOutstanding: receivablesOutstanding ?? this.receivablesOutstanding,
       lowStockProducts: lowStockProducts ?? this.lowStockProducts,
       recentTransactions: recentTransactions ?? this.recentTransactions,
+      weeklyTrend: weeklyTrend ?? this.weeklyTrend,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );

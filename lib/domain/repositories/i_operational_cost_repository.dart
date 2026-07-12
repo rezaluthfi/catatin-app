@@ -10,6 +10,9 @@ abstract interface class IOperationalCostRepository {
   /// Tambah biaya operasional baru.
   Future<OperationalCostModel> insert(OperationalCostModel cost);
 
+  /// Ubah biaya operasional.
+  Future<void> update(OperationalCostModel cost);
+
   /// Hapus biaya operasional berdasarkan ID.
   Future<void> delete(String id);
 

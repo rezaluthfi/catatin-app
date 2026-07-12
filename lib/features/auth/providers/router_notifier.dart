@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import 'auth_provider.dart';
 import 'auth_state.dart';
+import '../screens/splash_screen.dart';
 
 /// Provider untuk RouterNotifier.
 /// Di-watch oleh [routerProvider] agar GoRouter mendapat notifikasi perubahan.
@@ -28,6 +29,11 @@ class RouterNotifier extends AsyncNotifier<void> implements Listenable {
     // Pantau perubahan auth state dan teruskan ke GoRouter
     ref.listen<AsyncValue<AuthState>>(
       authProvider,
+      (_, __) => _notifyListeners(),
+    );
+    // Pantau selesainya splash screen
+    ref.listen<bool>(
+      showSplashProvider,
       (_, __) => _notifyListeners(),
     );
   }
@@ -51,15 +57,23 @@ class RouterNotifier extends AsyncNotifier<void> implements Listenable {
   /// Dipanggil GoRouter setiap kali state berubah atau navigasi terjadi.
   /// Mengembalikan path tujuan redirect, atau null jika tidak perlu redirect.
   String? redirect(BuildContext context, GoRouterState routerState) {
+    final showSplash = ref.read(showSplashProvider);
+    final currentPath = routerState.uri.toString();
+    final isOnSplash = currentPath == AppRoutes.splash;
+
+    // Jika splash screen masih aktif, paksa tetap di splash screen
+    if (showSplash) {
+      return isOnSplash ? null : AppRoutes.splash;
+    }
+
     final authValue = ref.read(authProvider);
 
-    // Masih loading → jangan redirect
+    // Jika auth masih loading, jangan redirect dulu (tunggu splash selesai dan auth siap)
     if (authValue.isLoading || authValue.hasError) return null;
 
     final auth = authValue.valueOrNull;
     if (auth == null) return null;
 
-    final currentPath = routerState.uri.toString();
     final isOnSetup = currentPath.startsWith(AppRoutes.pinSetup);
     final isOnLock = currentPath.startsWith(AppRoutes.pinLock);
 
@@ -75,9 +89,9 @@ class RouterNotifier extends AsyncNotifier<void> implements Listenable {
       case AuthStatus.locked:
         return isOnLock ? null : AppRoutes.pinLock;
 
-      // Sudah authenticated → jika masih di halaman auth, kirim ke dashboard
+      // Sudah authenticated → jika masih di halaman auth/splash, kirim ke dashboard
       case AuthStatus.authenticated:
-        if (isOnSetup || isOnLock) return AppRoutes.dashboard;
+        if (isOnSetup || isOnLock || isOnSplash) return AppRoutes.dashboard;
         return null;
     }
   }

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/providers/router_notifier.dart';
 import '../features/auth/screens/pin_lock_screen.dart';
 import '../features/auth/screens/pin_setup_screen.dart';
+import '../features/auth/screens/splash_screen.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
 import '../features/inventory/screens/inventory_list_screen.dart';
 import '../features/inventory/screens/product_form_screen.dart';
@@ -29,6 +30,7 @@ import 'shell/main_shell.dart';
 class AppRoutes {
   AppRoutes._(); // Prevent instantiation
 
+  static const String splash = '/';
   static const String pinSetup = '/pin-setup';
   static const String pinLock = '/pin-lock';
   static const String dashboard = '/dashboard';
@@ -55,7 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(routerNotifierProvider.notifier);
 
   return GoRouter(
-    initialLocation: AppRoutes.pinLock,
+    initialLocation: AppRoutes.splash,
     debugLogDiagnostics: false,
     refreshListenable: notifier,
     redirect: notifier.redirect,
@@ -68,6 +70,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 final _routes = <RouteBase>[
+  // ── Splash ───────────────────────────────────────────────────
+  GoRoute(
+    path: AppRoutes.splash,
+    name: 'splash',
+    builder: (context, state) => const SplashScreen(),
+  ),
+
   // ── Auth ──────────────────────────────────────────────────────
   GoRoute(
     path: AppRoutes.pinSetup,

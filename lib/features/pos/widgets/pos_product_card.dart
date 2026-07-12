@@ -22,22 +22,41 @@ class PosProductCard extends ConsumerWidget {
     final cartItem = cartItems.where((c) => c.product.id == product.id).firstOrNull;
     final int qtyInCart = cartItem?.quantity ?? 0;
 
+    final isLowStock = product.isLowStock;
     final isOutOfStock = product.isOutOfStock;
     // Jika stok sisa 0, maka tidak bisa ditambah ke keranjang lagi
     final bool canAdd = !isOutOfStock && qtyInCart < product.stock;
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.05),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isOutOfStock
+              ? AppColors.expense.withValues(alpha: 0.5)
+              : (qtyInCart > 0)
+                  ? AppColors.income
+                  : isLowStock
+                      ? AppColors.warning.withValues(alpha: 0.5)
+                      : AppColors.border,
+          width: 1,
+        ),
+      ),
+      color: isOutOfStock
+          ? AppColors.errorContainer
+          : (qtyInCart > 0)
+              ? AppColors.income.withValues(alpha: 0.05)
+              : isLowStock
+                  ? AppColors.warningContainer
+                  : AppColors.surface,
       child: Stack(
         children: [
           // Konten utama kartu
           InkWell(
             onTap: canAdd ? () => ref.read(posProvider.notifier).addToCart(product) : null,
             child: Opacity(
-              opacity: isOutOfStock ? 0.5 : 1.0,
+              opacity: isOutOfStock ? 0.6 : 1.0,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -47,17 +66,21 @@ class PosProductCard extends ConsumerWidget {
                     width: double.infinity,
                     color: isOutOfStock
                         ? AppColors.expense.withValues(alpha: 0.1)
-                        : (qtyInCart > 0)
-                            ? AppColors.income.withValues(alpha: 0.1)
-                            : AppColors.primary.withValues(alpha: 0.05),
+                        : isLowStock
+                            ? AppColors.warning.withValues(alpha: 0.1)
+                            : (qtyInCart > 0)
+                                ? AppColors.income.withValues(alpha: 0.1)
+                                : AppColors.primary.withValues(alpha: 0.05),
                     child: Icon(
                       Icons.inventory_2_rounded,
                       size: 40,
                       color: isOutOfStock
                           ? AppColors.expense.withValues(alpha: 0.5)
-                          : (qtyInCart > 0)
-                              ? AppColors.income.withValues(alpha: 0.5)
-                              : AppColors.primary.withValues(alpha: 0.3),
+                          : isLowStock
+                              ? AppColors.warning.withValues(alpha: 0.5)
+                              : (qtyInCart > 0)
+                                  ? AppColors.income.withValues(alpha: 0.5)
+                                  : AppColors.primary.withValues(alpha: 0.3),
                     ),
                   ),
                 ),
@@ -75,22 +98,28 @@ class PosProductCard extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const Spacer(),
-                        Text(
-                          product.sellingPrice.toRupiah(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.income,
-                            height: 1.2,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            product.sellingPrice.toRupiah(),
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.income,
+                              height: 1.2,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           isOutOfStock ? 'Habis' : 'Stok: ${product.stock}',
                           style: AppTextStyles.labelMedium.copyWith(
-                            color: isOutOfStock ? AppColors.expense : AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                            color: isOutOfStock
+                                ? AppColors.expense
+                                : isLowStock
+                                    ? AppColors.warning
+                                    : AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

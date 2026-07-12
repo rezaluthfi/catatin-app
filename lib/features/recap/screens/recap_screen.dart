@@ -15,18 +15,29 @@ class RecapScreen extends ConsumerWidget {
 
   String _getMonthName(int month) {
     return const [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ][month];
   }
 
-  void _showAddExpense(BuildContext context) {
+  void _showAddExpense(BuildContext context, {OperationalCostModel? expense}) {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AddExpenseSheet(),
+      builder: (context) => AddExpenseSheet(expense: expense),
     );
   }
 
@@ -82,12 +93,14 @@ class RecapScreen extends ConsumerWidget {
   }
 
   String _formatValueShort(double value) {
-    if (value >= 1000000) {
-      return '${(value / 1000000).toStringAsFixed(1)}jt';
-    } else if (value >= 1000) {
-      return '${(value / 1000).toStringAsFixed(0)}rb';
+    final absVal = value.abs();
+    final sign = value < 0 ? '-' : '';
+    if (absVal >= 1000000) {
+      return '$sign${(absVal / 1000000).toStringAsFixed(1).replaceAll('.0', '')}jt';
+    } else if (absVal >= 1000) {
+      return '$sign${(absVal / 1000).toStringAsFixed(0)}rb';
     }
-    return value.toStringAsFixed(0);
+    return '$sign${absVal.toStringAsFixed(0)}';
   }
 
   @override
@@ -155,7 +168,9 @@ class RecapScreen extends ConsumerWidget {
                             icon: const Icon(Icons.chevron_left),
                             onPressed: () {
                               final newDate = _adjustDate(state, -1);
-                              ref.read(recapProvider.notifier).changeDate(newDate);
+                              ref
+                                  .read(recapProvider.notifier)
+                                  .changeDate(newDate);
                             },
                           ),
                           Expanded(
@@ -173,7 +188,9 @@ class RecapScreen extends ConsumerWidget {
                             icon: const Icon(Icons.chevron_right),
                             onPressed: () {
                               final newDate = _adjustDate(state, 1);
-                              ref.read(recapProvider.notifier).changeDate(newDate);
+                              ref
+                                  .read(recapProvider.notifier)
+                                  .changeDate(newDate);
                             },
                           ),
                         ],
@@ -204,7 +221,6 @@ class RecapScreen extends ConsumerWidget {
                               Text(
                                 'Keuntungan Bersih',
                                 style: AppTextStyles.labelLarge.copyWith(
-                                  color: AppColors.textSecondary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -284,8 +300,9 @@ class RecapScreen extends ConsumerWidget {
                                 Icon(
                                   Icons.money_off_rounded,
                                   size: 48,
-                                  color: AppColors.textSecondary
-                                      .withValues(alpha: 0.5),
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
@@ -313,11 +330,13 @@ class RecapScreen extends ConsumerWidget {
                                 side: const BorderSide(color: AppColors.border),
                               ),
                               child: ListTile(
+                                onTap: () => _showAddExpense(context, expense: item),
                                 leading: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.expense
-                                        .withValues(alpha: 0.1),
+                                    color: AppColors.expense.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -348,18 +367,60 @@ class RecapScreen extends ConsumerWidget {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    IconButton(
+                                    const SizedBox(width: 8),
+                                    PopupMenuButton<String>(
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
                                       icon: const Icon(
-                                        Icons.delete_outline,
+                                        Icons.more_vert,
                                         color: AppColors.textSecondary,
                                         size: 20,
                                       ),
-                                      onPressed: () => _confirmDeleteExpense(
-                                        context,
-                                        ref,
-                                        item,
-                                      ),
+                                      onSelected: (value) {
+                                        if (value == 'edit') {
+                                          _showAddExpense(context, expense: item);
+                                        } else if (value == 'delete') {
+                                          _confirmDeleteExpense(context, ref, item);
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        PopupMenuItem(
+                                          value: 'edit',
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.edit_outlined,
+                                                size: 20,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Text(
+                                                'Edit',
+                                                style: AppTextStyles.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.delete_outline,
+                                                color: AppColors.expense,
+                                                size: 20,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Text(
+                                                'Hapus',
+                                                style: AppTextStyles.bodyMedium.copyWith(
+                                                  color: AppColors.expense,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -393,7 +454,9 @@ class RecapScreen extends ConsumerWidget {
                                 Icon(
                                   Icons.shopping_bag_outlined,
                                   size: 48,
-                                  color: AppColors.textSecondary.withValues(alpha: 0.5),
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
@@ -424,7 +487,9 @@ class RecapScreen extends ConsumerWidget {
                                 leading: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.income.withValues(alpha: 0.1),
+                                    color: AppColors.income.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -464,18 +529,12 @@ class RecapScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Terjadi kesalahan: $err'),
-        ),
+        error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
       ),
     );
   }
 
-  Widget _buildRowDetail(
-    String label,
-    String value, {
-    Color? valueColor,
-  }) {
+  Widget _buildRowDetail(String label, String value, {Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -487,14 +546,15 @@ class RecapScreen extends ConsumerWidget {
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: valueColor ?? AppColors.textPrimary,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                color: valueColor ?? AppColors.textPrimary,
+              ),
             ),
           ),
         ),
@@ -506,16 +566,35 @@ class RecapScreen extends ConsumerWidget {
     final entries = state.chartData.entries.toList();
     final keys = state.chartData.keys.toList();
 
-    // Temukan nilai maksimum untuk penskalaan grafik Y
-    int maxVal = 0;
+    // Temukan nilai minimum dan maksimum untuk penskalaan grafik Y
+    double minVal = double.infinity;
+    double maxVal = -double.infinity;
     for (final entry in entries) {
-      if (entry.value.revenue > maxVal) maxVal = entry.value.revenue;
-      if (entry.value.netProfit.abs() > maxVal) {
-        maxVal = entry.value.netProfit.abs();
+      final rev = entry.value.revenue.toDouble();
+      final net = entry.value.netProfit.toDouble();
+      if (rev < minVal) minVal = rev;
+      if (net < minVal) minVal = net;
+      if (rev > maxVal) maxVal = rev;
+      if (net > maxVal) maxVal = net;
+    }
+
+    double minScaleY;
+    double maxScaleY;
+    if (minVal == double.infinity || maxVal == -double.infinity) {
+      minScaleY = 0;
+      maxScaleY = 100000.0;
+    } else if (minVal == maxVal) {
+      minScaleY = minVal > 0 ? minVal * 0.8 : 0;
+      maxScaleY = maxVal > 0 ? maxVal * 1.2 : 100000.0;
+    } else {
+      final diff = maxVal - minVal;
+      minScaleY = minVal - (diff * 0.15);
+      maxScaleY = maxVal + (diff * 0.15);
+
+      if (minVal >= 0 && minScaleY < 0) {
+        minScaleY = 0;
       }
     }
-    // Tambahkan 20% margin di atas nilai maksimum
-    final maxScaleY = maxVal > 0 ? maxVal * 1.2 : 100000.0;
 
     return Card(
       elevation: 0,
@@ -548,6 +627,33 @@ class RecapScreen extends ConsumerWidget {
               height: 200,
               child: LineChart(
                 LineChartData(
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (touchedSpot) => AppColors.textPrimary,
+                      tooltipBorder: const BorderSide(
+                        color: AppColors.border,
+                        width: 1,
+                      ),
+                      getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                        return touchedSpots.map((LineBarSpot touchedSpot) {
+                          final val = touchedSpot.y.toInt();
+                          final isRevenue = touchedSpot.barIndex == 0;
+                          final label = isRevenue ? 'Pemasukan' : 'Laba';
+                          final formattedVal = val.toRupiah();
+                          return LineTooltipItem(
+                            '$label: $formattedVal',
+                            TextStyle(
+                              color: isRevenue
+                                  ? AppColors.primaryLight
+                                  : AppColors.secondaryLight,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                   gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
                     rightTitles: const AxisTitles(
@@ -561,12 +667,15 @@ class RecapScreen extends ConsumerWidget {
                         showTitles: true,
                         reservedSize: 42,
                         getTitlesWidget: (value, meta) {
-                          if (value == 0) return const SizedBox();
+                          if (value == minScaleY || value == maxScaleY) {
+                            return const SizedBox();
+                          }
                           return Text(
                             _formatValueShort(value),
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.textPrimary,
                               fontSize: 10,
+                              fontWeight: FontWeight.bold,
                             ),
                           );
                         },
@@ -585,8 +694,9 @@ class RecapScreen extends ConsumerWidget {
                             child: Text(
                               keys[index],
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
+                                color: AppColors.textPrimary,
                                 fontSize: 10,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           );
@@ -597,13 +707,16 @@ class RecapScreen extends ConsumerWidget {
                   borderData: FlBorderData(show: false),
                   minX: 0,
                   maxX: (keys.length - 1).toDouble(),
-                  minY: 0,
+                  minY: minScaleY,
                   maxY: maxScaleY,
                   lineBarsData: [
                     // Line 1: Omzet (Revenue)
                     LineChartBarData(
                       spots: List.generate(entries.length, (i) {
-                        return FlSpot(i.toDouble(), entries[i].value.revenue.toDouble());
+                        return FlSpot(
+                          i.toDouble(),
+                          entries[i].value.revenue.toDouble(),
+                        );
                       }),
                       isCurved: true,
                       color: AppColors.income,
@@ -615,7 +728,10 @@ class RecapScreen extends ConsumerWidget {
                       spots: List.generate(entries.length, (i) {
                         return FlSpot(
                           i.toDouble(),
-                          entries[i].value.netProfit.toDouble().clamp(0.0, maxScaleY),
+                          entries[i].value.netProfit.toDouble().clamp(
+                            minScaleY,
+                            maxScaleY,
+                          ),
                         );
                       }),
                       isCurved: true,

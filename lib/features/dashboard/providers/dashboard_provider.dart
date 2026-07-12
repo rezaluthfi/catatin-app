@@ -54,6 +54,25 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
       // Ambil Transaksi Terbaru (Limit: 3)
       final recentTxs = await txRepo.getRecent(limit: 3);
 
+      // Hitung data tren mingguan (7 hari terakhir)
+      final List<DashboardChartPoint> weeklyTrend = [];
+      for (int i = 6; i >= 0; i--) {
+        final dayDate = now.subtract(Duration(days: i));
+        final startOfDay = DateTime(dayDate.year, dayDate.month, dayDate.day, 0, 0, 0);
+        final endOfDay = DateTime(dayDate.year, dayDate.month, dayDate.day, 23, 59, 59);
+
+        final dayIncome = await txRepo.getTotalIncomeByDateRange(startOfDay, endOfDay);
+        final dayGross = await txRepo.getTotalProfitByDateRange(startOfDay, endOfDay);
+        final dayExpense = await opRepo.getTotalByDateRange(startOfDay, endOfDay);
+        final dayNetProfit = dayGross - dayExpense;
+
+        weeklyTrend.add(DashboardChartPoint(
+          date: dayDate,
+          income: dayIncome,
+          netProfit: dayNetProfit,
+        ));
+      }
+
       return DashboardState(
         businessName: businessName,
         incomeToday: income,
@@ -62,6 +81,7 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
         receivablesOutstanding: outstanding,
         lowStockProducts: lowStock,
         recentTransactions: recentTxs,
+        weeklyTrend: weeklyTrend,
         isLoading: false,
         errorMessage: null,
       );

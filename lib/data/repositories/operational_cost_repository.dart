@@ -63,6 +63,20 @@ class OperationalCostRepository implements IOperationalCostRepository {
   }
 
   @override
+  Future<void> update(OperationalCostModel cost) async {
+    try {
+      await _db.update(
+        DbConstants.tableOperationalCosts,
+        cost.toMap(),
+        where: '${DbConstants.colCostId} = ?',
+        whereArgs: [cost.id],
+      );
+    } catch (e) {
+      throw DatabaseException('Gagal mengubah pengeluaran', originalError: e);
+    }
+  }
+
+  @override
   Future<void> delete(String id) async {
     try {
       await _db.delete(

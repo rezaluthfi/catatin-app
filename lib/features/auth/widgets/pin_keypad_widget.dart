@@ -22,7 +22,7 @@ class PinKeypadWidget extends StatelessWidget {
     required this.onDigitPressed,
     required this.onBackspacePressed,
     this.bottomLeftChild,
-    this.keySize = 72.0,
+    this.keySize,
     this.enabled = true,
   });
 
@@ -35,29 +35,32 @@ class PinKeypadWidget extends StatelessWidget {
   /// Widget opsional di slot kiri-bawah (misal: tombol "Lupa PIN" atau ikon).
   final Widget? bottomLeftChild;
 
-  /// Ukuran (diameter) setiap tombol angka.
-  final double keySize;
+  /// Ukuran (diameter) setiap tombol angka. Jika null, otomatis menyesuaikan tinggi layar.
+  final double? keySize;
 
   /// Jika false, semua tombol tidak bisa ditekan.
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final double activeKeySize = keySize ?? (screenHeight < 680 ? 56.0 : 72.0);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildRow(['1', '2', '3']),
+        _buildRow(['1', '2', '3'], activeKeySize),
         const SizedBox(height: 12),
-        _buildRow(['4', '5', '6']),
+        _buildRow(['4', '5', '6'], activeKeySize),
         const SizedBox(height: 12),
-        _buildRow(['7', '8', '9']),
+        _buildRow(['7', '8', '9'], activeKeySize),
         const SizedBox(height: 12),
-        _buildBottomRow(),
+        _buildBottomRow(activeKeySize),
       ],
     );
   }
 
-  Widget _buildRow(List<String> digits) {
+  Widget _buildRow(List<String> digits, double activeKeySize) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: digits.map((d) {
@@ -65,7 +68,7 @@ class PinKeypadWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: _DigitKey(
             digit: d,
-            size: keySize,
+            size: activeKeySize,
             enabled: enabled,
             onPressed: () => onDigitPressed(d),
           ),
@@ -74,14 +77,14 @@ class PinKeypadWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomRow() {
+  Widget _buildBottomRow(double activeKeySize) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Slot kiri bawah — bisa diisi widget custom atau kosong
         SizedBox(
-          width: keySize + 32,
-          height: keySize,
+          width: activeKeySize + 32,
+          height: activeKeySize,
           child: bottomLeftChild != null
               ? Center(child: bottomLeftChild)
               : const SizedBox.shrink(),
@@ -92,7 +95,7 @@ class PinKeypadWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: _DigitKey(
             digit: '0',
-            size: keySize,
+            size: activeKeySize,
             enabled: enabled,
             onPressed: () => onDigitPressed('0'),
           ),
@@ -100,11 +103,11 @@ class PinKeypadWidget extends StatelessWidget {
 
         // Tombol backspace
         SizedBox(
-          width: keySize + 32,
-          height: keySize,
+          width: activeKeySize + 32,
+          height: activeKeySize,
           child: Center(
             child: _BackspaceKey(
-              size: keySize,
+              size: activeKeySize,
               enabled: enabled,
               onPressed: onBackspacePressed,
             ),

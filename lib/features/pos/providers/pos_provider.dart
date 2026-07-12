@@ -152,6 +152,7 @@ class PosNotifier extends Notifier<PosState> {
             paidAmount: 0,
             status: ReceivableStatus.unpaid,
             dueDate: dueDate,
+            notes: notes,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           ),

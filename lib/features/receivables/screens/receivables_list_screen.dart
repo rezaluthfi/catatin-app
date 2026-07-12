@@ -342,6 +342,18 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                                   color: AppColors.textSecondary,
                                                 ),
                                               ),
+                                              if (item.notes != null && item.notes!.isNotEmpty) ...[
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  item.notes!,
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: AppTextStyles.bodyMedium.copyWith(
+                                                    fontStyle: FontStyle.italic,
+                                                    color: AppColors.textSecondary,
+                                                  ),
+                                                ),
+                                              ],
                                             ],
                                           ),
                                         ),
@@ -416,55 +428,68 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Total Tagihan',
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                color: AppColors.textSecondary,
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Total Tagihan',
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                  color: AppColors.textSecondary,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              item.amount.toRupiah(),
-                                              style: AppTextStyles.bodyMedium
-                                                  .copyWith(
-                                                fontWeight: FontWeight.w600,
+                                              const SizedBox(height: 2),
+                                              FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  item.amount.toRupiah(),
+                                                  style: AppTextStyles.bodyMedium
+                                                      .copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              item.isPaid
-                                                  ? 'Sudah Dibayar'
-                                                  : 'Sisa Utang',
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                color: AppColors.textSecondary,
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                item.isPaid
+                                                    ? 'Sudah Dibayar'
+                                                    : 'Sisa Utang',
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                  color: AppColors.textSecondary,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              item.isPaid
-                                                  ? item.amount.toRupiah()
-                                                  : item.remainingAmount
-                                                      .toRupiah(),
-                                              style: AppTextStyles.bodyLarge
-                                                  .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: item.isPaid
-                                                    ? AppColors.income
-                                                    : AppColors.expense,
+                                              const SizedBox(height: 2),
+                                              FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                alignment: Alignment.centerRight,
+                                                child: Text(
+                                                  item.isPaid
+                                                      ? item.amount.toRupiah()
+                                                      : item.remainingAmount
+                                                          .toRupiah(),
+                                                  style: AppTextStyles.bodyLarge
+                                                      .copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: item.isPaid
+                                                        ? AppColors.income
+                                                        : AppColors.expense,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),

@@ -160,6 +160,23 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
     }
   }
 
+  Future<bool> updateOperationalCost(OperationalCostModel cost) async {
+    state = AsyncData(state.value!.copyWith(isLoading: true));
+    try {
+      final opRepo = ref.read(operationalCostRepositoryProvider);
+      await opRepo.update(cost);
+      ref.invalidate(dashboardProvider);
+      state = AsyncData(await _loadData(state.value!));
+      return true;
+    } catch (e) {
+      state = AsyncData(state.value!.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
   Future<bool> deleteOperationalCost(String id) async {
     state = AsyncData(state.value!.copyWith(isLoading: true));
     try {

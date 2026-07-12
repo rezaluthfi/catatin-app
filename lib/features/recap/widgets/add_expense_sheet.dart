@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
+import '../../../data/models/operational_cost_model.dart';
 import '../providers/recap_provider.dart';
 
 class AddExpenseSheet extends ConsumerStatefulWidget {
-  const AddExpenseSheet({super.key});
+  const AddExpenseSheet({super.key, this.expense});
+
+  final OperationalCostModel? expense;
 
   @override
   ConsumerState<AddExpenseSheet> createState() => _AddExpenseSheetState();
@@ -25,6 +28,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   @override
   void initState() {
     super.initState();
+    if (widget.expense != null) {
+      _descriptionController.text = widget.expense!.description;
+      _amount = widget.expense!.amount;
+      _amountController.text = widget.expense!.amount.toRupiahNoSymbol();
+      _selectedDate = widget.expense!.date;
+    }
     _dateController.text =
         '${_selectedDate.day} ${_getMonthName(_selectedDate.month)} ${_selectedDate.year}';
   }
@@ -71,19 +80,29 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       return;
     }
 
-    final success = await ref.read(recapProvider.notifier).addOperationalCost(
-          description: _descriptionController.text.trim(),
-          amount: _amount,
-          date: _selectedDate,
-        );
+    final success = widget.expense != null
+        ? await ref.read(recapProvider.notifier).updateOperationalCost(
+              widget.expense!.copyWith(
+                description: _descriptionController.text.trim(),
+                amount: _amount,
+                date: _selectedDate,
+              ),
+            )
+        : await ref.read(recapProvider.notifier).addOperationalCost(
+              description: _descriptionController.text.trim(),
+              amount: _amount,
+              date: _selectedDate,
+            );
 
     if (!mounted) return;
 
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pengeluaran berhasil dicatat!'),
+        SnackBar(
+          content: Text(widget.expense != null
+              ? 'Pengeluaran berhasil diubah!'
+              : 'Pengeluaran berhasil dicatat!'),
           backgroundColor: AppColors.income,
         ),
       );
@@ -91,7 +110,9 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       final errorMsg = ref.read(recapProvider).value?.errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(errorMsg ?? 'Gagal mencatat pengeluaran'),
+          content: Text(errorMsg ?? (widget.expense != null
+              ? 'Gagal mengubah pengeluaran'
+              : 'Gagal mencatat pengeluaran')),
           backgroundColor: AppColors.expense,
         ),
       );
@@ -125,7 +146,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Catat Pengeluaran',
+                  widget.expense != null ? 'Edit Pengeluaran' : 'Catat Pengeluaran',
                   style: AppTextStyles.headingMedium.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -175,7 +196,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       onChanged: _onAmountChanged,
                       decoration: InputDecoration(
                         labelText: 'Nominal Pengeluaran (Wajib)',
-                        prefixText: 'Rp ',
+                        prefixText: 'Rp',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -223,7 +244,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       onPressed: isLoading ? null : _submitExpense,
                       child: isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Simpan Pengeluaran'),
+                          : Text(widget.expense != null ? 'Simpan Perubahan' : 'Simpan Pengeluaran'),
                     ),
                   ],
                 ),
