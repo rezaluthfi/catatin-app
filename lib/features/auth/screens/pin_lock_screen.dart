@@ -256,31 +256,40 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
           spacing: 14,
         ),
         const SizedBox(height: 16),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: Text(
-            hintText,
-            key: ValueKey(hintText),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: _isError
-                  ? AppColors.expense
-                  : _isSuccess
-                      ? AppColors.income
-                      : AppColors.textSecondary,
-              fontWeight:
-                  _isError || _isSuccess ? FontWeight.w600 : FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
+        // Gunakan tinggi tetap 60px agar area status + loading stabil dan tidak menggeser posisi dots
+        SizedBox(
+          height: 60,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  hintText,
+                  key: ValueKey(hintText),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: _isError
+                        ? AppColors.expense
+                        : _isSuccess
+                            ? AppColors.income
+                            : AppColors.textSecondary,
+                    fontWeight:
+                        _isError || _isSuccess ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              if (_isLoading) ...[
+                const SizedBox(height: 8),
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ],
           ),
         ),
-        if (_isLoading) ...[
-          const SizedBox(height: 12),
-          const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ],
       ],
     );
   }
