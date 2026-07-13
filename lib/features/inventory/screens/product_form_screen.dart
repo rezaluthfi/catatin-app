@@ -314,7 +314,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               Navigator.pop(ctx);
               _deleteProduct();
             },
-            child: const Text('Hapus', style: TextStyle(color: AppColors.expense)),
+            child: Text('Hapus', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.expense)),
           ),
         ],
       ),
