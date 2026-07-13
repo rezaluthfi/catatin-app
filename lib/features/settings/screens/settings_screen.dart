@@ -13,6 +13,7 @@ import '../../../app/theme/app_text_styles.dart';
 import '../../../core/constants/app_constants.dart';
 import '../providers/settings_provider.dart';
 import '../providers/settings_state.dart';
+import '../widgets/export_sheet.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -135,6 +136,13 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Impor data dari file backup',
               isLoading: state.isImporting,
               onTap: () => _doImport(context, ref),
+            ),
+            _buildTile(
+              icon: Icons.summarize_rounded,
+              iconColor: AppColors.info,
+              title: 'Export Laporan',
+              subtitle: 'Unduh laporan keuangan dalam format PDF atau XLSX',
+              onTap: () => _showExportSheet(context),
             ),
 
             const SizedBox(height: 8),
@@ -347,6 +355,15 @@ class SettingsScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  void _showExportSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const ExportSheet(),
+    );
   }
 
   Future<void> _doExport(BuildContext context, WidgetRef ref) async {
