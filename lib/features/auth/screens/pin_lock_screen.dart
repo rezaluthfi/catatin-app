@@ -1,6 +1,7 @@
 // PIN Lock Screen — ditampilkan setiap kali aplikasi dibuka.
 // Pengguna harus memasukkan PIN 6 digit untuk membuka aplikasi.
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -67,6 +68,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
       });
       // Router akan otomatis redirect ke dashboard via RouterNotifier
     } else {
+      HapticFeedback.vibrate();
       _dotsKey.currentState?.shake();
       setState(() {
         _isError = true;
@@ -170,14 +172,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withAlpha(200),
-          ],
-        ),
+        color: AppColors.primary,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
