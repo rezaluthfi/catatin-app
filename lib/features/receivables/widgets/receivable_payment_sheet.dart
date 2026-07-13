@@ -25,6 +25,7 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
   bool _submitted = false;
   int _paymentAmount = 0;
   bool _payInFull = true;
+  bool _overflowError = false;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
 
     setState(() {
       _paymentAmount = intValue;
+      _overflowError = intValue > widget.receivable.remainingAmount && intValue > 0;
     });
   }
 
@@ -75,13 +77,7 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
       return;
     }
 
-    if (_paymentAmount > widget.receivable.remainingAmount) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nominal pembayaran melebihi sisa utang'),
-          backgroundColor: AppColors.expense,
-        ),
-      );
+    if (_overflowError) {
       return;
     }
 
@@ -278,7 +274,9 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
                         prefixText: 'Rp',
                         errorText: _submitted && _paymentAmount <= 0
                             ? 'Nominal pembayaran tidak valid'
-                            : null,
+                            : _overflowError
+                                ? 'Melebihi sisa piutang (${widget.receivable.remainingAmount.toRupiahNoSymbol()})'
+                                : null,
                       ),
                     ),
                   ],
