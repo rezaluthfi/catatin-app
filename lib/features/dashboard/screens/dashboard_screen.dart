@@ -12,6 +12,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../../recap/widgets/add_expense_sheet.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/dashboard_state.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -155,9 +156,17 @@ class DashboardScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  item.productName,
+                                  item.productName.isNotEmpty
+                                      ? item.productName
+                                      : '(Produk telah dihapus)',
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     fontWeight: FontWeight.w600,
+                                    color: item.productName.isEmpty
+                                        ? AppColors.textSecondary
+                                        : null,
+                                    fontStyle: item.productName.isEmpty
+                                        ? FontStyle.italic
+                                        : FontStyle.normal,
                                   ),
                                 ),
                                 Text(
@@ -737,7 +746,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ShimmerLoading(),
           error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
         ),
       ),
@@ -900,6 +909,7 @@ class DashboardScreen extends ConsumerWidget {
                           return LineTooltipItem(
                             '$label: $formattedVal',
                             TextStyle(
+                              fontFamily: 'GoogleSans',
                               color: isRevenue
                                   ? AppColors.primaryLight
                                   : AppColors.secondaryLight,

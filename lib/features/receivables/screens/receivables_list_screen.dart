@@ -10,6 +10,7 @@ import '../../../data/models/receivable_model.dart';
 import '../providers/receivable_provider.dart';
 import '../providers/receivable_state.dart';
 import '../widgets/receivable_payment_sheet.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ReceivablesListScreen extends ConsumerStatefulWidget {
   const ReceivablesListScreen({super.key});
@@ -21,6 +22,8 @@ class ReceivablesListScreen extends ConsumerStatefulWidget {
 
 class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
   final _searchController = TextEditingController();
+  static const int _pageSize = 20;
+  bool _showAllReceivables = false;
 
   @override
   void dispose() {
@@ -212,7 +215,7 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
               const SizedBox(height: 12),
               Container(
                 color: AppColors.surface,
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (val) {
@@ -320,255 +323,271 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 8,
-                        ),
-                        itemCount: state.filteredReceivables.length,
-                        itemBuilder: (context, index) {
-                          final item = state.filteredReceivables[index];
-                          final createdDate = item.createdAt;
+                    : () {
+                        final allItems = state.filteredReceivables;
+                        final displayItems = _showAllReceivables
+                            ? allItems
+                            : allItems.take(_pageSize).toList();
+                        final hasMore = allItems.length > _pageSize && !_showAllReceivables;
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 8,
+                          ),
+                          itemCount: displayItems.length + (hasMore ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            // Show-more footer button
+                            if (hasMore && index == displayItems.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: TextButton.icon(
+                                  onPressed: () => setState(() => _showAllReceivables = true),
+                                  icon: const Icon(Icons.expand_more_rounded),
+                                  label: Text(
+                                    'Tampilkan ${allItems.length - _pageSize} piutang lainnya',
+                                  ),
+                                ),
+                              );
+                            }
 
-                          Color statusColor;
-                          String statusLabel;
-                          if (item.status == ReceivableStatus.paid) {
-                            statusColor = AppColors.income;
-                            statusLabel = 'Lunas';
-                          } else if (item.status == ReceivableStatus.partial) {
-                            statusColor = Colors.orange;
-                            statusLabel = 'Dicicil';
-                          } else {
-                            statusColor = AppColors.expense;
-                            statusLabel = 'Belum Bayar';
-                          }
+                            final item = displayItems[index];
+                            final createdDate = item.createdAt;
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              side: const BorderSide(color: AppColors.border),
-                            ),
-                            child: InkWell(
-                              onTap: item.isPaid
-                                  ? null
-                                  : () => _showPaymentSheet(item),
-                              borderRadius: BorderRadius.circular(16),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item.customerName,
-                                                style: AppTextStyles.bodyLarge
-                                                    .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'Dibuat: ${createdDate.day} ${_getMonthName(createdDate.month)} ${createdDate.year}',
-                                                style: AppTextStyles.bodySmall
-                                                    .copyWith(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    ),
-                                              ),
-                                              if (item.notes != null &&
-                                                  item.notes!.isNotEmpty) ...[
-                                                const SizedBox(height: 8),
+                            Color statusColor;
+                            String statusLabel;
+                            if (item.status == ReceivableStatus.paid) {
+                              statusColor = AppColors.income;
+                              statusLabel = 'Lunas';
+                            } else if (item.status == ReceivableStatus.partial) {
+                              statusColor = Colors.orange;
+                              statusLabel = 'Dicicil';
+                            } else {
+                              statusColor = AppColors.expense;
+                              statusLabel = 'Belum Bayar';
+                            }
+
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: const BorderSide(color: AppColors.border),
+                              ),
+                              child: InkWell(
+                                onTap: item.isPaid
+                                    ? null
+                                    : () => _showPaymentSheet(item),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
                                                 Text(
-                                                  item.notes!,
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: AppTextStyles
-                                                      .bodyMedium
-                                                      .copyWith(
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                      ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                        // Status Badge & Action Menu
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 4,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: statusColor.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                statusLabel,
-                                                style: AppTextStyles.labelSmall
-                                                    .copyWith(
-                                                      color: statusColor,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                              ),
-                                            ),
-                                            PopupMenuButton<String>(
-                                              onSelected: (val) {
-                                                if (val == 'delete') {
-                                                  _confirmDelete(item);
-                                                } else if (val == 'reset') {
-                                                  _showPaidOptionsDialog(item);
-                                                }
-                                              },
-                                              itemBuilder: (context) => [
-                                                if (item.paidAmount > 0)
-                                                  const PopupMenuItem(
-                                                    value: 'reset',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons
-                                                              .restart_alt_outlined,
-                                                          color:
-                                                              AppColors.primary,
-                                                        ),
-                                                        SizedBox(width: 8),
-                                                        Text(
-                                                          'Reset Pembayaran',
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                const PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons.delete_outline,
-                                                        color:
-                                                            AppColors.expense,
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Text('Hapus'),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const Divider(height: 24),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Total Tagihan',
-                                                style: AppTextStyles.bodySmall
-                                                    .copyWith(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    ),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  item.amount.toRupiah(),
-                                                  style: AppTextStyles
-                                                      .bodyMedium
-                                                      .copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                item.isPaid
-                                                    ? 'Sudah Dibayar'
-                                                    : 'Sisa Utang',
-                                                style: AppTextStyles.bodySmall
-                                                    .copyWith(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    ),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  item.isPaid
-                                                      ? item.amount.toRupiah()
-                                                      : item.remainingAmount
-                                                            .toRupiah(),
+                                                  item.customerName,
                                                   style: AppTextStyles.bodyLarge
                                                       .copyWith(
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: item.isPaid
-                                                            ? AppColors.income
-                                                            : AppColors.expense,
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Dibuat: ${createdDate.day} ${_getMonthName(createdDate.month)} ${createdDate.year}',
+                                                  style: AppTextStyles.bodySmall
+                                                      .copyWith(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                ),
+                                                if (item.notes != null &&
+                                                    item.notes!.isNotEmpty) ...[
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    item.notes!,
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: AppTextStyles
+                                                        .bodyMedium
+                                                        .copyWith(
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          color: AppColors
+                                                              .textSecondary,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          // Status Badge & Action Menu
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: statusColor.withValues(
+                                                    alpha: 0.1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  statusLabel,
+                                                  style: AppTextStyles.labelSmall
+                                                      .copyWith(
+                                                        color: statusColor,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                 ),
                                               ),
+                                              PopupMenuButton<String>(
+                                                onSelected: (val) {
+                                                  if (val == 'delete') {
+                                                    _confirmDelete(item);
+                                                  } else if (val == 'reset') {
+                                                    _showPaidOptionsDialog(item);
+                                                  }
+                                                },
+                                                itemBuilder: (context) => [
+                                                  if (item.paidAmount > 0)
+                                                    const PopupMenuItem(
+                                                      value: 'reset',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons.restart_alt_outlined,
+                                                            color: AppColors.primary,
+                                                          ),
+                                                          SizedBox(width: 8),
+                                                          Text('Reset Pembayaran'),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  const PopupMenuItem(
+                                                    value: 'delete',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.delete_outline,
+                                                          color: AppColors.expense,
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Text('Hapus'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                      const Divider(height: 24),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Total Tagihan',
+                                                  style: AppTextStyles.bodySmall
+                                                      .copyWith(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Text(
+                                                    item.amount.toRupiah(),
+                                                    style: AppTextStyles
+                                                        .bodyMedium
+                                                        .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  item.isPaid
+                                                      ? 'Sudah Dibayar'
+                                                      : 'Sisa Utang',
+                                                  style: AppTextStyles.bodySmall
+                                                      .copyWith(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    item.isPaid
+                                                        ? item.amount.toRupiah()
+                                                        : item.remainingAmount
+                                                              .toRupiah(),
+                                                    style: AppTextStyles.bodyLarge
+                                                        .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: item.isPaid
+                                                              ? AppColors.income
+                                                              : AppColors.expense,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        );
+                      }(),
               ),
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ShimmerList(),
         error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
       ),
       floatingActionButton: FloatingActionButton(
