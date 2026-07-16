@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
 import '../../../data/models/transaction_enums.dart';
 import '../providers/pos_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 
 class CheckoutBottomSheet extends ConsumerStatefulWidget {
   const CheckoutBottomSheet({super.key, this.onBackToCart});
@@ -19,6 +22,8 @@ class CheckoutBottomSheet extends ConsumerStatefulWidget {
 
 class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
   PaymentMethod _paymentMethod = PaymentMethod.cash;
+  String _nonCashType = 'qris';
+  String? _selectedBankAccount;
   int _cashReceived = 0;
   final _notesController = TextEditingController();
   final _cashController = TextEditingController();
@@ -92,6 +97,8 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
               ? _customerNameController.text.trim()
               : null,
           dueDate: _paymentMethod == PaymentMethod.credit ? _dueDate : null,
+          nonCashType: _paymentMethod == PaymentMethod.nonCash ? _nonCashType : null,
+          bankAccount: _paymentMethod == PaymentMethod.nonCash ? _selectedBankAccount : null,
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
@@ -172,6 +179,89 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Ringkasan Transaksi
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.receipt_long_rounded, size: 20, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Ringkasan Transaksi',
+                              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Divider(height: 1),
+                        const SizedBox(height: 8),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: posState.cartItems.length,
+                          itemBuilder: (context, index) {
+                            final item = posState.cartItems[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.product.name,
+                                          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                                        ),
+                                        Text(
+                                          '${item.quantity} x ${item.product.sellingPrice.toRupiah()}',
+                                          style: AppTextStyles.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    item.subtotal.toRupiah(),
+                                    style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        const Divider(height: 1),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Tagihan',
+                              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              totalAmount.toRupiah(),
+                              style: AppTextStyles.headingSmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Tipe Pembayaran
                   SegmentedButton<PaymentMethod>(
                     segments: const [
@@ -179,6 +269,11 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         value: PaymentMethod.cash,
                         label: Text('Tunai'),
                         icon: Icon(Icons.money_rounded),
+                      ),
+                      ButtonSegment(
+                        value: PaymentMethod.nonCash,
+                        label: Text('Non Tunai'),
+                        icon: Icon(Icons.qr_code_2_rounded),
                       ),
                       ButtonSegment(
                         value: PaymentMethod.credit,
@@ -191,7 +286,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                       setState(() {
                         _paymentMethod = newSelection.first;
                         _submitted = false;
-                        if (_paymentMethod == PaymentMethod.credit) {
+                        if (_paymentMethod == PaymentMethod.credit || _paymentMethod == PaymentMethod.nonCash) {
                           _cashReceived = 0;
                           _cashController.clear();
                         }
@@ -267,6 +362,111 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  if (_paymentMethod == PaymentMethod.nonCash) ...[
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'qris',
+                          label: Text('QRIS'),
+                          icon: Icon(Icons.qr_code_2_rounded),
+                        ),
+                        ButtonSegment(
+                          value: 'transfer',
+                          label: Text('Transfer Bank'),
+                          icon: Icon(Icons.account_balance_rounded),
+                        ),
+                      ],
+                      selected: {_nonCashType},
+                      onSelectionChanged: (newSelection) {
+                        setState(() {
+                          _nonCashType = newSelection.first;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    () {
+                      final settingsState = ref.watch(settingsProvider).valueOrNull;
+                      final accounts = settingsState?.bankAccounts ?? [];
+
+                      if (accounts.isEmpty) {
+                        return InkWell(
+                          onTap: () {
+                            Navigator.pop(context); // Tutup bottom sheet
+                            context.go(AppRoutes.settings); // Navigasi ke Pengaturan
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.expense.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.expense.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.warning_amber_rounded,
+                                    color: AppColors.expense),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Belum ada rekening/e-wallet terdaftar.',
+                                        style: AppTextStyles.bodyMedium.copyWith(
+                                          color: AppColors.expense,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Ketuk di sini untuk mendaftarkan di profil/pengaturan.',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.expense.withValues(alpha: 0.8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (_selectedBankAccount != null &&
+                          !accounts.contains(_selectedBankAccount)) {
+                        _selectedBankAccount = null;
+                      }
+
+                      _selectedBankAccount ??= accounts.first;
+
+                      return DropdownButtonFormField<String>(
+                        initialValue: _selectedBankAccount,
+                        decoration: InputDecoration(
+                          labelText: 'Pilih Rekening / E-Wallet Tujuan',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: accounts.map((acc) {
+                          return DropdownMenuItem<String>(
+                            value: acc,
+                            child: Text(acc),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedBankAccount = val;
+                          });
+                        },
+                      );
+                    }(),
                     const SizedBox(height: 16),
                   ],
 
@@ -355,11 +555,27 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                   ),
 
                   const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: posState.isLoading ? null : _submitTransaction,
-                    child: posState.isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Selesaikan Transaksi'),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final settingsState = ref.watch(settingsProvider).valueOrNull;
+                      final hasNoAccounts = _paymentMethod == PaymentMethod.nonCash &&
+                          (settingsState?.bankAccounts ?? []).isEmpty;
+                      return FilledButton(
+                        onPressed: posState.isLoading || hasNoAccounts
+                            ? null
+                            : _submitTransaction,
+                        child: posState.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Selesaikan Transaksi'),
+                      );
+                    },
                   ),
                 ],
               ),

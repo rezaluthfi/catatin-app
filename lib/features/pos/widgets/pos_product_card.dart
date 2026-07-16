@@ -54,7 +54,27 @@ class PosProductCard extends ConsumerWidget {
         children: [
           // Konten utama kartu
           InkWell(
-            onTap: canAdd ? () => ref.read(posProvider.notifier).addToCart(product) : null,
+            onTap: () {
+              if (canAdd) {
+                ref.read(posProvider.notifier).addToCart(product);
+              } else if (isOutOfStock) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${product.name} sudah habis!'),
+                    backgroundColor: AppColors.expense,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Jumlah pembelian ${product.name} mencapai batas maksimum stok (${product.stock} pcs)',
+                    ),
+                    backgroundColor: AppColors.expense,
+                  ),
+                );
+              }
+            },
             child: Opacity(
               opacity: isOutOfStock ? 0.6 : 1.0,
               child: Column(

@@ -107,6 +107,8 @@ class PosNotifier extends Notifier<PosState> {
     String? notes,
     String? customerName,
     DateTime? dueDate,
+    String? nonCashType,
+    String? bankAccount,
   }) async {
     if (state.cartItems.isEmpty) return false;
 
@@ -128,12 +130,20 @@ class PosNotifier extends Notifier<PosState> {
         );
       }).toList();
 
+      String? finalNotes = notes;
+      if (paymentMethod == PaymentMethod.nonCash) {
+        final typeStr = nonCashType == 'qris' ? 'QRIS' : 'Transfer';
+        final accStr = bankAccount != null && bankAccount.isNotEmpty ? ' - $bankAccount' : '';
+        final prefix = '[$typeStr$accStr]';
+        finalNotes = notes == null || notes.trim().isEmpty ? prefix : '$prefix $notes';
+      }
+
       final transaction = TransactionModel(
         id: '',
         totalAmount: state.totalAmount,
         type: TransactionType.income,
         paymentMethod: paymentMethod,
-        notes: notes,
+        notes: finalNotes,
         createdAt: DateTime.now(),
         items: transactionItems,
       );

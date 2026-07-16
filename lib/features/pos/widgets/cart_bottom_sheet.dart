@@ -155,7 +155,18 @@ class _CartItemRowState extends ConsumerState<_CartItemRow> {
 
   void _submitQty() {
     final newQty = int.tryParse(_qtyController.text) ?? 0;
-    if (newQty > 0) {
+    if (newQty > widget.item.product.stock) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Jumlah pembelian melebihi stok yang tersedia (${widget.item.product.stock} pcs)',
+          ),
+          backgroundColor: AppColors.expense,
+        ),
+      );
+      ref.read(posProvider.notifier).setQuantity(widget.item.product, widget.item.product.stock);
+      _qtyController.text = widget.item.product.stock.toString();
+    } else if (newQty > 0) {
       ref.read(posProvider.notifier).setQuantity(widget.item.product, newQty);
     } else {
       _qtyController.text = widget.item.quantity.toString();
@@ -209,6 +220,16 @@ class _CartItemRowState extends ConsumerState<_CartItemRow> {
                     color: AppColors.income,
                   ),
                 ),
+                if (widget.item.quantity >= widget.item.product.stock) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Jumlah mencapai batas stok (${widget.item.product.stock})',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.expense,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
