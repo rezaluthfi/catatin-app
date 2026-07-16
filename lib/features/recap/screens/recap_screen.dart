@@ -393,7 +393,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Pengeluaran berhasil dihapus'),
-              backgroundColor: AppColors.income,
+              backgroundColor: AppColors.primary,
             ),
           );
         } else {

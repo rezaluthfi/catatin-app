@@ -79,7 +79,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
             ),
           ],
         ),
-        backgroundColor: AppColors.income,
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

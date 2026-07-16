@@ -362,7 +362,7 @@ class SettingsScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$title berhasil diperbarui'),
-            backgroundColor: AppColors.income,
+            backgroundColor: AppColors.primary,
           ),
         );
       }
@@ -440,7 +440,7 @@ class SettingsScreen extends ConsumerWidget {
           content: Text(
             'Data berhasil dipulihkan! Restart aplikasi untuk melihat perubahan.',
           ),
-          backgroundColor: AppColors.income,
+          backgroundColor: AppColors.primary,
           duration: Duration(seconds: 5),
         ),
       );
@@ -563,7 +563,7 @@ class SettingsScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Backup berhasil disimpan di perangkat!'),
-            backgroundColor: AppColors.income,
+            backgroundColor: AppColors.primary,
           ),
         );
       }
@@ -831,7 +831,7 @@ class SettingsScreen extends ConsumerWidget {
                                             content: Text(
                                               'Rekening/E-Wallet berhasil dihapus',
                                             ),
-                                            backgroundColor: AppColors.income,
+                                            backgroundColor: AppColors.primary,
                                           ),
                                         );
                                       }
@@ -993,7 +993,7 @@ class SettingsScreen extends ConsumerWidget {
                               ? 'Rekening/E-Wallet berhasil diperbarui'
                               : 'Rekening/E-Wallet berhasil ditambahkan',
                         ),
-                        backgroundColor: AppColors.income,
+                        backgroundColor: AppColors.primary,
                       ),
                     );
                   }

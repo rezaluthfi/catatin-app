@@ -108,7 +108,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
           content: Text(widget.expense != null
               ? 'Pengeluaran berhasil diubah!'
               : 'Pengeluaran berhasil dicatat!'),
-          backgroundColor: AppColors.income,
+          backgroundColor: AppColors.primary,
           action: SnackBarAction(
             label: 'LIHAT',
             textColor: Colors.white,

@@ -137,7 +137,7 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('PIN berhasil diubah!'),
-        backgroundColor: AppColors.income,
+        backgroundColor: AppColors.primary,
       ),
     );
     Navigator.of(context).pop();

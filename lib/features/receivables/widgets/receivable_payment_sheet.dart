@@ -92,7 +92,7 @@ class _ReceivablePaymentSheetState extends ConsumerState<ReceivablePaymentSheet>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pembayaran berhasil dicatat!'),
-          backgroundColor: AppColors.income,
+          backgroundColor: AppColors.primary,
         ),
       );
     } else {

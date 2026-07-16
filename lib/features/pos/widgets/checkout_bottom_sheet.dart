@@ -111,7 +111,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Transaksi berhasil disimpan!'),
-          backgroundColor: AppColors.income,
+          backgroundColor: AppColors.primary,
         ),
       );
     } else {

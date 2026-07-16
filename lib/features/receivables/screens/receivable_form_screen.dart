@@ -84,7 +84,7 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Piutang berhasil ditambahkan!'),
-          backgroundColor: AppColors.income,
+          backgroundColor: AppColors.primary,
         ),
       );
     } else {

@@ -85,7 +85,7 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
                     content: Text(
                       'Pembayaran berhasil di-reset menjadi Belum Lunas',
                     ),
-                    backgroundColor: AppColors.income,
+                    backgroundColor: AppColors.primary,
                   ),
                 );
               } else {
@@ -137,7 +137,7 @@ class _ReceivablesListScreenState extends ConsumerState<ReceivablesListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Piutang berhasil dihapus'),
-            backgroundColor: AppColors.income,
+            backgroundColor: AppColors.primary,
           ),
         );
       } else {
