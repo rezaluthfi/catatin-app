@@ -16,8 +16,9 @@ enum TransactionType {
 
 /// Enum untuk metode pembayaran.
 enum PaymentMethod {
-  cash('cash'),     // Tunai
-  credit('credit'); // Kasbon (piutang)
+  cash('cash'),       // Tunai
+  nonCash('non_cash'), // Non Tunai
+  credit('credit');   // Kasbon (piutang)
 
   const PaymentMethod(this.value);
   final String value;
@@ -25,6 +26,7 @@ enum PaymentMethod {
   /// Label tampilan dalam Bahasa Indonesia.
   String get label => switch (this) {
         PaymentMethod.cash => 'Tunai',
+        PaymentMethod.nonCash => 'Non Tunai',
         PaymentMethod.credit => 'Kasbon',
       };
 

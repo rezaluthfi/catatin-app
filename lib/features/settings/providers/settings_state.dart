@@ -10,6 +10,7 @@ class SettingsState {
     this.isImporting = false,
     this.exportError,
     this.importError,
+    this.bankAccounts = const [],
   });
 
   final String businessName;
@@ -21,6 +22,7 @@ class SettingsState {
   final bool isImporting;
   final String? exportError;
   final String? importError;
+  final List<String> bankAccounts;
 
   SettingsState copyWith({
     String? businessName,
@@ -32,6 +34,7 @@ class SettingsState {
     bool? isImporting,
     String? exportError,
     String? importError,
+    List<String>? bankAccounts,
   }) {
     return SettingsState(
       businessName: businessName ?? this.businessName,
@@ -43,6 +46,7 @@ class SettingsState {
       isImporting: isImporting ?? this.isImporting,
       exportError: exportError,
       importError: importError,
+      bankAccounts: bankAccounts ?? this.bankAccounts,
     );
   }
 }

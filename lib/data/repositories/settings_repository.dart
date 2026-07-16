@@ -73,6 +73,11 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   @override
+  Future<void> saveBankAccounts(List<String> bankAccounts) async {
+    await _upsertSetting('bank_accounts', jsonEncode(bankAccounts));
+  }
+
+  @override
   Future<void> savePinHash(String pinHash) async {
     try {
       await _secureStorage.write(key: AppConstants.keyPinHash, value: pinHash);

@@ -34,6 +34,7 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
       defaultMargin: settings.defaultMargin,
       securityQuestion: settings.securityQuestion,
       hasSecurityQuestion: settings.hasSecurityQuestion,
+      bankAccounts: settings.bankAccounts,
     );
   }
 
@@ -57,6 +58,13 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     await repo.saveDefaultMargin(margin);
     final current = state.valueOrNull ?? const SettingsState();
     state = AsyncData(current.copyWith(defaultMargin: margin));
+  }
+
+  Future<void> updateBankAccounts(List<String> accounts) async {
+    final repo = ref.read(settingsRepositoryProvider);
+    await repo.saveBankAccounts(accounts);
+    final current = state.valueOrNull ?? const SettingsState();
+    state = AsyncData(current.copyWith(bankAccounts: accounts));
   }
 
   Future<void> updateSecurityInfo(String question, String answer) async {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// Model data untuk Pengaturan Aplikasi.
 ///
 /// Data pengaturan disimpan sebagai key-value pairs di tabel `settings`.
@@ -10,6 +12,7 @@ class SettingsModel {
     this.pinHash,
     this.securityQuestion,
     this.securityAnswerHash,
+    this.bankAccounts = const [],
   });
 
   final String businessName;
@@ -24,6 +27,9 @@ class SettingsModel {
 
   /// Hash jawaban pertanyaan keamanan.
   final String? securityAnswerHash;
+
+  /// Daftar rekening bank / e-wallet terdaftar.
+  final List<String> bankAccounts;
 
   // ─────────────────────────────────────────────────────────────
   // Computed properties
@@ -42,6 +48,15 @@ class SettingsModel {
 
   /// Buat dari Map key-value (hasil query dari tabel settings).
   factory SettingsModel.fromMap(Map<String, String> map) {
+    List<String> accounts = [];
+    final jsonStr = map['bank_accounts'];
+    if (jsonStr != null && jsonStr.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(jsonStr) as List<dynamic>;
+        accounts = decoded.map((e) => e.toString()).toList();
+      } catch (_) {}
+    }
+
     return SettingsModel(
       businessName: map['business_name'] ?? '',
       ownerName: map['owner_name'] ?? '',
@@ -49,6 +64,7 @@ class SettingsModel {
       pinHash: map['pin_hash'],
       securityQuestion: map['security_question'],
       securityAnswerHash: map['security_answer_hash'],
+      bankAccounts: accounts,
     );
   }
 
@@ -58,6 +74,7 @@ class SettingsModel {
       'business_name': businessName,
       'owner_name': ownerName,
       'default_margin': defaultMargin.toString(),
+      'bank_accounts': jsonEncode(bankAccounts),
     };
     if (pinHash != null) map['pin_hash'] = pinHash!;
     if (securityQuestion != null) map['security_question'] = securityQuestion!;
@@ -74,6 +91,7 @@ class SettingsModel {
     String? pinHash,
     String? securityQuestion,
     String? securityAnswerHash,
+    List<String>? bankAccounts,
   }) {
     return SettingsModel(
       businessName: businessName ?? this.businessName,
@@ -82,10 +100,11 @@ class SettingsModel {
       pinHash: pinHash ?? this.pinHash,
       securityQuestion: securityQuestion ?? this.securityQuestion,
       securityAnswerHash: securityAnswerHash ?? this.securityAnswerHash,
+      bankAccounts: bankAccounts ?? this.bankAccounts,
     );
   }
 
   @override
   String toString() =>
-      'SettingsModel(businessName: $businessName, ownerName: $ownerName, defaultMargin: $defaultMargin)';
+      'SettingsModel(businessName: $businessName, ownerName: $ownerName, defaultMargin: $defaultMargin, bankAccounts: $bankAccounts)';
 }

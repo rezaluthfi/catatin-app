@@ -14,6 +14,9 @@ abstract interface class ISettingsRepository {
   /// Simpan margin keuntungan default.
   Future<void> saveDefaultMargin(int margin);
 
+  /// Simpan daftar rekening / e-wallet.
+  Future<void> saveBankAccounts(List<String> bankAccounts);
+
   /// Simpan hash PIN (melalui flutter_secure_storage).
   Future<void> savePinHash(String pinHash);
 
