@@ -211,12 +211,14 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                           setState(() {});
                         }
                       },
+                      style: AppTextStyles.headingMedium,
                       decoration: InputDecoration(
                         labelText: 'Nominal Uang Diterima (Rp)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        prefixText: 'Rp',
+                        prefixText: 'Rp ',
+                        prefixStyle: AppTextStyles.headingMedium,
                         errorText: _submitted && _cashController.text.trim().isEmpty
                             ? 'Nominal uang diterima wajib diisi'
                             : (_submitted && _cashReceived < totalAmount
@@ -335,7 +337,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                       ),
                       hintText: 'Misal: Nama pelanggan',
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                   ),
 
                   const SizedBox(height: 24),
