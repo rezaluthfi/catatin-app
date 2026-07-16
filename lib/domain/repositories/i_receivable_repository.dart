@@ -20,6 +20,10 @@ abstract interface class IReceivableRepository {
   /// Ambil total keseluruhan piutang yang belum tertagih.
   Future<int> getTotalOutstanding();
 
+  /// Ambil total piutang yang dibuat dalam rentang tanggal tertentu
+  /// (digunakan untuk rekap arus kas per bulan).
+  Future<int> getTotalByDateRange(DateTime start, DateTime end);
+
   /// Reset status pembayaran piutang kembali ke belum lunas.
   Future<void> resetPayment(String id);
 

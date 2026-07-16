@@ -140,6 +140,25 @@ class ReceivableRepository implements IReceivableRepository {
   }
 
   @override
+  Future<int> getTotalByDateRange(DateTime start, DateTime end) async {
+    try {
+      final result = await _db.rawQuery(
+        '''SELECT COALESCE(SUM(${DbConstants.colReceivableAmount}), 0) as total
+           FROM ${DbConstants.tableReceivables}
+           WHERE ${DbConstants.colReceivableCreatedAt} >= ?
+             AND ${DbConstants.colReceivableCreatedAt} <= ?''',
+        [start.toIso8601String(), end.toIso8601String()],
+      );
+      final raw = result.first['total'];
+      return raw is num ? raw.toInt() : 0;
+    } catch (e) {
+      throw DatabaseException(
+          'Gagal menghitung total piutang per periode', originalError: e);
+    }
+  }
+
+
+  @override
   Future<void> resetPayment(String id) async {
     try {
       await _db.update(
