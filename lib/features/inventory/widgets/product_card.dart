@@ -95,7 +95,7 @@ class ProductCard extends StatelessWidget {
                             product.sellingPrice.toRupiah(),
                             style: AppTextStyles.bodyLarge.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.income,
+                              color: AppColors.primary,
                               height: 1.2,
                             ),
                           ),

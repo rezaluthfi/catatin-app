@@ -96,7 +96,7 @@ class CartBottomSheet extends ConsumerWidget {
                     Text(
                       posState.totalAmount.toRupiah(),
                       style: AppTextStyles.headingMedium.copyWith(
-                        color: AppColors.income,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -217,7 +217,7 @@ class _CartItemRowState extends ConsumerState<_CartItemRow> {
                 Text(
                   widget.item.subtotal.toRupiah(),
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.income,
+                    color: AppColors.primary,
                   ),
                 ),
                 if (widget.item.quantity >= widget.item.product.stock) ...[

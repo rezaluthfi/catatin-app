@@ -36,7 +36,7 @@ class PosProductCard extends ConsumerWidget {
           color: isOutOfStock
               ? AppColors.expense.withValues(alpha: 0.5)
               : (qtyInCart > 0)
-                  ? AppColors.income
+                  ? AppColors.primary
                   : isLowStock
                       ? AppColors.warning.withValues(alpha: 0.5)
                       : AppColors.border,
@@ -46,7 +46,7 @@ class PosProductCard extends ConsumerWidget {
       color: isOutOfStock
           ? AppColors.errorContainer
           : (qtyInCart > 0)
-              ? AppColors.income.withValues(alpha: 0.05)
+              ? AppColors.primary.withValues(alpha: 0.05)
               : isLowStock
                   ? AppColors.warningContainer
                   : AppColors.surface,
@@ -89,17 +89,17 @@ class PosProductCard extends ConsumerWidget {
                         : isLowStock
                             ? AppColors.warning.withValues(alpha: 0.1)
                             : (qtyInCart > 0)
-                                ? AppColors.income.withValues(alpha: 0.1)
+                                ? AppColors.primary.withValues(alpha: 0.1)
                                 : AppColors.primary.withValues(alpha: 0.05),
                     child: Icon(
-                      Icons.inventory_2_rounded,
+                       Icons.inventory_2_rounded,
                       size: 40,
                       color: isOutOfStock
                           ? AppColors.expense.withValues(alpha: 0.5)
                           : isLowStock
                               ? AppColors.warning.withValues(alpha: 0.5)
                               : (qtyInCart > 0)
-                                  ? AppColors.income.withValues(alpha: 0.5)
+                                  ? AppColors.primary.withValues(alpha: 0.5)
                                   : AppColors.primary.withValues(alpha: 0.3),
                     ),
                   ),
@@ -125,7 +125,7 @@ class PosProductCard extends ConsumerWidget {
                             product.sellingPrice.toRupiah(),
                             style: AppTextStyles.bodyLarge.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.income,
+                              color: AppColors.primary,
                               height: 1.2,
                             ),
                           ),
@@ -159,7 +159,7 @@ class PosProductCard extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.income,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white, width: 2),
                 ),
