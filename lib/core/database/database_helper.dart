@@ -47,11 +47,12 @@ class DatabaseHelper {
 
   /// Dipanggil saat versi database naik (migrasi skema).
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // TODO: Tambahkan skrip migrasi di sini saat dbVersion dinaikkan.
-    // Contoh:
-    // if (oldVersion < 2) {
-    //   await db.execute('ALTER TABLE products ADD COLUMN barcode TEXT');
-    // }
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE ${DbConstants.tableProducts} ADD COLUMN ${DbConstants.colProductImagePath} TEXT',
+      );
+      await db.execute(AppDatabase.createProductStockHistoryTableScript);
+    }
   }
 
   /// Menutup koneksi database (gunakan saat testing atau hot restart).

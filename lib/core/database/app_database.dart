@@ -15,6 +15,7 @@ class AppDatabase {
     _createReceivablesTable,
     _createOperationalCostsTable,
     _createSettingsTable,
+    _createProductStockHistoryTable,
     _createIndexScripts,
   ];
 
@@ -30,8 +31,26 @@ class AppDatabase {
       ${DbConstants.colProductSellingPrice}     INTEGER NOT NULL DEFAULT 0,
       ${DbConstants.colProductStock}            INTEGER NOT NULL DEFAULT 0,
       ${DbConstants.colProductOperationalCost}  INTEGER NOT NULL DEFAULT 0,
+      ${DbConstants.colProductImagePath}        TEXT,
       ${DbConstants.colProductCreatedAt}        TEXT NOT NULL,
       ${DbConstants.colProductUpdatedAt}        TEXT NOT NULL
+    )
+  ''';
+
+  static const String createProductStockHistoryTableScript = _createProductStockHistoryTable;
+
+  static const String _createProductStockHistoryTable = '''
+    CREATE TABLE ${DbConstants.tableProductStockHistory} (
+      ${DbConstants.colHistoryId}             TEXT PRIMARY KEY,
+      ${DbConstants.colHistoryProductId}      TEXT NOT NULL,
+      ${DbConstants.colHistoryPurchasePrice}   INTEGER NOT NULL DEFAULT 0,
+      ${DbConstants.colHistorySellingPrice}    INTEGER NOT NULL DEFAULT 0,
+      ${DbConstants.colHistoryStockAdded}      INTEGER NOT NULL DEFAULT 0,
+      ${DbConstants.colHistoryDate}            TEXT NOT NULL,
+      ${DbConstants.colHistoryCreatedAt}       TEXT NOT NULL,
+      FOREIGN KEY (${DbConstants.colHistoryProductId})
+        REFERENCES ${DbConstants.tableProducts}(${DbConstants.colProductId})
+        ON DELETE CASCADE
     )
   ''';
 

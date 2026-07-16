@@ -7,7 +7,7 @@ class DbConstants {
 
   // --- Database ---
   static const String dbName = 'catatin.db';
-  static const int dbVersion = 1;
+  static const int dbVersion = 2;
 
   // ─────────────────────────────────────────────────────────────
   // Tabel: products
@@ -19,8 +19,21 @@ class DbConstants {
   static const String colProductSellingPrice = 'selling_price';
   static const String colProductStock = 'stock';
   static const String colProductOperationalCost = 'operational_cost';
+  static const String colProductImagePath = 'image_path';
   static const String colProductCreatedAt = 'created_at';
   static const String colProductUpdatedAt = 'updated_at';
+
+  // ─────────────────────────────────────────────────────────────
+  // Tabel: product_stock_history
+  // ─────────────────────────────────────────────────────────────
+  static const String tableProductStockHistory = 'product_stock_history';
+  static const String colHistoryId = 'id';
+  static const String colHistoryProductId = 'product_id';
+  static const String colHistoryPurchasePrice = 'purchase_price';
+  static const String colHistorySellingPrice = 'selling_price';
+  static const String colHistoryStockAdded = 'stock_added';
+  static const String colHistoryDate = 'date';
+  static const String colHistoryCreatedAt = 'created_at';
 
   // ─────────────────────────────────────────────────────────────
   // Tabel: transactions

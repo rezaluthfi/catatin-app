@@ -12,6 +12,7 @@ class ProductModel {
     required this.sellingPrice,
     required this.stock,
     this.operationalCost = 0,
+    this.imagePath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -30,6 +31,9 @@ class ProductModel {
 
   /// Biaya operasional per unit (opsional).
   final int operationalCost;
+
+  /// Path/lokasi foto produk (opsional).
+  final String? imagePath;
 
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -63,6 +67,7 @@ class ProductModel {
       sellingPrice: map[DbConstants.colProductSellingPrice] as int,
       stock: map[DbConstants.colProductStock] as int,
       operationalCost: map[DbConstants.colProductOperationalCost] as int? ?? 0,
+      imagePath: map[DbConstants.colProductImagePath] as String?,
       createdAt: DateTime.parse(map[DbConstants.colProductCreatedAt] as String),
       updatedAt: DateTime.parse(map[DbConstants.colProductUpdatedAt] as String),
     );
@@ -76,6 +81,7 @@ class ProductModel {
       DbConstants.colProductSellingPrice: sellingPrice,
       DbConstants.colProductStock: stock,
       DbConstants.colProductOperationalCost: operationalCost,
+      DbConstants.colProductImagePath: imagePath,
       DbConstants.colProductCreatedAt: createdAt.toIso8601String(),
       DbConstants.colProductUpdatedAt: updatedAt.toIso8601String(),
     };
@@ -89,6 +95,7 @@ class ProductModel {
     int? sellingPrice,
     int? stock,
     int? operationalCost,
+    String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -99,6 +106,7 @@ class ProductModel {
       sellingPrice: sellingPrice ?? this.sellingPrice,
       stock: stock ?? this.stock,
       operationalCost: operationalCost ?? this.operationalCost,
+      imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -106,7 +114,7 @@ class ProductModel {
 
   @override
   String toString() =>
-      'ProductModel(id: $id, name: $name, stock: $stock, sellingPrice: $sellingPrice)';
+      'ProductModel(id: $id, name: $name, stock: $stock, sellingPrice: $sellingPrice, imagePath: $imagePath)';
 
   @override
   bool operator ==(Object other) =>
