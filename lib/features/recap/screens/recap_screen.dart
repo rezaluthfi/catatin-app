@@ -152,7 +152,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                             ),
                             child: Text(
                               tx.paymentMethod == PaymentMethod.credit
-                                  ? 'Kasbon (Piutang)'
+                                  ? 'Kasbon'
                                   : (tx.paymentMethod == PaymentMethod.nonCash
                                       ? 'Non Tunai'
                                       : 'Tunai'),
@@ -772,10 +772,10 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                         }(),
                                         title: Text(
                                           tx.paymentMethod == PaymentMethod.credit
-                                              ? 'Kasbon (Piutang)'
+                                              ? 'Kasbon'
                                               : (tx.paymentMethod == PaymentMethod.nonCash
                                                   ? 'Non Tunai'
-                                                  : 'Penjualan Langsung'),
+                                                  : 'Tunai'),
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
                                                 fontWeight: FontWeight.bold,

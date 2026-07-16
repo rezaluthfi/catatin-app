@@ -136,9 +136,9 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                             child: Text(
                               tx.paymentMethod == PaymentMethod.credit
-                                  ? 'Kasbon (Piutang)'
+                                  ? 'Kasbon'
                                   : (tx.paymentMethod == PaymentMethod.nonCash
-                                        ? 'Non Trunai'
+                                        ? 'Non Tunai'
                                         : 'Tunai'),
                               style: AppTextStyles.labelSmall.copyWith(
                                 color: tx.paymentMethod == PaymentMethod.credit
@@ -744,10 +744,10 @@ class DashboardScreen extends ConsumerWidget {
                                   ? Icons.qr_code_2_rounded
                                   : Icons.shopping_bag_outlined);
                         final txLabel = tx.paymentMethod == PaymentMethod.credit
-                            ? 'Kasbon (Piutang)'
+                            ? 'Kasbon'
                             : (tx.paymentMethod == PaymentMethod.nonCash
                                   ? 'Non Tunai'
-                                  : 'Penjualan Langsung');
+                                  : 'Tunai');
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
