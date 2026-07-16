@@ -13,6 +13,7 @@ import '../../recap/widgets/add_expense_sheet.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/dashboard_state.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/app_footer.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -356,7 +357,7 @@ class DashboardScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Keuntungan Hari Ini',
+                              'Laba Hari Ini',
                               style: AppTextStyles.labelLarge.copyWith(
                                 color: Colors.white.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w500,
@@ -366,7 +367,9 @@ class DashboardScreen extends ConsumerWidget {
                             Text(
                               state.netProfitToday.toRupiah(),
                               style: AppTextStyles.headlineLarge.copyWith(
-                                color: Colors.white,
+                                color: state.netProfitToday <= 0
+                                    ? Colors.redAccent[200]
+                                    : Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 32,
                               ),
@@ -603,7 +606,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
 
                     const SizedBox(height: 24),
-                    _buildWeeklyTrendChart(state),
+                    _buildWeeklyTrendChart(state, ref),
 
                     const SizedBox(height: 32),
 
@@ -741,6 +744,7 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         );
                       }),
+                    const AppFooter(),
                   ],
                 ),
               ),
@@ -807,19 +811,23 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeeklyTrendChart(DashboardState state) {
+  Widget _buildWeeklyTrendChart(DashboardState state, WidgetRef ref) {
     if (state.weeklyTrend.isEmpty) return const SizedBox.shrink();
 
     // Temukan nilai minimum dan maksimum untuk Y agar grafik pas secara vertikal
     double minVal = double.infinity;
     double maxVal = -double.infinity;
     for (final pt in state.weeklyTrend) {
-      final inc = pt.income.toDouble();
-      final prof = pt.netProfit.toDouble();
-      if (inc < minVal) minVal = inc;
-      if (prof < minVal) minVal = prof;
-      if (inc > maxVal) maxVal = inc;
-      if (prof > maxVal) maxVal = prof;
+      final values = [
+        pt.income.toDouble(),
+        pt.netProfit.toDouble(),
+        pt.cash.toDouble(),
+        pt.receivables.toDouble(),
+      ];
+      for (final val in values) {
+        if (val < minVal) minVal = val;
+        if (val > maxVal) maxVal = val;
+      }
     }
 
     double minY;
@@ -851,15 +859,19 @@ class DashboardScreen extends ConsumerWidget {
       );
     });
 
-    final Map<int, String> dayNames = {
-      1: 'Sn',
-      2: 'Sl',
-      3: 'Rb',
-      4: 'Km',
-      5: 'Jm',
-      6: 'Sb',
-      7: 'Mg',
-    };
+    final spotsCash = List.generate(state.weeklyTrend.length, (i) {
+      return FlSpot(
+        i.toDouble(),
+        state.weeklyTrend[i].cash.toDouble().clamp(minY, maxY),
+      );
+    });
+
+    final spotsReceivables = List.generate(state.weeklyTrend.length, (i) {
+      return FlSpot(
+        i.toDouble(),
+        state.weeklyTrend[i].receivables.toDouble().clamp(minY, maxY),
+      );
+    });
 
     return Card(
       elevation: 0,
@@ -874,18 +886,58 @@ class DashboardScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tren Keuangan (7 Hari Terakhir)',
+              'Tren Keuangan',
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 12),
+            // Pemilih periode
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildPeriodChip(
+                    ref,
+                    state.selectedPeriod,
+                    DashboardPeriod.sevenDays,
+                    '7 Hari',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildPeriodChip(
+                    ref,
+                    state.selectedPeriod,
+                    DashboardPeriod.oneMonth,
+                    '30 Hari',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildPeriodChip(
+                    ref,
+                    state.selectedPeriod,
+                    DashboardPeriod.threeMonths,
+                    '3 Bulan',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildPeriodChip(
+                    ref,
+                    state.selectedPeriod,
+                    DashboardPeriod.sixMonths,
+                    '6 Bulan',
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             // Legenda
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 6,
               children: [
                 _buildLegendItem('Penerimaan', AppColors.income),
-                const SizedBox(width: 16),
                 _buildLegendItem('Laba Bersih', AppColors.info),
+                _buildLegendItem('Kas (Tunai)', const Color(0xFF8B5CF6)),
+                _buildLegendItem('Utang (Kasbon)', AppColors.warning),
               ],
             ),
             const SizedBox(height: 24),
@@ -895,7 +947,7 @@ class DashboardScreen extends ConsumerWidget {
                 LineChartData(
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (touchedSpot) => AppColors.textPrimary,
+                      getTooltipColor: (touchedSpot) => AppColors.surface,
                       tooltipBorder: const BorderSide(
                         color: AppColors.border,
                         width: 1,
@@ -903,16 +955,35 @@ class DashboardScreen extends ConsumerWidget {
                       getTooltipItems: (List<LineBarSpot> touchedSpots) {
                         return touchedSpots.map((LineBarSpot touchedSpot) {
                           final val = touchedSpot.y.toInt();
-                          final isRevenue = touchedSpot.barIndex == 0;
-                          final label = isRevenue ? 'Penerimaan' : 'Laba';
+                          final String label;
+                          final Color color;
+
+                          switch (touchedSpot.barIndex) {
+                            case 0:
+                              label = 'Penerimaan';
+                              color = AppColors.income;
+                              break;
+                            case 1:
+                              label = 'Laba';
+                              color = AppColors.info;
+                              break;
+                            case 2:
+                              label = 'Kas (Tunai)';
+                              color = const Color(0xFF8B5CF6);
+                              break;
+                            case 3:
+                            default:
+                              label = 'Utang (Kasbon)';
+                              color = AppColors.warning;
+                              break;
+                          }
+
                           final formattedVal = val.toRupiah();
                           return LineTooltipItem(
                             '$label: $formattedVal',
                             TextStyle(
                               fontFamily: 'GoogleSans',
-                              color: isRevenue
-                                  ? AppColors.income
-                                  : AppColors.info,
+                              color: color,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -952,10 +1023,18 @@ class DashboardScreen extends ConsumerWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final idx = value.toInt();
+                          final rounded = value.round();
+                          if ((value - rounded).abs() > 0.05) {
+                            return const SizedBox.shrink();
+                          }
+                          final idx = rounded;
                           if (idx >= 0 && idx < state.weeklyTrend.length) {
-                            final date = state.weeklyTrend[idx].date;
-                            final label = dayNames[date.weekday] ?? '';
+                            final label = state.weeklyTrend[idx].label;
+                            if (state.selectedPeriod ==
+                                    DashboardPeriod.oneMonth &&
+                                idx % 5 != 0) {
+                              return const SizedBox.shrink();
+                            }
                             return Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
@@ -963,7 +1042,7 @@ class DashboardScreen extends ConsumerWidget {
                                 style: AppTextStyles.bodySmall.copyWith(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             );
@@ -974,11 +1053,12 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                   borderData: FlBorderData(show: false),
-                  minX: 0,
-                  maxX: (state.weeklyTrend.length - 1).toDouble(),
+                  minX: -0.2,
+                  maxX: (state.weeklyTrend.length - 1).toDouble() + 0.2,
                   minY: minY,
                   maxY: maxY,
                   lineBarsData: [
+                    // Line 1: Penerimaan
                     LineChartBarData(
                       spots: spotsIncome,
                       isCurved: true,
@@ -987,9 +1067,17 @@ class DashboardScreen extends ConsumerWidget {
                       dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.income.withValues(alpha: 0.1),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.income.withValues(alpha: 0.15),
+                            AppColors.income.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
+                    // Line 2: Laba
                     LineChartBarData(
                       spots: spotsProfit,
                       isCurved: true,
@@ -998,7 +1086,52 @@ class DashboardScreen extends ConsumerWidget {
                       dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.info.withValues(alpha: 0.1),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.info.withValues(alpha: 0.15),
+                            AppColors.info.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                    // Line 3: Kas
+                    LineChartBarData(
+                      spots: spotsCash,
+                      isCurved: true,
+                      color: const Color(0xFF8B5CF6),
+                      barWidth: 3,
+                      dotData: const FlDotData(show: true),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                            const Color(0xFF8B5CF6).withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                    // Line 4: Utang
+                    LineChartBarData(
+                      spots: spotsReceivables,
+                      isCurved: true,
+                      color: AppColors.warning,
+                      barWidth: 3,
+                      dotData: const FlDotData(show: true),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.warning.withValues(alpha: 0.15),
+                            AppColors.warning.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
                   ],
@@ -1007,6 +1140,34 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPeriodChip(
+    WidgetRef ref,
+    DashboardPeriod current,
+    DashboardPeriod target,
+    String label,
+  ) {
+    final isSelected = current == target;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      showCheckmark: true,
+      checkmarkColor: AppColors.primary,
+      onSelected: (val) {
+        if (val) {
+          ref.read(dashboardProvider.notifier).changePeriod(target);
+        }
+      },
+      selectedColor: AppColors.primary.withValues(alpha: 0.1),
+      labelStyle: AppTextStyles.bodyMedium.copyWith(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+      ),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary : AppColors.border,
       ),
     );
   }

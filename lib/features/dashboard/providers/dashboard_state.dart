@@ -1,16 +1,29 @@
 import '../../../data/models/product_model.dart';
 import '../../../data/models/transaction_model.dart';
 
+enum DashboardPeriod {
+  sevenDays,
+  oneMonth,
+  threeMonths,
+  sixMonths,
+}
+
 class DashboardChartPoint {
   const DashboardChartPoint({
+    required this.label,
     required this.date,
     required this.income,
     required this.netProfit,
+    required this.cash,
+    required this.receivables,
   });
 
+  final String label;
   final DateTime date;
   final int income;
   final int netProfit;
+  final int cash;
+  final int receivables;
 }
 
 class DashboardState {
@@ -23,6 +36,7 @@ class DashboardState {
     this.lowStockProducts = const [],
     this.recentTransactions = const [],
     this.weeklyTrend = const [],
+    this.selectedPeriod = DashboardPeriod.sevenDays,
     this.isLoading = false,
     this.errorMessage,
   });
@@ -35,6 +49,7 @@ class DashboardState {
   final List<ProductModel> lowStockProducts;
   final List<TransactionModel> recentTransactions;
   final List<DashboardChartPoint> weeklyTrend;
+  final DashboardPeriod selectedPeriod;
   final bool isLoading;
   final String? errorMessage;
 
@@ -47,6 +62,7 @@ class DashboardState {
     List<ProductModel>? lowStockProducts,
     List<TransactionModel>? recentTransactions,
     List<DashboardChartPoint>? weeklyTrend,
+    DashboardPeriod? selectedPeriod,
     bool? isLoading,
     String? errorMessage,
   }) {
@@ -59,6 +75,7 @@ class DashboardState {
       lowStockProducts: lowStockProducts ?? this.lowStockProducts,
       recentTransactions: recentTransactions ?? this.recentTransactions,
       weeklyTrend: weeklyTrend ?? this.weeklyTrend,
+      selectedPeriod: selectedPeriod ?? this.selectedPeriod,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );
