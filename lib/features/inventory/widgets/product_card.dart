@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'dart:io';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
@@ -50,15 +51,7 @@ class ProductCard extends StatelessWidget {
                     : isLowStock
                     ? AppColors.warning.withValues(alpha: 0.1)
                     : AppColors.primary.withValues(alpha: 0.05),
-                child: Icon(
-                  Icons.inventory_2_rounded,
-                  size: 40,
-                  color: isOutOfStock
-                      ? AppColors.expense.withValues(alpha: 0.5)
-                      : isLowStock
-                      ? AppColors.warning.withValues(alpha: 0.5)
-                      : AppColors.primary.withValues(alpha: 0.3),
-                ),
+                child: _buildProductImage(isOutOfStock, isLowStock),
               ),
             ),
             Expanded(
@@ -159,6 +152,29 @@ class ProductCard extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+
+  Widget _buildProductImage(bool isOutOfStock, bool isLowStock) {
+    if (product.imagePath != null && product.imagePath!.isNotEmpty) {
+      final file = File(product.imagePath!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        );
+      }
+    }
+    return Icon(
+      Icons.inventory_2_rounded,
+      size: 40,
+      color: isOutOfStock
+          ? AppColors.expense.withValues(alpha: 0.5)
+          : isLowStock
+          ? AppColors.warning.withValues(alpha: 0.5)
+          : AppColors.primary.withValues(alpha: 0.3),
     );
   }
 }
