@@ -205,7 +205,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.asset(
-              'assets/images/logo.jpeg',
+              'assets/images/logo_bg_white.jpeg',
               width: 60,
               height: 60,
               fit: BoxFit.cover,

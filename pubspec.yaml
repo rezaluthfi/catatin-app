@@ -1,5 +1,5 @@
 name: catatin
-description: "Aplikasi pencatatan keuangan offline untuk UMKM — Catatin"
+description: "Aplikasi pencatatan keuangan offline untuk UMKM — CatatIn"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -54,7 +54,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/logo.jpeg
+    - assets/images/logo_bg_white.jpeg
+    - assets/images/logo_bg_primary.jpeg
 
   fonts:
     - family: GoogleSans
@@ -70,5 +71,7 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.jpeg"
+  image_path: "assets/images/logo_bg_primary.jpeg"
+  adaptive_icon_background: "#198D8D"
+  adaptive_icon_foreground: "assets/images/logo_bg_primary.jpeg"
   min_sdk_android: 21
