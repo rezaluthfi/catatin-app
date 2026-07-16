@@ -70,7 +70,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
   void _showTransactionDetailSheet(BuildContext context, TransactionModel tx) {
     final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
     final minStr = tx.createdAt.minute.toString().padLeft(2, '0');
-    final formattedTime = '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} pukul $hourStr:$minStr';
+    final formattedTime =
+        '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} pukul $hourStr:$minStr';
 
     showModalBottomSheet(
       context: context,
@@ -100,25 +101,47 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Waktu', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-                  Text(formattedTime, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Waktu',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    formattedTime,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Metode Pembayaran', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  Text(
+                    'Metode Pembayaran',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: (tx.isCredit ? AppColors.secondary : AppColors.income).withValues(alpha: 0.1),
+                      color:
+                          (tx.isCredit ? AppColors.secondary : AppColors.income)
+                              .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       tx.isCredit ? 'Kasbon (Piutang)' : 'Tunai',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: tx.isCredit ? AppColors.secondary : AppColors.income,
+                        color: tx.isCredit
+                            ? AppColors.secondary
+                            : AppColors.income,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -126,10 +149,17 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                 ],
               ),
               const Divider(height: 24),
-              Text('Daftar Produk', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Daftar Produk',
+                style: AppTextStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.25),
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.25,
+                ),
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: tx.items.length,
@@ -160,12 +190,19 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                 ),
                                 Text(
                                   '${item.quantity} x ${item.sellingPriceAtTime.toRupiah()}',
-                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          Text(item.subtotal.toRupiah(), style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            item.subtotal.toRupiah(),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -176,11 +213,18 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Total Pembayaran', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Total Pembayaran',
+                    style: AppTextStyles.headlineMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Text(
                     tx.totalAmount.toRupiah(),
                     style: AppTextStyles.headlineLarge.copyWith(
-                      color: tx.isCredit ? AppColors.secondary : AppColors.income,
+                      color: tx.isCredit
+                          ? AppColors.secondary
+                          : AppColors.income,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -209,7 +253,9 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                       const SizedBox(height: 4),
                       Text(
                         tx.notes!,
-                        style: AppTextStyles.bodyMedium.copyWith(fontStyle: FontStyle.italic),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ],
                   ),
@@ -370,79 +416,95 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                     // Date Navigator
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chevron_left),
-                            onPressed: () {
-                              final newDate = _adjustDate(state, -1);
-                              ref
-                                  .read(recapProvider.notifier)
-                                  .changeDate(newDate);
-                            },
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: () async {
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: state.selectedDate,
-                                  firstDate: DateTime(2020),
-                                  lastDate: DateTime.now().add(
-                                    const Duration(days: 365),
-                                  ),
-                                  helpText: 'Pilih Tanggal',
-                                  confirmText: 'Pilih',
-                                  cancelText: 'Batal',
-                                );
-                                if (picked != null) {
-                                  ref
-                                      .read(recapProvider.notifier)
-                                      .changeDate(picked);
-                                }
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
+                      child: state.period == RecapPeriod.weekly
+                          ? _buildWeeklyDateRange(context, state, ref)
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.chevron_left),
+                                  onPressed: () {
+                                    ref
+                                        .read(recapProvider.notifier)
+                                        .changeDate(_adjustDate(state, -1));
+                                  },
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      formattedPeriod,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.bodyLarge.copyWith(
-                                        fontWeight: FontWeight.bold,
+                                Expanded(
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(8),
+                                    onTap: () async {
+                                      if (state.period == RecapPeriod.daily) {
+                                        final picked = await showDatePicker(
+                                          context: context,
+                                          initialDate: state.selectedDate,
+                                          firstDate: DateTime(2020),
+                                          lastDate: DateTime.now().add(
+                                            const Duration(days: 365),
+                                          ),
+                                          helpText: 'Pilih Tanggal',
+                                          confirmText: 'Pilih',
+                                          cancelText: 'Batal',
+                                        );
+                                        if (picked != null && context.mounted) {
+                                          ref
+                                              .read(recapProvider.notifier)
+                                              .changeDate(picked);
+                                        }
+                                      } else {
+                                        // Bulanan: pilih bulan
+                                        final picked = await _showMonthPicker(
+                                          context,
+                                          state.selectedDate,
+                                        );
+                                        if (picked != null && context.mounted) {
+                                          ref
+                                              .read(recapProvider.notifier)
+                                              .changeDate(picked);
+                                        }
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: 4,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            formattedPeriod,
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style:
+                                                AppTextStyles.bodyLarge.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Icon(
+                                            Icons.calendar_month_outlined,
+                                            size: 16,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                    const Icon(
-                                      Icons.calendar_month_outlined,
-                                      size: 16,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                IconButton(
+                                  icon: const Icon(Icons.chevron_right),
+                                  onPressed: () {
+                                    ref
+                                        .read(recapProvider.notifier)
+                                        .changeDate(_adjustDate(state, 1));
+                                  },
+                                ),
+                              ],
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.chevron_right),
-                            onPressed: () {
-                              final newDate = _adjustDate(state, 1);
-                              ref
-                                  .read(recapProvider.notifier)
-                                  .changeDate(newDate);
-                            },
-                          ),
-                        ],
-                      ),
                     ),
+
                   ],
                 ),
               ),
@@ -505,12 +567,15 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                         ),
                       ),
 
-                      // Section Chart jika Bulanan
-                      if (state.period == RecapPeriod.monthly &&
-                          state.chartData.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        _buildChartSection(state),
+                      // Card Arus Kas (hanya Bulanan)
+                      if (state.period == RecapPeriod.monthly) ...[
+                        const SizedBox(height: 16),
+                        _buildOperatingCashFlowCard(state),
                       ],
+
+                      // Section Chart Tren Keuangan
+                      const SizedBox(height: 24),
+                      _buildChartSection(state),
 
                       // Tab Selector Section
                       const SizedBox(height: 24),
@@ -519,11 +584,20 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                         physics: const BouncingScrollPhysics(),
                         child: Row(
                           children: [
-                            _buildTabChip(0, 'Transaksi (${state.transactions.length})'),
+                            _buildTabChip(
+                              0,
+                              'Transaksi (${state.transactions.length})',
+                            ),
                             const SizedBox(width: 8),
-                            _buildTabChip(1, 'Pengeluaran (${state.operationalCosts.length})'),
+                            _buildTabChip(
+                              1,
+                              'Pengeluaran (${state.operationalCosts.length})',
+                            ),
                             const SizedBox(width: 8),
-                            _buildTabChip(2, 'Produk Terjual (${state.soldProducts.length})'),
+                            _buildTabChip(
+                              2,
+                              'Produk Terjual (${state.soldProducts.length})',
+                            ),
                           ],
                         ),
                       ),
@@ -588,26 +662,38 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                   itemBuilder: (context, index) {
                                     final tx = displayList[index];
                                     final isCredit = tx.isCredit;
-                                    final hourStr = tx.createdAt.hour.toString().padLeft(2, '0');
-                                    final minStr = tx.createdAt.minute.toString().padLeft(2, '0');
-                                    final formattedTime = '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} - $hourStr:$minStr';
+                                    final hourStr = tx.createdAt.hour
+                                        .toString()
+                                        .padLeft(2, '0');
+                                    final minStr = tx.createdAt.minute
+                                        .toString()
+                                        .padLeft(2, '0');
+                                    final formattedTime =
+                                        '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} - $hourStr:$minStr';
 
                                     return Card(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        side: const BorderSide(color: AppColors.border),
+                                        side: const BorderSide(
+                                          color: AppColors.border,
+                                        ),
                                       ),
                                       child: ListTile(
-                                        onTap: () => _showTransactionDetailSheet(context, tx),
+                                        onTap: () =>
+                                            _showTransactionDetailSheet(
+                                              context,
+                                              tx,
+                                            ),
                                         leading: Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: (isCredit
-                                                    ? AppColors.secondary
-                                                    : AppColors.income)
-                                                .withValues(alpha: 0.1),
+                                            color:
+                                                (isCredit
+                                                        ? AppColors.secondary
+                                                        : AppColors.income)
+                                                    .withValues(alpha: 0.1),
                                             shape: BoxShape.circle,
                                           ),
                                           child: Icon(
@@ -624,49 +710,61 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                           isCredit
                                               ? 'Kasbon (Piutang)'
                                               : 'Penjualan Langsung',
-                                          style: AppTextStyles.bodyLarge.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: AppTextStyles.bodyLarge
+                                              .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                         subtitle: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               formattedTime,
-                                              style: AppTextStyles.bodySmall.copyWith(
-                                                color: AppColors.textSecondary,
-                                              ),
+                                              style: AppTextStyles.bodySmall
+                                                  .copyWith(
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
                                             ),
-                                            if (tx.notes != null && tx.notes!.isNotEmpty) ...[
+                                            if (tx.notes != null &&
+                                                tx.notes!.isNotEmpty) ...[
                                               const SizedBox(height: 4),
                                               Text(
                                                 tx.notes!,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: AppTextStyles.bodySmall.copyWith(
-                                                  color: AppColors.textSecondary,
-                                                  fontStyle: FontStyle.italic,
-                                                ),
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                    ),
                                               ),
                                             ],
                                           ],
                                         ),
                                         trailing: Text(
                                           tx.totalAmount.toRupiah(),
-                                          style: AppTextStyles.bodyLarge.copyWith(
-                                            color: isCredit
-                                                ? AppColors.secondary
-                                                : AppColors.income,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: AppTextStyles.bodyLarge
+                                              .copyWith(
+                                                color: isCredit
+                                                    ? AppColors.secondary
+                                                    : AppColors.income,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                       ),
                                     );
                                   },
                                 ),
-                                if (txList.length > _pageSize && !_showAllTransactions)
+                                if (txList.length > _pageSize &&
+                                    !_showAllTransactions)
                                   TextButton.icon(
-                                    onPressed: () => setState(() => _showAllTransactions = true),
+                                    onPressed: () => setState(
+                                      () => _showAllTransactions = true,
+                                    ),
                                     icon: const Icon(Icons.expand_more_rounded),
                                     label: Text(
                                       'Tampilkan ${txList.length - _pageSize} transaksi lainnya',
@@ -743,19 +841,30 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        side: const BorderSide(color: AppColors.border),
+                                        side: const BorderSide(
+                                          color: AppColors.border,
+                                        ),
                                       ),
                                       child: InkWell(
-                                        onTap: () => _showAddExpense(context, expense: item),
+                                        onTap: () => _showAddExpense(
+                                          context,
+                                          expense: item,
+                                        ),
                                         borderRadius: BorderRadius.circular(12),
                                         child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
                                           child: Row(
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.all(8),
+                                                padding: const EdgeInsets.all(
+                                                  8,
+                                                ),
                                                 decoration: BoxDecoration(
-                                                  color: AppColors.expense.withValues(alpha: 0.1),
+                                                  color: AppColors.expense
+                                                      .withValues(alpha: 0.1),
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: const Icon(
@@ -767,22 +876,30 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       item.description,
                                                       maxLines: 2,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: AppTextStyles.bodyLarge.copyWith(
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: AppTextStyles
+                                                          .bodyLarge
+                                                          .copyWith(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       '${item.date.day} ${_getMonthName(item.date.month)} ${item.date.year}',
-                                                      style: AppTextStyles.bodySmall.copyWith(
-                                                        color: AppColors.textSecondary,
-                                                      ),
+                                                      style: AppTextStyles
+                                                          .bodySmall
+                                                          .copyWith(
+                                                            color: AppColors
+                                                                .textSecondary,
+                                                          ),
                                                     ),
                                                   ],
                                                 ),
@@ -793,25 +910,39 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                                 children: [
                                                   Text(
                                                     '- ${item.amount.toRupiah()}',
-                                                    style: AppTextStyles.bodyLarge.copyWith(
-                                                      color: AppColors.expense,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
+                                                    style: AppTextStyles
+                                                        .bodyLarge
+                                                        .copyWith(
+                                                          color:
+                                                              AppColors.expense,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                   ),
                                                   const SizedBox(width: 4),
                                                   PopupMenuButton<String>(
                                                     padding: EdgeInsets.zero,
-                                                    constraints: const BoxConstraints(),
+                                                    constraints:
+                                                        const BoxConstraints(),
                                                     icon: const Icon(
                                                       Icons.more_vert,
-                                                      color: AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                       size: 20,
                                                     ),
                                                     onSelected: (value) {
                                                       if (value == 'edit') {
-                                                        _showAddExpense(context, expense: item);
-                                                      } else if (value == 'delete') {
-                                                        _confirmDeleteExpense(context, ref, item);
+                                                        _showAddExpense(
+                                                          context,
+                                                          expense: item,
+                                                        );
+                                                      } else if (value ==
+                                                          'delete') {
+                                                        _confirmDeleteExpense(
+                                                          context,
+                                                          ref,
+                                                          item,
+                                                        );
                                                       }
                                                     },
                                                     itemBuilder: (context) => [
@@ -819,9 +950,21 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                                         value: 'edit',
                                                         child: Row(
                                                           children: [
-                                                            const Icon(Icons.edit_outlined, size: 20, color: AppColors.textPrimary),
-                                                            const SizedBox(width: 12),
-                                                            Text('Edit', style: AppTextStyles.bodyMedium),
+                                                            const Icon(
+                                                              Icons
+                                                                  .edit_outlined,
+                                                              size: 20,
+                                                              color: AppColors
+                                                                  .textPrimary,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 12,
+                                                            ),
+                                                            Text(
+                                                              'Edit',
+                                                              style: AppTextStyles
+                                                                  .bodyMedium,
+                                                            ),
                                                           ],
                                                         ),
                                                       ),
@@ -829,9 +972,25 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                                         value: 'delete',
                                                         child: Row(
                                                           children: [
-                                                            const Icon(Icons.delete_outline, color: AppColors.expense, size: 20),
-                                                            const SizedBox(width: 12),
-                                                            Text('Hapus', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.expense)),
+                                                            const Icon(
+                                                              Icons
+                                                                  .delete_outline,
+                                                              color: AppColors
+                                                                  .expense,
+                                                              size: 20,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 12,
+                                                            ),
+                                                            Text(
+                                                              'Hapus',
+                                                              style: AppTextStyles
+                                                                  .bodyMedium
+                                                                  .copyWith(
+                                                                    color: AppColors
+                                                                        .expense,
+                                                                  ),
+                                                            ),
                                                           ],
                                                         ),
                                                       ),
@@ -846,9 +1005,11 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                     );
                                   },
                                 ),
-                                if (costList.length > _pageSize && !_showAllExpenses)
+                                if (costList.length > _pageSize &&
+                                    !_showAllExpenses)
                                   TextButton.icon(
-                                    onPressed: () => setState(() => _showAllExpenses = true),
+                                    onPressed: () =>
+                                        setState(() => _showAllExpenses = true),
                                     icon: const Icon(Icons.expand_more_rounded),
                                     label: Text(
                                       'Tampilkan ${costList.length - _pageSize} pengeluaran lainnya',
@@ -920,13 +1081,17 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        side: const BorderSide(color: AppColors.border),
+                                        side: const BorderSide(
+                                          color: AppColors.border,
+                                        ),
                                       ),
                                       child: ListTile(
                                         leading: Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: AppColors.income.withValues(alpha: 0.1),
+                                            color: AppColors.income.withValues(
+                                              alpha: 0.1,
+                                            ),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(
@@ -937,30 +1102,36 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                         ),
                                         title: Text(
                                           item.name,
-                                          style: AppTextStyles.bodyLarge.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: AppTextStyles.bodyLarge
+                                              .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                         subtitle: Text(
                                           'Terjual: ${item.quantity} pcs',
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: AppColors.textSecondary,
+                                              ),
                                         ),
                                         trailing: Text(
                                           item.totalAmount.toRupiah(),
-                                          style: AppTextStyles.bodyLarge.copyWith(
-                                            color: AppColors.income,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: AppTextStyles.bodyLarge
+                                              .copyWith(
+                                                color: AppColors.income,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                       ),
                                     );
                                   },
                                 ),
-                                if (productList.length > _pageSize && !_showAllSoldProducts)
+                                if (productList.length > _pageSize &&
+                                    !_showAllSoldProducts)
                                   TextButton.icon(
-                                    onPressed: () => setState(() => _showAllSoldProducts = true),
+                                    onPressed: () => setState(
+                                      () => _showAllSoldProducts = true,
+                                    ),
                                     icon: const Icon(Icons.expand_more_rounded),
                                     label: Text(
                                       'Tampilkan ${productList.length - _pageSize} produk lainnya',
@@ -982,6 +1153,126 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
         loading: () => const ShimmerLoading(),
         error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
       ),
+    );
+  }
+
+  /// Date navigator khusus mode Mingguan: dua DatePicker (Mulai & Selesai)
+  /// masing-masing identik dengan gaya harian (showDatePicker biasa).
+  Widget _buildWeeklyDateRange(
+    BuildContext context,
+    RecapState state,
+    WidgetRef ref,
+  ) {
+    final startDate = state.selectedDate;
+    final endDate =
+        state.selectedEndDate ?? state.selectedDate.add(const Duration(days: 6));
+
+    Widget dateField({
+      required String label,
+      required DateTime date,
+      required bool isStart,
+    }) {
+      return Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+            const SizedBox(height: 4),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: date,
+                  firstDate: isStart ? DateTime(2020) : startDate,
+                  lastDate: isStart
+                      ? endDate
+                      : DateTime.now().add(const Duration(days: 365)),
+                  helpText: isStart
+                      ? 'Pilih Tanggal Mulai'
+                      : 'Pilih Tanggal Selesai',
+                  confirmText: 'Pilih',
+                  cancelText: 'Batal',
+                );
+                if (picked != null && context.mounted) {
+                  ref.read(recapProvider.notifier).changeDateRange(
+                        isStart ? picked : startDate,
+                        isStart ? endDate : picked,
+                      );
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${date.day} ${_getMonthName(date.month).substring(0, 3)} ${date.year}',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.calendar_month_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        // Panah kiri — geser -7 hari
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () {
+            ref.read(recapProvider.notifier).changeDateRange(
+                  startDate.subtract(const Duration(days: 7)),
+                  endDate.subtract(const Duration(days: 7)),
+                );
+          },
+        ),
+        // Start date field
+        dateField(label: 'Mulai', date: startDate, isStart: true),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          child: Text('–'),
+        ),
+        // End date field
+        dateField(label: 'Selesai', date: endDate, isStart: false),
+        // Panah kanan — geser +7 hari
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: () {
+            ref.read(recapProvider.notifier).changeDateRange(
+                  startDate.add(const Duration(days: 7)),
+                  endDate.add(const Duration(days: 7)),
+                );
+          },
+        ),
+      ],
     );
   }
 
@@ -1007,6 +1298,109 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                 color: valueColor ?? AppColors.textPrimary,
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Card Arus Kas dari Aktivitas Operasional (hanya mode Bulanan).
+  Widget _buildOperatingCashFlowCard(RecapState state) {
+    final kasFromOps =
+        state.netProfit - state.totalReceivables - state.totalInventoryValue;
+    final isPositive = kasFromOps >= 0;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Kas dari Aktivitas Operasional',
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            _buildCashFlowRow(
+              'Laba Bersih',
+              state.netProfit,
+              isDeduction: false,
+            ),
+            const SizedBox(height: 8),
+            _buildCashFlowRow(
+              'Kurang akun piutang',
+              state.totalReceivables,
+              isDeduction: true,
+            ),
+            const SizedBox(height: 8),
+            _buildCashFlowRow(
+              'Kurang persediaan barang',
+              state.totalInventoryValue,
+              isDeduction: true,
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Kas Bersih dari Aktivitas Operasional',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isPositive ? kasFromOps.toRupiah() : (-kasFromOps).toRupiah(),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isPositive ? AppColors.income : AppColors.expense,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCashFlowRow(
+    String label,
+    int amount, {
+    required bool isDeduction,
+  }) {
+    final displayText = isDeduction
+        ? '(${amount.toRupiah()})'
+        : amount.toRupiah();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          displayText,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: isDeduction ? AppColors.expense : AppColors.textPrimary,
           ),
         ),
       ],
@@ -1058,13 +1452,35 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Tren Keuangan (6 Bulan Terakhir)',
-              style: AppTextStyles.bodyLarge.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tren Keuangan',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
+            // Selector skala waktu grafik — identik dengan Dashboard
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildScaleChip(state, ChartScale.week7, '7 Hari'),
+                  const SizedBox(width: 8),
+                  _buildScaleChip(state, ChartScale.month1, '1 Bulan'),
+                  const SizedBox(width: 8),
+                  _buildScaleChip(state, ChartScale.month3, '3 Bulan'),
+                  const SizedBox(width: 8),
+                  _buildScaleChip(state, ChartScale.month6, '6 Bulan'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             // Legenda
             Row(
               children: [
@@ -1227,6 +1643,29 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
     );
   }
 
+  Widget _buildScaleChip(RecapState state, ChartScale target, String label) {
+    final isSelected = state.chartScale == target;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      showCheckmark: true,
+      checkmarkColor: AppColors.primary,
+      onSelected: (val) {
+        if (val) {
+          ref.read(recapProvider.notifier).setChartScale(target);
+        }
+      },
+      selectedColor: AppColors.primary.withValues(alpha: 0.1),
+      labelStyle: AppTextStyles.bodyMedium.copyWith(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+      ),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary : AppColors.border,
+      ),
+    );
+  }
+
   Widget _buildLegendItem(String label, Color color) {
     return Row(
       children: [
@@ -1254,23 +1693,131 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
     if (state.period == RecapPeriod.daily) {
       return '${d.day} ${_getMonthName(d.month)} ${d.year}';
     } else if (state.period == RecapPeriod.weekly) {
-      final weekday = d.weekday;
-      final start = d.subtract(Duration(days: weekday - 1));
-      final end = start.add(const Duration(days: 6));
-      return '${start.day} ${_getMonthName(start.month).substring(0, 3)} - ${end.day} ${_getMonthName(end.month).substring(0, 3)} ${end.year}';
+      // Tampilkan rentang yang dipilih user (selectedDate – selectedEndDate)
+      final end = state.selectedEndDate ??
+          state.selectedDate.add(const Duration(days: 6));
+      final startStr =
+          '${d.day} ${_getMonthName(d.month).substring(0, 3)}';
+      final endStr =
+          '${end.day} ${_getMonthName(end.month).substring(0, 3)} ${end.year}';
+      return '$startStr – $endStr';
     } else {
       return '${_getMonthName(d.month)} ${d.year}';
     }
   }
 
+  /// Sesuaikan tanggal untuk tombol prev/next (harian dan bulanan).
+  /// Untuk mingguan, penanganan dilakukan langsung di UI masing-masing tombol.
   DateTime _adjustDate(RecapState state, int offset) {
     final d = state.selectedDate;
     if (state.period == RecapPeriod.daily) {
       return d.add(Duration(days: offset));
-    } else if (state.period == RecapPeriod.weekly) {
-      return d.add(Duration(days: offset * 7));
     } else {
+      // Bulanan
       return DateTime(d.year, d.month + offset, 1);
     }
+  }
+
+  /// Tampilkan dialog pemilih bulan.
+  Future<DateTime?> _showMonthPicker(
+    BuildContext context,
+    DateTime initial,
+  ) async {
+    int selectedYear = initial.year;
+
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    ];
+
+    return showDialog<DateTime>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: () =>
+                      setDialogState(() => selectedYear--),
+                ),
+                Text(
+                  '$selectedYear',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: () =>
+                      setDialogState(() => selectedYear++),
+                ),
+              ],
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            content: SizedBox(
+              width: 280,
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 2.2,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: 12,
+                itemBuilder: (_, index) {
+                  final month = index + 1;
+                  final isActive = initial.month == month &&
+                      initial.year == selectedYear;
+                  return InkWell(
+                    onTap: () => Navigator.of(ctx)
+                        .pop(DateTime(selectedYear, month, 1)),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? AppColors.primary
+                            : AppColors.background,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isActive
+                              ? AppColors.primary
+                              : AppColors.border,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        monthNames[index],
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isActive
+                              ? Colors.white
+                              : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Batal'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }
