@@ -1,4 +1,4 @@
-/// Entry point aplikasi Catatin.
+/// Entry point aplikasi CatatIn.
 ///
 /// - Memastikan Flutter binding sudah diinisialisasi sebelum menjalankan app
 /// - Membungkus seluruh app dengan [ProviderScope] (Riverpod)

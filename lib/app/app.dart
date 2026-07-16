@@ -1,4 +1,4 @@
-// Root widget aplikasi Catatin.
+// Root widget aplikasi CatatIn.
 // Menggunakan ConsumerWidget agar bisa watch routerProvider dari Riverpod.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
