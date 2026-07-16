@@ -10,6 +10,7 @@ import '../providers/inventory_provider.dart';
 import '../providers/inventory_state.dart';
 import '../widgets/empty_inventory_widget.dart';
 import '../widgets/product_card.dart';
+import '../../../core/widgets/app_footer.dart';
 
 class InventoryListScreen extends ConsumerWidget {
   const InventoryListScreen({super.key});
@@ -39,41 +40,60 @@ class InventoryListScreen extends ConsumerWidget {
             child: inventoryState.when(
               data: (state) {
                 if (state.products.isEmpty) {
-                  return EmptyInventoryWidget(
-                    isSearch: state.searchQuery.isNotEmpty,
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: EmptyInventoryWidget(
+                          isSearch: state.searchQuery.isNotEmpty,
+                        ),
+                      ),
+                      const AppFooter(hasFAB: true),
+                    ],
                   );
                 }
                 return RefreshIndicator(
                   onRefresh: () =>
                       ref.read(inventoryProvider.notifier).reload(),
                   color: AppColors.primary,
-                  child: GridView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.6,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
                         ),
-                    itemCount: state.products.length,
-                    itemBuilder: (context, index) {
-                      final product = state.products[index];
-                      return ProductCard(
-                        product: product,
-                        onTap: () {
-                          context.push(
-                            AppRoutes.productEdit.replaceFirst(
-                              ':id',
-                              product.id,
-                            ),
-                          );
-                        },
-                      );
-                    },
+                        sliver: SliverGrid(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.6,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final product = state.products[index];
+                              return ProductCard(
+                                product: product,
+                                onTap: () {
+                                  context.push(
+                                    AppRoutes.productEdit.replaceFirst(
+                                      ':id',
+                                      product.id,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            childCount: state.products.length,
+                          ),
+                        ),
+                      ),
+                      const SliverToBoxAdapter(
+                        child: AppFooter(hasFAB: true),
+                      ),
+                    ],
                   ),
                 );
               },
