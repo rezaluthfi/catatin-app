@@ -15,7 +15,8 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -60,16 +61,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.primary,
-              AppColors.primaryDark,
-            ],
-          ),
-        ),
+        color: AppColors.primary,
         child: SafeArea(
           child: Stack(
             children: [
@@ -93,9 +85,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                           ),
                         ),
                         const SizedBox(height: 24),
-                        // Nama Aplikasi
                         Text(
-                          'Catatin',
+                          'CatatIn',
                           style: AppTextStyles.headingLarge.copyWith(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
@@ -128,12 +119,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   opacity: _fadeAnimation,
                   child: Column(
                     children: [
-                      Text(
-                        'v1.0.0',
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          letterSpacing: 1.0,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.copyright_rounded,
+                            size: 13,
+                            color: Colors.white.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'KKN-PPM UGM Alor Carita 2026',
+                            style: TextStyle(
+                              fontFamily: 'GoogleSans',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

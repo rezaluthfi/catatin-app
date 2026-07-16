@@ -201,6 +201,29 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Icon(
+                  Icons.copyright_rounded,
+                  size: 13,
+                  color: AppColors.textDisabled,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'KKN-PPM UGM Alor Carita 2026',
+                  style: TextStyle(
+                    fontFamily: 'GoogleSans',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDisabled,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -223,9 +246,8 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
 
           const Spacer(),
 
-          // Logo
           Text(
-            'Catatin',
+            'CatatIn',
             style: AppTextStyles.headlineMedium.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w700,
@@ -631,7 +653,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Mulai Gunakan Catatin'),
+                  : const Text('Mulai Gunakan CatatIn'),
             ),
           ),
           const SizedBox(height: 16),

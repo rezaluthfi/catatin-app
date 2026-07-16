@@ -159,7 +159,28 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
                 ),
               ),
             ),
-
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Icon(
+                  Icons.copyright_rounded,
+                  size: 13,
+                  color: AppColors.textDisabled,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'KKN-PPM UGM Alor Carita 2026',
+                  style: TextStyle(
+                    fontFamily: 'GoogleSans',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDisabled,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
           ],
         ),
@@ -193,7 +214,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen> {
           const SizedBox(height: 16),
           // App name
           Text(
-            'Catatin',
+            'CatatIn',
             style: AppTextStyles.displayMedium.copyWith(
               color: Colors.white,
               fontSize: 32,
