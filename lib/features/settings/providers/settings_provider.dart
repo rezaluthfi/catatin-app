@@ -98,8 +98,8 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
       // Share the file
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/json')],
-        subject: 'Backup Data Catatin',
-        text: 'Backup data Catatin - $timestamp',
+        subject: 'Backup Data CatatIn',
+        text: 'Backup data CatatIn - $timestamp',
       );
 
       state = AsyncData(current.copyWith(isExporting: false));
@@ -118,10 +118,10 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
     final current = state.valueOrNull ?? const SettingsState();
     state = AsyncData(current.copyWith(isImporting: true, importError: null));
     try {
-      // Validasi: pastikan ini file backup Catatin yang valid
+      // Validasi: pastikan ini file backup CatatIn yang valid
       final decoded = jsonDecode(jsonContent) as Map<String, dynamic>;
       if (!decoded.containsKey('data') || !decoded.containsKey('version')) {
-        throw Exception('File bukan backup Catatin yang valid');
+        throw Exception('File bukan backup CatatIn yang valid');
       }
 
       final repo = ref.read(settingsRepositoryProvider);

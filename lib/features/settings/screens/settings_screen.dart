@@ -14,6 +14,7 @@ import '../../../core/constants/app_constants.dart';
 import '../providers/settings_provider.dart';
 import '../providers/settings_state.dart';
 import '../widgets/export_sheet.dart';
+import '../../../core/widgets/app_footer.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -159,11 +160,12 @@ class SettingsScreen extends ConsumerWidget {
             _buildTile(
               icon: Icons.favorite_outline_rounded,
               iconColor: AppColors.expense,
-              title: 'Tentang Catatin',
+              title: 'Tentang CatatIn',
               subtitle: AppConstants.appDeveloper,
               onTap: null,
             ),
             const SizedBox(height: 32),
+            const AppFooter(),
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -118,7 +118,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'Laporan Keuangan ${settingsState.businessName}',
-      text: 'Laporan keuangan Catatin — '
+      text: 'Laporan keuangan CatatIn — '
           '${_formatDate(_startDate)} s/d '
           '${_formatDate(_endDate)}',
     );
@@ -147,7 +147,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       
       final startFmt = _formatDate(_startDate).replaceAll('/', '-');
       final endFmt = _formatDate(_endDate).replaceAll('/', '-');
-      final fileName = 'Catatin_Laporan_${startFmt}_s-d_$endFmt$ext';
+      final fileName = 'CatatIn_Laporan_${startFmt}_s-d_$endFmt$ext';
       
       final path = await FilePicker.platform.saveFile(
         dialogTitle: 'Simpan Laporan',
