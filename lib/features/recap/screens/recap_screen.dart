@@ -7,6 +7,8 @@ import '../../../app/theme/app_text_styles.dart';
 import '../../../core/extensions/currency_extension.dart';
 import '../../../data/models/operational_cost_model.dart';
 import '../../../data/models/transaction_model.dart';
+import '../../../data/models/transaction_enums.dart';
+import '../../../core/utils/transaction_notes_parser.dart';
 import '../providers/recap_provider.dart';
 import '../providers/recap_state.dart';
 import '../widgets/add_expense_sheet.dart';
@@ -76,16 +78,20 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
+      isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,169 +104,224 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                 ],
               ),
               const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Waktu',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  Text(
-                    formattedTime,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Metode Pembayaran',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                          (tx.isCredit ? AppColors.secondary : AppColors.income)
-                              .withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      tx.isCredit ? 'Kasbon (Piutang)' : 'Tunai',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: tx.isCredit
-                            ? AppColors.secondary
-                            : AppColors.income,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 24),
-              Text(
-                'Daftar Produk',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.25,
-                ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: tx.items.length,
-                  itemBuilder: (context, index) {
-                    final item = tx.items[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.productName.isNotEmpty
-                                      ? item.productName
-                                      : '(Produk telah dihapus)',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: item.productName.isEmpty
-                                        ? AppColors.textSecondary
-                                        : null,
-                                    fontStyle: item.productName.isEmpty
-                                        ? FontStyle.italic
-                                        : FontStyle.normal,
-                                  ),
-                                ),
-                                Text(
-                                  '${item.quantity} x ${item.sellingPriceAtTime.toRupiah()}',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            'Waktu',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
                             ),
                           ),
                           Text(
-                            item.subtotal.toRupiah(),
+                            formattedTime,
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              ),
-              const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total Pembayaran',
-                    style: AppTextStyles.headlineMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    tx.totalAmount.toRupiah(),
-                    style: AppTextStyles.headlineLarge.copyWith(
-                      color: tx.isCredit
-                          ? AppColors.secondary
-                          : AppColors.income,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              if (tx.notes != null && tx.notes!.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Metode Pembayaran',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: (tx.paymentMethod == PaymentMethod.credit
+                                      ? AppColors.secondary
+                                      : (tx.paymentMethod == PaymentMethod.nonCash
+                                          ? AppColors.primary
+                                          : AppColors.income))
+                                  .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              tx.paymentMethod == PaymentMethod.credit
+                                  ? 'Kasbon (Piutang)'
+                                  : (tx.paymentMethod == PaymentMethod.nonCash
+                                      ? 'Non Tunai'
+                                      : 'Tunai'),
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: tx.paymentMethod == PaymentMethod.credit
+                                    ? AppColors.secondary
+                                    : (tx.paymentMethod == PaymentMethod.nonCash
+                                        ? AppColors.primary
+                                        : AppColors.income),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
                       Text(
-                        'Catatan:',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                        'Daftar Produk',
+                        style: AppTextStyles.headlineMedium.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        tx.notes!,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontStyle: FontStyle.italic,
-                        ),
+                      const SizedBox(height: 8),
+                      ...tx.items.map((item) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.productName.isNotEmpty
+                                          ? item.productName
+                                          : '(Produk telah dihapus)',
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: item.productName.isEmpty
+                                            ? AppColors.textSecondary
+                                            : null,
+                                        fontStyle: item.productName.isEmpty
+                                            ? FontStyle.italic
+                                            : FontStyle.normal,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${item.quantity} x ${item.sellingPriceAtTime.toRupiah()}',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                item.subtotal.toRupiah(),
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const Divider(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total Pembayaran',
+                            style: AppTextStyles.headlineMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            tx.totalAmount.toRupiah(),
+                            style: AppTextStyles.headlineLarge.copyWith(
+                              color: tx.paymentMethod == PaymentMethod.credit
+                                  ? AppColors.secondary
+                                  : (tx.paymentMethod == PaymentMethod.nonCash
+                                      ? AppColors.primary
+                                      : AppColors.income),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
+                      () {
+                        final paymentDetail =
+                            TransactionNotesParser.getPaymentDetail(tx.notes);
+                        final customNotes =
+                            TransactionNotesParser.getCustomNotes(tx.notes);
+
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (paymentDetail != null) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Detail Rekening Penerima:',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      paymentDetail,
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            if (customNotes != null && customNotes.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Catatan:',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      customNotes,
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                      }(),
                     ],
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         );
@@ -661,7 +722,6 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                   itemCount: displayList.length,
                                   itemBuilder: (context, index) {
                                     final tx = displayList[index];
-                                    final isCredit = tx.isCredit;
                                     final hourStr = tx.createdAt.hour
                                         .toString()
                                         .padLeft(2, '0');
@@ -686,30 +746,36 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                               context,
                                               tx,
                                             ),
-                                        leading: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                (isCredit
-                                                        ? AppColors.secondary
-                                                        : AppColors.income)
-                                                    .withValues(alpha: 0.1),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            isCredit
-                                                ? Icons.payments_outlined
-                                                : Icons.shopping_bag_outlined,
-                                            color: isCredit
-                                                ? AppColors.secondary
-                                                : AppColors.income,
-                                            size: 18,
-                                          ),
-                                        ),
+                                        leading: () {
+                                          final txColor = tx.paymentMethod == PaymentMethod.credit
+                                              ? AppColors.secondary
+                                              : (tx.paymentMethod == PaymentMethod.nonCash
+                                                  ? AppColors.primary
+                                                  : AppColors.income);
+                                          final txIcon = tx.paymentMethod == PaymentMethod.credit
+                                              ? Icons.payments_outlined
+                                              : (tx.paymentMethod == PaymentMethod.nonCash
+                                                  ? Icons.qr_code_2_rounded
+                                                  : Icons.shopping_bag_outlined);
+                                          return Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: txColor.withValues(alpha: 0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              txIcon,
+                                              color: txColor,
+                                              size: 18,
+                                            ),
+                                          );
+                                        }(),
                                         title: Text(
-                                          isCredit
+                                          tx.paymentMethod == PaymentMethod.credit
                                               ? 'Kasbon (Piutang)'
-                                              : 'Penjualan Langsung',
+                                              : (tx.paymentMethod == PaymentMethod.nonCash
+                                                  ? 'Non Tunai'
+                                                  : 'Penjualan Langsung'),
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
                                                 fontWeight: FontWeight.bold,
@@ -727,31 +793,66 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                                         AppColors.textSecondary,
                                                   ),
                                             ),
-                                            if (tx.notes != null &&
-                                                tx.notes!.isNotEmpty) ...[
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                tx.notes!,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: AppTextStyles.bodySmall
-                                                    .copyWith(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      fontStyle:
-                                                          FontStyle.italic,
+                                            () {
+                                              final paymentDetail =
+                                                  TransactionNotesParser
+                                                      .getPaymentDetail(
+                                                          tx.notes);
+                                              final customNotes =
+                                                  TransactionNotesParser
+                                                      .getCustomNotes(tx.notes);
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  if (paymentDetail != null) ...[
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      paymentDetail,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow
+                                                          .ellipsis,
+                                                      style: AppTextStyles
+                                                          .bodySmall
+                                                          .copyWith(
+                                                        color: AppColors.primary,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
                                                     ),
-                                              ),
-                                            ],
+                                                  ],
+                                                  if (customNotes != null &&
+                                                      customNotes.isNotEmpty) ...[
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      customNotes,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow
+                                                          .ellipsis,
+                                                      style: AppTextStyles
+                                                          .bodySmall
+                                                          .copyWith(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              );
+                                            }(),
                                           ],
                                         ),
                                         trailing: Text(
                                           tx.totalAmount.toRupiah(),
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
-                                                color: isCredit
+                                                color: tx.paymentMethod == PaymentMethod.credit
                                                     ? AppColors.secondary
-                                                    : AppColors.income,
+                                                    : (tx.paymentMethod == PaymentMethod.nonCash
+                                                        ? AppColors.primary
+                                                        : AppColors.income),
                                                 fontWeight: FontWeight.bold,
                                               ),
                                         ),
