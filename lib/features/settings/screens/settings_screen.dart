@@ -96,6 +96,14 @@ class SettingsScreen extends ConsumerWidget {
                 },
               ),
             ),
+            _buildTile(
+              icon: Icons.account_balance_wallet_rounded,
+              iconColor: AppColors.income,
+              title: 'Rekening & E-Wallet',
+              subtitle:
+                  '${state.bankAccounts.length} rekening/e-wallet terdaftar',
+              onTap: () => _showManageBankAccountsSheet(context, ref, state),
+            ),
 
             const SizedBox(height: 8),
 
@@ -110,7 +118,9 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _buildTile(
               icon: Icons.security_rounded,
-              iconColor: state.hasSecurityQuestion ? AppColors.info : AppColors.expense,
+              iconColor: state.hasSecurityQuestion
+                  ? AppColors.info
+                  : AppColors.expense,
               title: 'Pertanyaan Keamanan',
               subtitle: state.hasSecurityQuestion
                   ? 'Pertanyaan aktif: "${state.securityQuestion}"'
@@ -574,7 +584,8 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     SettingsState state,
   ) async {
-    String selectedQuestion = state.securityQuestion ?? AppConstants.securityQuestions.first;
+    String selectedQuestion =
+        state.securityQuestion ?? AppConstants.securityQuestions.first;
     final answerController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
@@ -663,7 +674,9 @@ class SettingsScreen extends ConsumerWidget {
                         Navigator.pop(dialogContext);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Pertanyaan keamanan berhasil disimpan!'),
+                            content: Text(
+                              'Pertanyaan keamanan berhasil disimpan!',
+                            ),
                             backgroundColor: AppColors.primary,
                           ),
                         );
@@ -675,6 +688,320 @@ class SettingsScreen extends ConsumerWidget {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showManageBankAccountsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    SettingsState state,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return Consumer(
+          builder: (consumerContext, ref, child) {
+            final currentSettings =
+                ref.watch(settingsProvider).valueOrNull ?? state;
+            final accounts = currentSettings.bankAccounts;
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                32 +
+                    MediaQuery.of(consumerContext).viewInsets.bottom +
+                    MediaQuery.of(consumerContext).padding.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Kelola Rekening & E-Wallet',
+                        style: AppTextStyles.headingMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(sheetContext),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (accounts.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Belum ada rekening/e-wallet terdaftar.',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    )
+                  else
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(consumerContext).size.height * 0.4,
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: accounts.length,
+                        itemBuilder: (itemContext, index) {
+                          final item = accounts[index];
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(item, style: AppTextStyles.bodyLarge),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    color: AppColors.textSecondary,
+                                    size: 20,
+                                  ),
+                                  onPressed: () =>
+                                      _showAddOrEditBankAccountDialog(
+                                        context,
+                                        ref,
+                                        accounts,
+                                        editingAccount: item,
+                                        index: index,
+                                      ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: AppColors.expense,
+                                    size: 20,
+                                  ),
+                                  onPressed: () async {
+                                    final confirmed = await showDialog<bool>(
+                                      context: consumerContext,
+                                      builder: (dialogCtx) => AlertDialog(
+                                        title: const Text('Hapus Rekening'),
+                                        content: Text(
+                                          'Apakah Anda yakin ingin menghapus rekening "$item"?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(dialogCtx, false),
+                                            child: const Text('Batal'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(dialogCtx, true),
+                                            child: const Text(
+                                              'Hapus',
+                                              style: TextStyle(
+                                                color: AppColors.expense,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirmed == true) {
+                                      final updated = List<String>.from(
+                                        accounts,
+                                      )..removeAt(index);
+                                      await ref
+                                          .read(settingsProvider.notifier)
+                                          .updateBankAccounts(updated);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Rekening/E-Wallet berhasil dihapus',
+                                            ),
+                                            backgroundColor: AppColors.income,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () =>
+                        _showAddOrEditBankAccountDialog(context, ref, accounts),
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Tambah Rekening / E-Wallet'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showAddOrEditBankAccountDialog(
+    BuildContext context,
+    WidgetRef ref,
+    List<String> currentAccounts, {
+    String? editingAccount,
+    int? index,
+  }) {
+    String bankName = '';
+    String accountNumber = '';
+    String ownerName = '';
+
+    if (editingAccount != null) {
+      final regExp = RegExp(r'^(.+?)\s*-\s*(.+?)\s*\(a\.n\.\s*(.+?)\)$');
+      final match = regExp.firstMatch(editingAccount);
+      if (match != null) {
+        bankName = match.group(1)?.trim() ?? '';
+        accountNumber = match.group(2)?.trim() ?? '';
+        ownerName = match.group(3)?.trim() ?? '';
+      } else {
+        bankName = editingAccount;
+      }
+    }
+
+    final bankNameController = TextEditingController(text: bankName);
+    final accountNumberController = TextEditingController(text: accountNumber);
+    final ownerNameController = TextEditingController(text: ownerName);
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            editingAccount == null
+                ? 'Tambah Rekening / E-Wallet'
+                : 'Edit Rekening / E-Wallet',
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: bankNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Bank / E-Wallet',
+                      hintText: 'Misal: BCA, Mandiri, Gopay, OVO',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Nama Bank/E-Wallet tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: accountNumberController,
+                    decoration: InputDecoration(
+                      labelText: 'Nomor Rekening / No. HP',
+                      hintText: 'Misal: 1234567890, 08123456789',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Nomor rekening/No. HP tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: ownerNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Pemilik (a.n.)',
+                      hintText: 'Misal: Alor Carita',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Nama pemilik tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  final bName = bankNameController.text.trim();
+                  final accNum = accountNumberController.text.trim();
+                  final oName = ownerNameController.text.trim();
+                  final formattedString = '$bName - $accNum (a.n. $oName)';
+
+                  final updated = List<String>.from(currentAccounts);
+                  if (index != null) {
+                    updated[index] = formattedString;
+                  } else {
+                    updated.add(formattedString);
+                  }
+                  await ref
+                      .read(settingsProvider.notifier)
+                      .updateBankAccounts(updated);
+                  if (dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          index != null
+                              ? 'Rekening/E-Wallet berhasil diperbarui'
+                              : 'Rekening/E-Wallet berhasil ditambahkan',
+                        ),
+                        backgroundColor: AppColors.income,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
         );
       },
     );
