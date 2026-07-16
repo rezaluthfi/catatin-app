@@ -3,7 +3,7 @@ class AppConstants {
   AppConstants._(); // Prevent instantiation
 
   // --- App Info ---
-  static const String appName = 'Catatin';
+  static const String appName = 'CatatIn';
   static const String appVersion = '1.0.0';
   static const String appDeveloper =
       'Dikembangkan oleh Tim KKN-PPM UGM Alor Carita 2026';

@@ -15,7 +15,7 @@ class CatatinApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Catatin',
+      title: 'CatatIn',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
