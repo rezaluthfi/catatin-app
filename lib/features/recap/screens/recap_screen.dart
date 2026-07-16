@@ -1190,14 +1190,14 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                         leading: Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: AppColors.income.withValues(
+                                            color: AppColors.primary.withValues(
                                               alpha: 0.1,
                                             ),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(
                                             Icons.shopping_bag_rounded,
-                                            color: AppColors.income,
+                                            color: AppColors.primary,
                                             size: 18,
                                           ),
                                         ),
@@ -1219,7 +1219,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                           item.totalAmount.toRupiah(),
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
-                                                color: AppColors.income,
+                                                color: AppColors.primary,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                         ),

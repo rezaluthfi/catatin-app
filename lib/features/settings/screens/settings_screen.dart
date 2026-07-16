@@ -98,7 +98,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _buildTile(
               icon: Icons.account_balance_wallet_rounded,
-              iconColor: AppColors.income,
+              iconColor: AppColors.primary,
               title: 'Rekening & E-Wallet',
               subtitle:
                   '${state.bankAccounts.length} rekening/e-wallet terdaftar',
@@ -134,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
             _buildSectionHeader('Data & Backup'),
             _buildTile(
               icon: Icons.upload_file_rounded,
-              iconColor: AppColors.income,
+              iconColor: AppColors.primary,
               title: 'Backup Data',
               subtitle: 'Ekspor semua data ke file JSON',
               isLoading: state.isExporting,
@@ -483,12 +483,12 @@ class SettingsScreen extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.income.withValues(alpha: 0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.save_alt_rounded,
-                    color: AppColors.income,
+                    color: AppColors.primary,
                   ),
                 ),
                 title: Text(
