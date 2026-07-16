@@ -95,7 +95,7 @@ class ProductModel {
     int? sellingPrice,
     int? stock,
     int? operationalCost,
-    String? imagePath,
+    String? Function()? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -106,7 +106,7 @@ class ProductModel {
       sellingPrice: sellingPrice ?? this.sellingPrice,
       stock: stock ?? this.stock,
       operationalCost: operationalCost ?? this.operationalCost,
-      imagePath: imagePath ?? this.imagePath,
+      imagePath: imagePath != null ? imagePath() : this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

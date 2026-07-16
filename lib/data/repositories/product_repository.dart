@@ -72,7 +72,7 @@ class ProductRepository implements IProductRepository {
           stock: updatedStock,
           purchasePrice: product.purchasePrice,
           sellingPrice: product.sellingPrice,
-          imagePath: product.imagePath ?? existing.imagePath,
+          imagePath: () => product.imagePath ?? existing.imagePath,
           updatedAt: DateTime.now(),
         );
         

@@ -48,10 +48,18 @@ class DatabaseHelper {
   /// Dipanggil saat versi database naik (migrasi skema).
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute(
-        'ALTER TABLE ${DbConstants.tableProducts} ADD COLUMN ${DbConstants.colProductImagePath} TEXT',
-      );
-      await db.execute(AppDatabase.createProductStockHistoryTableScript);
+      try {
+        await db.execute(
+          'ALTER TABLE ${DbConstants.tableProducts} ADD COLUMN ${DbConstants.colProductImagePath} TEXT',
+        );
+      } catch (e) {
+        // Abaikan jika kolom sudah ada (misalnya saat testing/pengembangan)
+      }
+      try {
+        await db.execute(AppDatabase.createProductStockHistoryTableScript);
+      } catch (e) {
+        // Abaikan jika tabel sudah ada
+      }
     }
   }
 
