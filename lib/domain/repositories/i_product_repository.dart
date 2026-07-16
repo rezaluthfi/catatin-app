@@ -4,6 +4,7 @@
 /// tanpa menyebutkan implementasi konkretnya (SQLite, mock, dll.).
 /// Ini memungkinkan testing dengan mock repository tanpa menyentuh database asli.
 import '../../data/models/product_model.dart';
+import '../../data/models/product_stock_history_model.dart';
 
 abstract interface class IProductRepository {
   /// Ambil semua produk, diurutkan berdasarkan nama secara ascending.
@@ -29,4 +30,10 @@ abstract interface class IProductRepository {
 
   /// Cari produk berdasarkan nama (case-insensitive).
   Future<List<ProductModel>> search(String query);
+
+  /// Ambil riwayat penambahan stok produk.
+  Future<List<ProductStockHistoryModel>> getStockHistory(String productId);
+
+  /// Masukkan catatan riwayat stok baru.
+  Future<void> insertStockHistory(ProductStockHistoryModel history);
 }

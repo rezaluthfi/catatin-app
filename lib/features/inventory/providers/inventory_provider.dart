@@ -4,8 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/repository_providers.dart';
 import '../../../data/models/product_model.dart';
+import '../../../data/models/product_stock_history_model.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 import 'inventory_state.dart';
+
+final productStockHistoryProvider = FutureProvider.family<List<ProductStockHistoryModel>, String>((ref, productId) {
+  final repo = ref.read(productRepositoryProvider);
+  return repo.getStockHistory(productId);
+});
 
 final inventoryProvider =
     AsyncNotifierProvider<InventoryNotifier, InventoryState>(
@@ -155,7 +161,8 @@ class InventoryNotifier extends AsyncNotifier<InventoryState> {
 
   Future<void> addProduct(ProductModel product) async {
     final repo = ref.read(productRepositoryProvider);
-    await repo.insert(product);
+    final savedProduct = await repo.insert(product);
+    ref.invalidate(productStockHistoryProvider(savedProduct.id));
     ref.invalidate(dashboardProvider);
     await reload();
   }
@@ -163,6 +170,7 @@ class InventoryNotifier extends AsyncNotifier<InventoryState> {
   Future<void> updateProduct(ProductModel product) async {
     final repo = ref.read(productRepositoryProvider);
     await repo.update(product);
+    ref.invalidate(productStockHistoryProvider(product.id));
     ref.invalidate(dashboardProvider);
     await reload();
   }

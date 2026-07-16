@@ -6,6 +6,7 @@ import '../../core/database/database_helper.dart';
 import '../../core/errors/app_exception.dart';
 import '../../domain/repositories/i_product_repository.dart';
 import '../models/product_model.dart';
+import '../models/product_stock_history_model.dart';
 
 class ProductRepository implements IProductRepository {
   ProductRepository({DatabaseHelper? dbHelper})
@@ -44,17 +45,79 @@ class ProductRepository implements IProductRepository {
     }
   }
 
+  Future<ProductModel?> getByName(String name) async {
+    try {
+      final rows = await _db.queryAll(
+        DbConstants.tableProducts,
+        where: 'LOWER(${DbConstants.colProductName}) = ?',
+        whereArgs: [name.trim().toLowerCase()],
+        limit: 1,
+      );
+      if (rows.isEmpty) return null;
+      return ProductModel.fromMap(rows.first);
+    } catch (e) {
+      throw DatabaseException('Gagal mengambil produk berdasarkan nama: $name',
+          originalError: e);
+    }
+  }
+
   @override
   Future<ProductModel> insert(ProductModel product) async {
     try {
-      final now = DateTime.now();
-      final newProduct = product.copyWith(
-        id: _uuid.v4(),
-        createdAt: now,
-        updatedAt: now,
-      );
-      await _db.insert(DbConstants.tableProducts, newProduct.toMap());
-      return newProduct;
+      final existing = await getByName(product.name);
+      if (existing != null) {
+        // Gabungkan (Merge) stok jika produk dengan nama yang sama sudah ada
+        final updatedStock = existing.stock + product.stock;
+        final updatedProduct = existing.copyWith(
+          stock: updatedStock,
+          purchasePrice: product.purchasePrice,
+          sellingPrice: product.sellingPrice,
+          imagePath: product.imagePath ?? existing.imagePath,
+          updatedAt: DateTime.now(),
+        );
+        
+        await _db.update(
+          DbConstants.tableProducts,
+          updatedProduct.toMap(),
+          where: '${DbConstants.colProductId} = ?',
+          whereArgs: [existing.id],
+        );
+
+        // Catat riwayat penambahan stok
+        final history = ProductStockHistoryModel(
+          id: _uuid.v4(),
+          productId: existing.id,
+          purchasePrice: product.purchasePrice,
+          sellingPrice: product.sellingPrice,
+          stockAdded: product.stock,
+          date: product.createdAt, // Tanggal masuk stok dari user
+          createdAt: DateTime.now(),
+        );
+        await insertStockHistory(history);
+
+        return updatedProduct;
+      } else {
+        // Masukkan produk baru secara normal
+        final newId = _uuid.v4();
+        final newProduct = product.copyWith(
+          id: newId,
+        );
+        await _db.insert(DbConstants.tableProducts, newProduct.toMap());
+
+        // Catat riwayat stok awal
+        final history = ProductStockHistoryModel(
+          id: _uuid.v4(),
+          productId: newId,
+          purchasePrice: product.purchasePrice,
+          sellingPrice: product.sellingPrice,
+          stockAdded: product.stock,
+          date: product.createdAt, // Tanggal masuk stok dari user
+          createdAt: DateTime.now(),
+        );
+        await insertStockHistory(history);
+
+        return newProduct;
+      }
     } catch (e) {
       throw DatabaseException('Gagal menambah produk', originalError: e);
     }
@@ -63,13 +126,29 @@ class ProductRepository implements IProductRepository {
   @override
   Future<void> update(ProductModel product) async {
     try {
-      final updated = product.copyWith(updatedAt: DateTime.now());
+      final oldProduct = await getById(product.id);
+      
       await _db.update(
         DbConstants.tableProducts,
-        updated.toMap(),
+        product.toMap(),
         where: '${DbConstants.colProductId} = ?',
         whereArgs: [product.id],
       );
+
+      // Jika ada perubahan stok, catat riwayatnya
+      if (oldProduct != null && oldProduct.stock != product.stock) {
+        final diff = product.stock - oldProduct.stock;
+        final history = ProductStockHistoryModel(
+          id: _uuid.v4(),
+          productId: product.id,
+          purchasePrice: product.purchasePrice,
+          sellingPrice: product.sellingPrice,
+          stockAdded: diff,
+          date: product.updatedAt, // Tanggal perubahan stok
+          createdAt: DateTime.now(),
+        );
+        await insertStockHistory(history);
+      }
     } catch (e) {
       throw DatabaseException('Gagal mengupdate produk', originalError: e);
     }
@@ -85,6 +164,30 @@ class ProductRepository implements IProductRepository {
       );
     } catch (e) {
       throw DatabaseException('Gagal menghapus produk', originalError: e);
+    }
+  }
+
+  @override
+  Future<List<ProductStockHistoryModel>> getStockHistory(String productId) async {
+    try {
+      final rows = await _db.queryAll(
+        DbConstants.tableProductStockHistory,
+        where: '${DbConstants.colHistoryProductId} = ?',
+        whereArgs: [productId],
+        orderBy: '${DbConstants.colHistoryDate} DESC, ${DbConstants.colHistoryCreatedAt} DESC',
+      );
+      return rows.map(ProductStockHistoryModel.fromMap).toList();
+    } catch (e) {
+      throw DatabaseException('Gagal mengambil riwayat stok produk', originalError: e);
+    }
+  }
+
+  @override
+  Future<void> insertStockHistory(ProductStockHistoryModel history) async {
+    try {
+      await _db.insert(DbConstants.tableProductStockHistory, history.toMap());
+    } catch (e) {
+      throw DatabaseException('Gagal menyimpan riwayat stok produk', originalError: e);
     }
   }
 
