@@ -104,7 +104,7 @@ class ExportService {
 
     final dir = await getApplicationDocumentsDirectory();
     final filename =
-        'Catatin_Laporan_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf';
+        'CatatIn_Laporan_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf';
     final file = File('${dir.path}/$filename');
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -132,7 +132,7 @@ class ExportService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text(
-                'CATATIN',
+                'CatatIn',
                 style: pw.TextStyle(
                   fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
@@ -176,7 +176,7 @@ class ExportService {
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 8),
       child: pw.Text(
-        'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount}  •  Dibuat oleh Catatin',
+        'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount}  •  Dibuat oleh CatatIn',
         style: pw.TextStyle(fontSize: 9, color: textSecondary),
       ),
     );
@@ -229,11 +229,19 @@ class ExportService {
       children: rows.asMap().entries.map((entry) {
         final i = entry.key;
         final row = entry.value;
-        final isProfit = i == 2;
+        final isProfitRow = i == 2;
+        final isPositiveProfit = data.netProfit > 0;
+        
+        final rowBgColor = isProfitRow
+            ? (isPositiveProfit ? brandGreenLight : PdfColor.fromInt(0xFFFEECEC))
+            : (i % 2 == 0 ? PdfColors.white : PdfColor.fromInt(0xFFF9FAFB));
+            
+        final textCol = isProfitRow
+            ? (isPositiveProfit ? brandGreen : PdfColors.red)
+            : null;
+
         return pw.TableRow(
-          decoration: pw.BoxDecoration(
-            color: isProfit ? brandGreenLight : (i % 2 == 0 ? PdfColors.white : PdfColor.fromInt(0xFFF9FAFB)),
-          ),
+          decoration: pw.BoxDecoration(color: rowBgColor),
           children: [
             pw.Padding(
               padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -245,8 +253,8 @@ class ExportService {
                 row[1],
                 style: pw.TextStyle(
                   fontSize: 10,
-                  fontWeight: isProfit ? pw.FontWeight.bold : pw.FontWeight.normal,
-                  color: isProfit ? brandGreen : null,
+                  fontWeight: isProfitRow ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  color: textCol,
                 ),
               ),
             ),
@@ -456,7 +464,7 @@ class ExportService {
 
     final dir = await getApplicationDocumentsDirectory();
     final filename =
-        'Catatin_Laporan_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx';
+        'CatatIn_Laporan_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx';
     final file = File('${dir.path}/$filename');
     final bytes = excel.save();
     if (bytes != null) await file.writeAsBytes(bytes);

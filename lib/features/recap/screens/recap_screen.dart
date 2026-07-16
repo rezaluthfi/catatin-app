@@ -11,6 +11,7 @@ import '../providers/recap_provider.dart';
 import '../providers/recap_state.dart';
 import '../widgets/add_expense_sheet.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/app_footer.dart';
 
 class RecapScreen extends ConsumerStatefulWidget {
   const RecapScreen({super.key, this.initialTab = 0});
@@ -325,7 +326,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
       ),
       body: stateAsync.when(
         data: (state) {
-          final isProfit = state.netProfit >= 0;
+          final isProfit = state.netProfit > 0;
           final formattedPeriod = _getFormattedPeriodText(state);
 
           return Column(
@@ -465,7 +466,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Keuntungan Bersih',
+                                'Laba Bersih',
                                 style: AppTextStyles.labelLarge.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -970,6 +971,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                           }(),
                         ],
                       ],
+                      const AppFooter(),
                     ],
                   ),
                 ),
@@ -1078,7 +1080,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                 LineChartData(
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (touchedSpot) => AppColors.textPrimary,
+                      getTooltipColor: (touchedSpot) => AppColors.surface,
                       tooltipBorder: const BorderSide(
                         color: AppColors.border,
                         width: 1,
@@ -1135,7 +1137,11 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
+                          final rounded = value.round();
+                          if ((value - rounded).abs() > 0.05) {
+                            return const SizedBox.shrink();
+                          }
+                          final index = rounded;
                           if (index < 0 || index >= keys.length) {
                             return const SizedBox();
                           }
@@ -1155,8 +1161,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                     ),
                   ),
                   borderData: FlBorderData(show: false),
-                  minX: 0,
-                  maxX: (keys.length - 1).toDouble(),
+                  minX: -0.2,
+                  maxX: (keys.length - 1).toDouble() + 0.2,
                   minY: minScaleY,
                   maxY: maxScaleY,
                   lineBarsData: [
@@ -1174,7 +1180,14 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                       dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.income.withValues(alpha: 0.08),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.income.withValues(alpha: 0.15),
+                            AppColors.income.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
                     // Line 2: Laba Bersih (Net Profit)
@@ -1194,7 +1207,14 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                       dotData: const FlDotData(show: true),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.info.withValues(alpha: 0.08),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.info.withValues(alpha: 0.15),
+                            AppColors.info.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
                   ],
