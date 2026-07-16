@@ -1094,8 +1094,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                             TextStyle(
                               fontFamily: 'GoogleSans',
                               color: isRevenue
-                                  ? AppColors.primaryLight
-                                  : AppColors.secondaryLight,
+                                  ? AppColors.income
+                                  : AppColors.info,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),

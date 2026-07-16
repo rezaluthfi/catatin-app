@@ -112,13 +112,13 @@ class PinDotsWidgetState extends State<PinDotsWidget>
   Color _getDotColor(bool isFilled) {
     if (!isFilled) return Colors.transparent;
     if (widget.isError) return AppColors.expense;
-    if (widget.isSuccess) return AppColors.primaryLight;
+    if (widget.isSuccess) return AppColors.income;
     return AppColors.primary;
   }
 
   Color _getBorderColor(bool isFilled) {
     if (widget.isError) return AppColors.expense;
-    if (widget.isSuccess) return AppColors.primaryLight;
+    if (widget.isSuccess) return AppColors.income;
     if (isFilled) return AppColors.primary;
     return AppColors.border;
   }

@@ -356,7 +356,7 @@ class DashboardScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Keuntungan Bersih Hari Ini',
+                              'Keuntungan Hari Ini',
                               style: AppTextStyles.labelLarge.copyWith(
                                 color: Colors.white.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w500,
@@ -394,7 +394,7 @@ class DashboardScreen extends ConsumerWidget {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            'Pemasukan',
+                                            'Penerimaan',
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                                   color: Colors.white70,
@@ -543,7 +543,7 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: _buildQuickActionCard(
                             context,
-                            title: 'Catat POS',
+                            title: 'Catat Transaksi',
                             subtitle: 'Transaksi kasir cepat',
                             icon: Icons.add_shopping_cart_rounded,
                             iconColor: AppColors.primary,
@@ -555,12 +555,12 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: _buildQuickActionCard(
                             context,
-                            title: 'Buku Piutang',
-                            subtitle: 'Kasbon pelanggan',
-                            icon: Icons.payments_outlined,
-                            iconColor: AppColors.secondary,
-                            bgColor: AppColors.secondary.withValues(alpha: 0.1),
-                            onTap: () => context.push(AppRoutes.receivables),
+                            title: 'Kelola Produk',
+                            subtitle: 'Stok & harga produk',
+                            icon: Icons.inventory_2_outlined,
+                            iconColor: AppColors.info,
+                            bgColor: AppColors.info.withValues(alpha: 0.1),
+                            onTap: () => context.push(AppRoutes.inventory),
                           ),
                         ),
                       ],
@@ -571,12 +571,12 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: _buildQuickActionCard(
                             context,
-                            title: 'Kelola Produk',
-                            subtitle: 'Stok & harga produk',
-                            icon: Icons.inventory_2_outlined,
-                            iconColor: AppColors.info,
-                            bgColor: AppColors.info.withValues(alpha: 0.1),
-                            onTap: () => context.push(AppRoutes.inventory),
+                            title: 'Buku Piutang',
+                            subtitle: 'Kasbon pelanggan',
+                            icon: Icons.payments_outlined,
+                            iconColor: AppColors.secondary,
+                            bgColor: AppColors.secondary.withValues(alpha: 0.1),
+                            onTap: () => context.push(AppRoutes.receivables),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -883,7 +883,7 @@ class DashboardScreen extends ConsumerWidget {
             // Legenda
             Row(
               children: [
-                _buildLegendItem('Pemasukan', AppColors.income),
+                _buildLegendItem('Penerimaan', AppColors.income),
                 const SizedBox(width: 16),
                 _buildLegendItem('Laba Bersih', AppColors.info),
               ],
@@ -904,15 +904,15 @@ class DashboardScreen extends ConsumerWidget {
                         return touchedSpots.map((LineBarSpot touchedSpot) {
                           final val = touchedSpot.y.toInt();
                           final isRevenue = touchedSpot.barIndex == 0;
-                          final label = isRevenue ? 'Pemasukan' : 'Laba';
+                          final label = isRevenue ? 'Penerimaan' : 'Laba';
                           final formattedVal = val.toRupiah();
                           return LineTooltipItem(
                             '$label: $formattedVal',
                             TextStyle(
                               fontFamily: 'GoogleSans',
                               color: isRevenue
-                                  ? AppColors.primaryLight
-                                  : AppColors.secondaryLight,
+                                  ? AppColors.income
+                                  : AppColors.info,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),

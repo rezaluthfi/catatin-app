@@ -6,11 +6,7 @@ import '../../../core/extensions/currency_extension.dart';
 import '../../../data/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({
-    super.key,
-    required this.product,
-    required this.onTap,
-  });
+  const ProductCard({super.key, required this.product, required this.onTap});
 
   final ProductModel product;
   final VoidCallback onTap;
@@ -29,16 +25,16 @@ class ProductCard extends StatelessWidget {
           color: isOutOfStock
               ? AppColors.expense.withValues(alpha: 0.5)
               : isLowStock
-                  ? AppColors.warning.withValues(alpha: 0.5)
-                  : AppColors.border,
+              ? AppColors.warning.withValues(alpha: 0.5)
+              : AppColors.border,
           width: 1,
         ),
       ),
       color: isOutOfStock
           ? AppColors.errorContainer
           : isLowStock
-              ? AppColors.warningContainer
-              : AppColors.surface,
+          ? AppColors.warningContainer
+          : AppColors.surface,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -52,16 +48,16 @@ class ProductCard extends StatelessWidget {
                 color: isOutOfStock
                     ? AppColors.expense.withValues(alpha: 0.1)
                     : isLowStock
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.primary.withValues(alpha: 0.05),
+                    ? AppColors.warning.withValues(alpha: 0.1)
+                    : AppColors.primary.withValues(alpha: 0.05),
                 child: Icon(
                   Icons.inventory_2_rounded,
                   size: 40,
                   color: isOutOfStock
                       ? AppColors.expense.withValues(alpha: 0.5)
                       : isLowStock
-                          ? AppColors.warning.withValues(alpha: 0.5)
-                          : AppColors.primary.withValues(alpha: 0.3),
+                      ? AppColors.warning.withValues(alpha: 0.5)
+                      : AppColors.primary.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -88,7 +84,7 @@ class ProductCard extends StatelessWidget {
                       ],
                     ),
                     const Spacer(),
-                     Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Harga Jual', style: AppTextStyles.labelSmall),
@@ -110,13 +106,15 @@ class ProductCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Harga Modal', style: AppTextStyles.labelSmall),
+                        Text('Harga Beli', style: AppTextStyles.labelSmall),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
                             product.purchasePrice.toRupiah(),
-                            style: AppTextStyles.bodyMediumSecondary.copyWith(height: 1.2),
+                            style: AppTextStyles.bodyMediumSecondary.copyWith(
+                              height: 1.2,
+                            ),
                           ),
                         ),
                       ],

@@ -21,7 +21,7 @@ class InventoryListScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Inventaris', style: AppTextStyles.headlineMedium),
+        title: Text('Inventaris Produk', style: AppTextStyles.headlineMedium),
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -52,19 +52,25 @@ class InventoryListScreen extends ConsumerWidget {
                       horizontal: 24,
                       vertical: 16,
                     ),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.6,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.6,
+                        ),
                     itemCount: state.products.length,
                     itemBuilder: (context, index) {
                       final product = state.products[index];
                       return ProductCard(
                         product: product,
                         onTap: () {
-                          context.push(AppRoutes.productEdit.replaceFirst(':id', product.id));
+                          context.push(
+                            AppRoutes.productEdit.replaceFirst(
+                              ':id',
+                              product.id,
+                            ),
+                          );
                         },
                       );
                     },
@@ -129,20 +135,28 @@ class InventoryListScreen extends ConsumerWidget {
                         children: [
                           Text('Filter', style: AppTextStyles.headlineSmall),
                           (() {
-                            final hasFilters = currentState.showLowStockOnly || currentState.showOutOfStockOnly;
-                            final hasDefaultSort = currentState.sortTypes.length == 1 && currentState.sortTypes.first == ProductSortType.nameAsc;
+                            final hasFilters =
+                                currentState.showLowStockOnly ||
+                                currentState.showOutOfStockOnly;
+                            final hasDefaultSort =
+                                currentState.sortTypes.length == 1 &&
+                                currentState.sortTypes.first ==
+                                    ProductSortType.nameAsc;
                             final isDirty = hasFilters || !hasDefaultSort;
                             if (isDirty) {
                               return TextButton(
                                 onPressed: () {
-                                  ref.read(inventoryProvider.notifier).clearFilters();
+                                  ref
+                                      .read(inventoryProvider.notifier)
+                                      .clearFilters();
                                   Navigator.pop(context);
                                 },
                                 style: TextButton.styleFrom(
                                   foregroundColor: AppColors.primary,
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: const Text('Reset'),
                               );
@@ -159,7 +173,9 @@ class InventoryListScreen extends ConsumerWidget {
                       title: 'Tampilkan Stok Menipis Saja',
                       value: currentState.showLowStockOnly,
                       onChanged: (_) {
-                        ref.read(inventoryProvider.notifier).toggleLowStockFilter();
+                        ref
+                            .read(inventoryProvider.notifier)
+                            .toggleLowStockFilter();
                         Navigator.pop(context);
                       },
                     ),
@@ -169,14 +185,19 @@ class InventoryListScreen extends ConsumerWidget {
                       title: 'Tampilkan Stok Habis Saja',
                       value: currentState.showOutOfStockOnly,
                       onChanged: (_) {
-                        ref.read(inventoryProvider.notifier).toggleOutOfStockFilter();
+                        ref
+                            .read(inventoryProvider.notifier)
+                            .toggleOutOfStockFilter();
                         Navigator.pop(context);
                       },
                     ),
                     const Divider(height: 32),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text('Urutkan Berdasarkan', style: AppTextStyles.headlineSmall),
+                      child: Text(
+                        'Urutkan Berdasarkan',
+                        style: AppTextStyles.headlineSmall,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     _buildSortOption(
@@ -309,8 +330,9 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final searchQuery = ref.watch(inventoryProvider).valueOrNull?.searchQuery ?? '';
-    
+    final searchQuery =
+        ref.watch(inventoryProvider).valueOrNull?.searchQuery ?? '';
+
     // Sinkronisasi teks jika dikosongkan dari luar (opsional)
     if (searchQuery.isEmpty && _controller.text.isNotEmpty) {
       _controller.clear();
@@ -327,10 +349,16 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
         decoration: InputDecoration(
           hintText: 'Cari produk...',
           hintStyle: AppTextStyles.bodyMediumSecondary,
-          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.textSecondary,
+          ),
           suffixIcon: searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: AppColors.textSecondary),
+                  icon: const Icon(
+                    Icons.clear_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                   onPressed: () {
                     _controller.clear();
                     ref.read(inventoryProvider.notifier).setSearchQuery('');

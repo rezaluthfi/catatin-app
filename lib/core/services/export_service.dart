@@ -45,8 +45,8 @@ class ExportService {
     final pdf = pw.Document();
 
     // Warna brand
-    const brandGreen = PdfColor.fromInt(0xFF1A7A4A);
-    const brandGreenLight = PdfColor.fromInt(0xFFD4EDDF);
+    const brandGreen = PdfColor.fromInt(0xFF198D8D);
+    const brandGreenLight = PdfColor.fromInt(0xFFE2F3F3);
     const textSecondary = PdfColor.fromInt(0xFF6B7280);
     const borderColor = PdfColor.fromInt(0xFFE5E7EB);
 
@@ -467,7 +467,7 @@ class ExportService {
 
   static CellStyle _headerStyle() {
     return CellStyle(
-      backgroundColorHex: ExcelColor.fromHexString('#1A7A4A'),
+      backgroundColorHex: ExcelColor.fromHexString('#198D8D'),
       fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
       bold: true,
       horizontalAlign: HorizontalAlign.Center,
@@ -487,7 +487,7 @@ class ExportService {
   static CellStyle _totalStyle() {
     return CellStyle(
       bold: true,
-      backgroundColorHex: ExcelColor.fromHexString('#D4EDDF'),
+      backgroundColorHex: ExcelColor.fromHexString('#E2F3F3'),
       numberFormat: NumFormat.custom(formatCode: '#,##0'),
     );
   }

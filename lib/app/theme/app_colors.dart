@@ -8,11 +8,11 @@ class AppColors {
   AppColors._(); // Prevent instantiation
 
   // --- Brand Colors ---
-  static const Color primary = Color(0xFF1A7A4A);       // Hijau tua (kepercayaan & uang)
-  static const Color primaryLight = Color(0xFF4CAF7D);  // Hijau muda
-  static const Color primaryDark = Color(0xFF0D5C37);   // Hijau gelap
+  static const Color primary = Color(0xFF198D8D); // Teal (brand utama)
+  static const Color primaryLight = Color(0xFF3AA6A6); // Teal muda
+  static const Color primaryDark = Color(0xFF0F5C5C); // Teal gelap
 
-  static const Color secondary = Color(0xFFE8A020);     // Kuning emas (aksen)
+  static const Color secondary = Color(0xFFE8A020); // Kuning emas (aksen)
   static const Color secondaryLight = Color(0xFFF5C552);
   static const Color secondaryDark = Color(0xFFB87A10);
 
@@ -27,16 +27,16 @@ class AppColors {
   static const Color textOnPrimary = Color(0xFFFFFFFF);
 
   // --- Semantic Colors ---
-  static const Color income = Color(0xFF1A7A4A);   // Kas masuk → hijau
-  static const Color expense = Color(0xFFE53E3E);  // Kas keluar → merah
-  static const Color warning = Color(0xFFE8A020);  // Peringatan stok → kuning
-  static const Color info = Color(0xFF3B82F6);     // Informasi → biru
+  static const Color income = Color(0xFF1A7A4A); // Kas masuk → hijau
+  static const Color expense = Color(0xFFE53E3E); // Kas keluar → merah
+  static const Color warning = Color(0xFFE8A020); // Peringatan stok → kuning
+  static const Color info = Color(0xFF3B82F6); // Informasi → biru
 
   // --- Container Colors (background tint untuk area semantic) ---
-  static const Color primaryContainer = Color(0xFFDFF2E9);  // Hijau muda pudar
-  static const Color warningContainer = Color(0xFFFFF8E7);  // Kuning muda pudar
-  static const Color errorContainer = Color(0xFFFEECEC);    // Merah muda pudar
-  static const Color infoContainer = Color(0xFFEFF6FF);     // Biru muda pudar
+  static const Color primaryContainer = Color(0xFFE2F3F3); // Teal muda pudar
+  static const Color warningContainer = Color(0xFFFFF8E7); // Kuning muda pudar
+  static const Color errorContainer = Color(0xFFFEECEC); // Merah muda pudar
+  static const Color infoContainer = Color(0xFFEFF6FF); // Biru muda pudar
 
   // --- Border & Divider ---
   static const Color border = Color(0xFFE5E7EB);

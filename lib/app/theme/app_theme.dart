@@ -19,7 +19,7 @@ class AppTheme {
         brightness: Brightness.light,
         primary: AppColors.primary,
         onPrimary: AppColors.textOnPrimary,
-        primaryContainer: Color(0xFFD4EDDF),
+        primaryContainer: AppColors.primaryContainer,
         onPrimaryContainer: AppColors.primaryDark,
         secondary: AppColors.secondary,
         onSecondary: AppColors.textOnPrimary,
@@ -51,7 +51,7 @@ class AppTheme {
       // --- Bottom Navigation ---
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        indicatorColor: Color(0xFFD4EDDF),
+        indicatorColor: AppColors.primaryContainer,
         labelTextStyle: WidgetStatePropertyAll(AppTextStyles.labelMedium),
         iconTheme: WidgetStatePropertyAll(
           IconThemeData(size: 24, color: AppColors.textSecondary),
