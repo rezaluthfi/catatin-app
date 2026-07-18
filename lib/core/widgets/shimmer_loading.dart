@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 
+enum ShimmerType { dashboard, recap }
+
 /// Widget shimmer loading yang bergerak sebagai pengganti CircularProgressIndicator.
 class ShimmerLoading extends StatefulWidget {
-  const ShimmerLoading({super.key});
+  const ShimmerLoading({super.key, this.type = ShimmerType.dashboard});
+  final ShimmerType type;
 
   @override
   State<ShimmerLoading> createState() => _ShimmerLoadingState();
@@ -38,43 +41,162 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, _) {
-        return SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildShimmerCard(height: 140),
-              const SizedBox(height: 20),
-              _buildShimmerCard(height: 56),
-              const SizedBox(height: 20),
-              _buildShimmerCard(height: 72),
-              const SizedBox(height: 12),
-              _buildShimmerCard(height: 72),
-              const SizedBox(height: 12),
-              _buildShimmerCard(height: 72),
-            ],
-          ),
-        );
+        if (widget.type == ShimmerType.dashboard) {
+          return _buildDashboardShimmer();
+        } else {
+          return _buildRecapShimmer();
+        }
       },
     );
   }
 
-  Widget _buildShimmerCard({required double height}) {
+  Widget _buildDashboardShimmer() {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildShimmerBox(height: 160, borderRadius: 24),
+          const SizedBox(height: 24),
+          _buildShimmerBox(height: 24, width: 140, borderRadius: 6), // Akses Cepat Title
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildShimmerBox(height: 124, borderRadius: 16)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildShimmerBox(height: 124, borderRadius: 16)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildShimmerBox(height: 124, borderRadius: 16)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildShimmerBox(height: 124, borderRadius: 16)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildShimmerBox(height: 240, width: double.infinity, borderRadius: 24), // Chart
+          const SizedBox(height: 32),
+          _buildShimmerBox(height: 24, width: 160, borderRadius: 6), // Transaksi Terbaru Title
+          const SizedBox(height: 12),
+          _buildShimmerListItem(),
+          const SizedBox(height: 12),
+          _buildShimmerListItem(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecapShimmer() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Bagian Header (Segmented Button & Date Navigator)
+        Container(
+          color: AppColors.surface,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _buildShimmerBox(height: 40, borderRadius: 24),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildShimmerBox(height: 64, borderRadius: 12),
+              ),
+            ],
+          ),
+        ),
+        // Bagian Scrollable (Kartu Rekap, Chart, List)
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildShimmerBox(height: 160, borderRadius: 24), // Total Rekap
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: _buildShimmerBox(height: 100, borderRadius: 20)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildShimmerBox(height: 100, borderRadius: 20)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: _buildShimmerBox(height: 100, borderRadius: 20)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildShimmerBox(height: 100, borderRadius: 20)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildShimmerBox(height: 240, borderRadius: 24), // Chart
+                const SizedBox(height: 24),
+                _buildShimmerListItem(),
+                const SizedBox(height: 12),
+                _buildShimmerListItem(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  LinearGradient get _shimmerGradient => LinearGradient(
+        begin: Alignment(_animation.value - 1, 0),
+        end: Alignment(_animation.value, 0),
+        colors: const [
+          AppColors.border,
+          AppColors.surfaceVariant,
+          AppColors.border,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      );
+
+  Widget _buildShimmerBox({required double height, required double borderRadius, double? width}) {
     return Container(
       height: height,
+      width: width,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: _shimmerGradient,
+      ),
+    );
+  }
+
+  Widget _buildShimmerListItem() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment(_animation.value - 1, 0),
-          end: Alignment(_animation.value, 0),
-          colors: const [
-            AppColors.border,
-            AppColors.surfaceVariant,
-            AppColors.border,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          _buildShimmerBox(height: 48, width: 48, borderRadius: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildShimmerBox(height: 14, width: double.infinity, borderRadius: 4),
+                const SizedBox(height: 8),
+                _buildShimmerBox(height: 12, width: 100, borderRadius: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          _buildShimmerBox(height: 16, width: 60, borderRadius: 4),
+        ],
       ),
     );
   }
@@ -134,36 +256,58 @@ class _ShimmerListState extends State<ShimmerList>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: _shimmerGradient,
-                ),
-              ),
+              _buildShimmerBox(height: 120, width: double.infinity, borderRadius: 20),
               const SizedBox(height: 16),
-              Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: _shimmerGradient,
-                ),
-              ),
+              _buildShimmerBox(height: 48, width: double.infinity, borderRadius: 12),
               const SizedBox(height: 16),
               ...List.generate(widget.itemCount, (i) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: _shimmerGradient,
-                  ),
-                ),
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildShimmerListItem(),
               )),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildShimmerBox({required double height, required double borderRadius, double? width}) {
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: _shimmerGradient,
+      ),
+    );
+  }
+
+  Widget _buildShimmerListItem() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          _buildShimmerBox(height: 48, width: 48, borderRadius: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildShimmerBox(height: 14, width: double.infinity, borderRadius: 4),
+                const SizedBox(height: 8),
+                _buildShimmerBox(height: 12, width: 100, borderRadius: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          _buildShimmerBox(height: 16, width: 60, borderRadius: 4),
+        ],
+      ),
     );
   }
 }
