@@ -179,7 +179,7 @@ class PosNotifier extends Notifier<PosState> {
 
       // Refresh data dashboard & rekap
       ref.invalidate(dashboardProvider);
-      ref.invalidate(recapProvider);
+      ref.read(recapProvider.notifier).refresh();
 
       // Kosongkan keranjang setelah berhasil
       state = const PosState();

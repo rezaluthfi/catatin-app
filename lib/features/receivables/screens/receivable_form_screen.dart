@@ -55,11 +55,8 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
     });
   }
 
-  String _getMonthName(int month) {
-    return const [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ][month];
+  String _formatDate(DateTime dt) {
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
   }
 
   Future<void> _saveReceivable() async {
@@ -180,8 +177,7 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
                   if (date != null) {
                     setState(() {
                       _dueDate = date;
-                      _dueDateController.text =
-                          '${date.day} ${_getMonthName(date.month)} ${date.year}';
+                      _dueDateController.text = _formatDate(date);
                     });
                   }
                 },

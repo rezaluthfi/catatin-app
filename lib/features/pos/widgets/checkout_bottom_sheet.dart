@@ -32,11 +32,8 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
   DateTime? _dueDate;
   bool _submitted = false;
 
-  String _getMonthName(int month) {
-    return const [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ][month];
+  String _formatDate(DateTime dt) {
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
   }
 
   @override
@@ -267,17 +264,26 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                     segments: const [
                       ButtonSegment(
                         value: PaymentMethod.cash,
-                        label: Text('Tunai'),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('Tunai', softWrap: false),
+                        ),
                         icon: Icon(Icons.money_rounded),
                       ),
                       ButtonSegment(
                         value: PaymentMethod.nonCash,
-                        label: Text('Non Tunai'),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('Non Tunai', softWrap: false),
+                        ),
                         icon: Icon(Icons.qr_code_2_rounded),
                       ),
                       ButtonSegment(
                         value: PaymentMethod.credit,
-                        label: Text('Kasbon'),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('Kasbon', softWrap: false),
+                        ),
                         icon: Icon(Icons.menu_book_rounded),
                       ),
                     ],
@@ -502,8 +508,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         if (date != null) {
                           setState(() {
                             _dueDate = date;
-                            _dueDateController.text =
-                                '${date.day} ${_getMonthName(date.month)} ${date.year}';
+                            _dueDateController.text = _formatDate(date);
                           });
                         }
                       },

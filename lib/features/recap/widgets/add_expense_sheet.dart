@@ -37,8 +37,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       _amountController.text = widget.expense!.amount.toRupiahNoSymbol();
       _selectedDate = widget.expense!.date;
     }
-    _dateController.text =
-        '${_selectedDate.day} ${_getMonthName(_selectedDate.month)} ${_selectedDate.year}';
+    _dateController.text = _formatDate(_selectedDate);
   }
 
   @override
@@ -49,11 +48,8 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     super.dispose();
   }
 
-  String _getMonthName(int month) {
-    return const [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ][month];
+  String _formatDate(DateTime dt) {
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
   }
 
   void _onAmountChanged(String value) {
@@ -236,8 +232,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                         if (date != null) {
                           setState(() {
                             _selectedDate = date;
-                            _dateController.text =
-                                '${date.day} ${_getMonthName(date.month)} ${date.year}';
+                            _dateController.text = _formatDate(date);
                           });
                         }
                       },
