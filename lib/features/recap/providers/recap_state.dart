@@ -12,10 +12,10 @@ enum RecapPeriod {
 
 /// Skala waktu untuk grafik Tren Keuangan.
 enum ChartScale {
-  week7('7H'),
-  month1('1B'),
-  month3('3B'),
-  month6('6B');
+  week7('7 Hari'),
+  month1('1 Bulan'),
+  month3('3 Bulan'),
+  month6('6 Bulan');
 
   const ChartScale(this.label);
   final String label;

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/repository_providers.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../data/models/transaction_model.dart';
 import '../../../data/models/transaction_enums.dart';
 import 'dashboard_state.dart';
 
@@ -53,8 +54,12 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
       // Ambil Produk Stok Menipis (Threshold: 5)
       final lowStock = await prodRepo.getLowStockProducts(threshold: 5);
 
-      // Ambil Transaksi Terbaru (Limit: 3)
-      final recentTxs = await txRepo.getRecent(limit: 3);
+      // Ambil Transaksi Terbaru Hari Ini (Limit: 3)
+      final todayTxs = await txRepo.getByDateRange(start, end);
+      final recentTxs = (List<TransactionModel>.from(todayTxs)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)))
+          .take(3)
+          .toList();
 
       // Tentukan rentang waktu keseluruhan untuk pre-fetch data grafik
       final int loopCount;

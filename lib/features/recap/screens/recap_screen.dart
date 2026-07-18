@@ -27,7 +27,7 @@ class RecapScreen extends ConsumerStatefulWidget {
 class _RecapScreenState extends ConsumerState<RecapScreen> {
   late int _selectedTab;
 
-  static const int _pageSize = 20;
+  static const int _pageSize = 10;
   bool _showAllTransactions = false;
   bool _showAllExpenses = false;
   bool _showAllSoldProducts = false;
@@ -477,93 +477,96 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                     // Date Navigator
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: state.period == RecapPeriod.weekly
-                          ? _buildWeeklyDateRange(context, state, ref)
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.chevron_left),
-                                  onPressed: () {
-                                    ref
-                                        .read(recapProvider.notifier)
-                                        .changeDate(_adjustDate(state, -1));
-                                  },
-                                ),
-                                Expanded(
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(8),
-                                    onTap: () async {
-                                      if (state.period == RecapPeriod.daily) {
-                                        final picked = await showDatePicker(
-                                          context: context,
-                                          initialDate: state.selectedDate,
-                                          firstDate: DateTime(2020),
-                                          lastDate: DateTime.now().add(
-                                            const Duration(days: 365),
-                                          ),
-                                          helpText: 'Pilih Tanggal',
-                                          confirmText: 'Pilih',
-                                          cancelText: 'Batal',
-                                        );
-                                        if (picked != null && context.mounted) {
-                                          ref
-                                              .read(recapProvider.notifier)
-                                              .changeDate(picked);
-                                        }
-                                      } else {
-                                        // Bulanan: pilih bulan
-                                        final picked = await _showMonthPicker(
-                                          context,
-                                          state.selectedDate,
-                                        );
-                                        if (picked != null && context.mounted) {
-                                          ref
-                                              .read(recapProvider.notifier)
-                                              .changeDate(picked);
-                                        }
-                                      }
+                      child: SizedBox(
+                        height: 64, // Fixed height untuk konsistensi antar tab
+                        child: state.period == RecapPeriod.weekly
+                            ? _buildWeeklyDateRange(context, state, ref)
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.chevron_left),
+                                    onPressed: () {
+                                      ref
+                                          .read(recapProvider.notifier)
+                                          .changeDate(_adjustDate(state, -1));
                                     },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                        horizontal: 4,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            formattedPeriod,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style:
-                                                AppTextStyles.bodyLarge.copyWith(
-                                              fontWeight: FontWeight.bold,
+                                  ),
+                                  Expanded(
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(8),
+                                      onTap: () async {
+                                        if (state.period == RecapPeriod.daily) {
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: state.selectedDate,
+                                            firstDate: DateTime(2020),
+                                            lastDate: DateTime.now().add(
+                                              const Duration(days: 365),
                                             ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          const Icon(
-                                            Icons.calendar_month_outlined,
-                                            size: 16,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ],
+                                            helpText: 'Pilih Tanggal',
+                                            confirmText: 'Pilih',
+                                            cancelText: 'Batal',
+                                          );
+                                          if (picked != null && context.mounted) {
+                                            ref
+                                                .read(recapProvider.notifier)
+                                                .changeDate(picked);
+                                          }
+                                        } else {
+                                          // Bulanan: pilih bulan
+                                          final picked = await _showMonthPicker(
+                                            context,
+                                            state.selectedDate,
+                                          );
+                                          if (picked != null && context.mounted) {
+                                            ref
+                                                .read(recapProvider.notifier)
+                                                .changeDate(picked);
+                                          }
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: 4,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              formattedPeriod,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style:
+                                                  AppTextStyles.bodyLarge.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            const Icon(
+                                              Icons.calendar_month_outlined,
+                                              size: 16,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.chevron_right),
-                                  onPressed: () {
-                                    ref
-                                        .read(recapProvider.notifier)
-                                        .changeDate(_adjustDate(state, 1));
-                                  },
-                                ),
-                              ],
-                            ),
+                                  IconButton(
+                                    icon: const Icon(Icons.chevron_right),
+                                    onPressed: () {
+                                      ref
+                                          .read(recapProvider.notifier)
+                                          .changeDate(_adjustDate(state, 1));
+                                    },
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
 
                   ],
@@ -710,7 +713,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                           )
                         else ...[
                           () {
-                            final txList = state.transactions.reversed.toList();
+                            final txList = state.transactions;
                             final displayList = _showAllTransactions
                                 ? txList
                                 : txList.take(_pageSize).toList();
@@ -1251,7 +1254,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
             ],
           );
         },
-        loading: () => const ShimmerLoading(),
+        loading: () => ShimmerLoading(type: ShimmerType.recap),
         error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
       ),
     );

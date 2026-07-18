@@ -35,73 +35,61 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
     final now = DateTime.now();
     final Map<String, ({int revenue, int netProfit})> chartData = {};
 
-    switch (scale) {
-      case ChartScale.week7:
-        // 7 hari terakhir, satu titik per hari
-        for (int i = 6; i >= 0; i--) {
-          final day = now.subtract(Duration(days: i));
-          final start =
-              DateTime(day.year, day.month, day.day, 0, 0, 0);
-          final end =
-              DateTime(day.year, day.month, day.day, 23, 59, 59);
-          final r = await txRepo.getTotalIncomeByDateRange(start, end);
-          final g = await txRepo.getTotalProfitByDateRange(start, end);
-          final o = await opRepo.getTotalByDateRange(start, end);
-          final n = g - o;
-          final label = '${day.day}/${day.month}';
-          chartData[label] = (revenue: r, netProfit: n);
-        }
+    // Tentukan jumlah loop
+    final int loopCount;
+    if (scale == ChartScale.week7) {
+      loopCount = 7;
+    } else if (scale == ChartScale.month1) {
+      loopCount = 30;
+    } else if (scale == ChartScale.month3) {
+      loopCount = 12; // 12 minggu
+    } else {
+      loopCount = 6; // 6 bulan
+    }
 
-      case ChartScale.month1:
-        // 4 minggu terakhir, satu titik per minggu
-        for (int i = 3; i >= 0; i--) {
-          final weekEnd = now.subtract(Duration(days: i * 7));
-          final weekStart = weekEnd.subtract(const Duration(days: 6));
-          final start = DateTime(
-              weekStart.year, weekStart.month, weekStart.day, 0, 0, 0);
-          final end = DateTime(
-              weekEnd.year, weekEnd.month, weekEnd.day, 23, 59, 59);
-          final r = await txRepo.getTotalIncomeByDateRange(start, end);
-          final g = await txRepo.getTotalProfitByDateRange(start, end);
-          final o = await opRepo.getTotalByDateRange(start, end);
-          final n = g - o;
-          final label = 'Mgg ${4 - i}';
-          chartData[label] = (revenue: r, netProfit: n);
-        }
+    final Map<int, String> dayNames = {
+      1: 'Sn', 2: 'Sl', 3: 'Rb', 4: 'Km', 5: 'Jm', 6: 'Sb', 7: 'Mg',
+    };
 
-      case ChartScale.month3:
-        // 3 bulan terakhir, satu titik per bulan
-        for (int i = 2; i >= 0; i--) {
-          final monthDate = DateTime(now.year, now.month - i, 1);
-          final start =
-              DateTime(monthDate.year, monthDate.month, 1, 0, 0, 0);
-          final end = DateTime(monthDate.year, monthDate.month + 1, 1)
-              .subtract(const Duration(seconds: 1));
-          final r = await txRepo.getTotalIncomeByDateRange(start, end);
-          final g = await txRepo.getTotalProfitByDateRange(start, end);
-          final o = await opRepo.getTotalByDateRange(start, end);
-          final n = g - o;
-          final label =
-              _getMonthName(monthDate.month).substring(0, 3);
-          chartData[label] = (revenue: r, netProfit: n);
-        }
+    final monthNames = [
+      '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    ];
 
-      case ChartScale.month6:
-        // 6 bulan terakhir, satu titik per bulan
-        for (int i = 5; i >= 0; i--) {
-          final monthDate = DateTime(now.year, now.month - i, 1);
-          final start =
-              DateTime(monthDate.year, monthDate.month, 1, 0, 0, 0);
-          final end = DateTime(monthDate.year, monthDate.month + 1, 1)
-              .subtract(const Duration(seconds: 1));
-          final r = await txRepo.getTotalIncomeByDateRange(start, end);
-          final g = await txRepo.getTotalProfitByDateRange(start, end);
-          final o = await opRepo.getTotalByDateRange(start, end);
-          final n = g - o;
-          final label =
-              _getMonthName(monthDate.month).substring(0, 3);
-          chartData[label] = (revenue: r, netProfit: n);
-        }
+    for (int i = loopCount - 1; i >= 0; i--) {
+      DateTime startRange;
+      DateTime endRange;
+      String pointLabel;
+
+      if (scale == ChartScale.week7) {
+        final date = now.subtract(Duration(days: i));
+        startRange = DateTime(date.year, date.month, date.day, 0, 0, 0);
+        endRange = DateTime(date.year, date.month, date.day, 23, 59, 59);
+        pointLabel = dayNames[date.weekday] ?? '';
+      } else if (scale == ChartScale.month1) {
+        final date = now.subtract(Duration(days: i));
+        startRange = DateTime(date.year, date.month, date.day, 0, 0, 0);
+        endRange = DateTime(date.year, date.month, date.day, 23, 59, 59);
+        pointLabel = date.day.toString();
+      } else if (scale == ChartScale.month3) {
+        final endOfWeek = now.subtract(Duration(days: i * 7));
+        final startOfWeek = now.subtract(Duration(days: i * 7 + 6));
+        startRange = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day, 0, 0, 0);
+        endRange = DateTime(endOfWeek.year, endOfWeek.month, endOfWeek.day, 23, 59, 59);
+        pointLabel = 'M${12 - i}';
+      } else {
+        final monthDate = DateTime(now.year, now.month - i, 1);
+        startRange = DateTime(monthDate.year, monthDate.month, 1, 0, 0, 0);
+        endRange = DateTime(monthDate.year, monthDate.month + 1, 1).subtract(const Duration(seconds: 1));
+        pointLabel = monthNames[monthDate.month];
+      }
+
+      final r = await txRepo.getTotalIncomeByDateRange(startRange, endRange);
+      final g = await txRepo.getTotalProfitByDateRange(startRange, endRange);
+      final o = await opRepo.getTotalByDateRange(startRange, endRange);
+      final n = g - o;
+      
+      chartData[pointLabel] = (revenue: r, netProfit: n);
     }
 
     return chartData;
@@ -246,6 +234,15 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
     state = AsyncData(current.copyWith(chartScale: scale));
     final chartData = await _buildChartData(scale);
     state = AsyncData(state.value!.copyWith(chartData: chartData));
+  }
+
+  /// Refresh data keuangan periode aktif tanpa mereset pilihan tanggal/periode.
+  Future<void> refresh() async {
+    final current = state.valueOrNull;
+    if (current != null) {
+      state = AsyncData(current.copyWith(isLoading: true));
+      state = AsyncData(await _loadData(current));
+    }
   }
 
   Future<bool> addOperationalCost({

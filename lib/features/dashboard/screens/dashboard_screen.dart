@@ -731,7 +731,8 @@ class DashboardScreen extends ConsumerWidget {
                           2,
                           '0',
                         );
-                        final formattedTime = '$hourStr:$minStr';
+                        final formattedTime =
+                            '${tx.createdAt.day} ${_getMonthName(tx.createdAt.month)} ${tx.createdAt.year} - $hourStr:$minStr';
 
                         final txColor = tx.paymentMethod == PaymentMethod.credit
                             ? AppColors.secondary
@@ -765,7 +766,7 @@ class DashboardScreen extends ConsumerWidget {
                                 color: txColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(txIcon, color: txColor, size: 20),
+                              child: Icon(txIcon, color: txColor, size: 18),
                             ),
                             title: Text(
                               txLabel,
@@ -843,7 +844,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const ShimmerLoading(),
+          loading: () => ShimmerLoading(),
           error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
         ),
       ),
@@ -1002,7 +1003,7 @@ class DashboardScreen extends ConsumerWidget {
                     ref,
                     state.selectedPeriod,
                     DashboardPeriod.oneMonth,
-                    '30 Hari',
+                    '1 Bulan',
                   ),
                   const SizedBox(width: 8),
                   _buildPeriodChip(
