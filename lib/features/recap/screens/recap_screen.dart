@@ -1324,11 +1324,15 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Text(
-                        '${date.day} ${_getMonthName(date.month).substring(0, 3)} ${date.year}',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.bold,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '${date.day} ${_getMonthName(date.month).substring(0, 3)} ${date.year}',
+                          textAlign: TextAlign.center,
+                          softWrap: false,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
