@@ -46,9 +46,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.primary,
-                onPrimary: Colors.white,
-              ),
+            primary: AppColors.primary,
+            onPrimary: Colors.white,
+          ),
         ),
         child: child!,
       ),
@@ -71,7 +71,11 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Text(
               message,
@@ -118,7 +122,8 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'Laporan Keuangan ${settingsState.businessName}',
-      text: 'Laporan keuangan CatatIn — '
+      text:
+          'Laporan keuangan CatatIn — '
           '${_formatDate(_startDate)} s/d '
           '${_formatDate(_endDate)}',
     );
@@ -144,11 +149,11 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     try {
       final bytes = await file.readAsBytes();
       final ext = _format == ExportFormat.pdf ? '.pdf' : '.xlsx';
-      
+
       final startFmt = _formatDate(_startDate).replaceAll('/', '-');
       final endFmt = _formatDate(_endDate).replaceAll('/', '-');
       final fileName = 'CatatIn_Laporan_${startFmt}_s-d_$endFmt$ext';
-      
+
       final path = await FilePicker.platform.saveFile(
         dialogTitle: 'Simpan Laporan',
         fileName: fileName,
@@ -178,167 +183,178 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
         24,
         20,
         24,
-        24 + MediaQuery.of(context).viewInsets.bottom,
+        16 +
+            MediaQuery.of(context).padding.bottom +
+            MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Handle bar
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          // Title
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.picture_as_pdf_rounded,
-                  color: AppColors.primary,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Export Laporan',
-                    style: AppTextStyles.headingSmall,
+            // Title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  Text(
-                    'Pilih periode dan format file',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          const Divider(),
-          const SizedBox(height: 16),
-
-          // Periode
-          Text('Periode Laporan', style: AppTextStyles.labelLarge),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: isLoading ? null : _pickDateRange,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(12),
-                color: AppColors.background,
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.date_range_rounded,
+                  child: const Icon(
+                    Icons.picture_as_pdf_rounded,
                     color: AppColors.primary,
-                    size: 20,
+                    size: 22,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${_formatDate(_startDate)}  →  ${_formatDate(_endDate)}',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Export Laporan', style: AppTextStyles.headingSmall),
+                    Text(
+                      'Pilih periode dan format file',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+
+            // Periode
+            Text('Periode Laporan', style: AppTextStyles.labelLarge),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: isLoading ? null : _pickDateRange,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.background,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.date_range_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${_formatDate(_startDate)}  →  ${_formatDate(_endDate)}',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  const Icon(
-                    Icons.arrow_drop_down_rounded,
-                    color: AppColors.textSecondary,
-                  ),
-                ],
+                    const Icon(
+                      Icons.arrow_drop_down_rounded,
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          // Format pilihan
-          Text('Format File', style: AppTextStyles.labelLarge),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _FormatCard(
-                  icon: Icons.picture_as_pdf_rounded,
-                  label: 'PDF',
-                  description: 'Siap cetak & share',
-                  color: const Color(0xFFE53E3E),
-                  isSelected: _format == ExportFormat.pdf,
-                  onTap: isLoading ? null : () => setState(() => _format = ExportFormat.pdf),
+            // Format pilihan
+            Text('Format File', style: AppTextStyles.labelLarge),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _FormatCard(
+                    icon: Icons.picture_as_pdf_rounded,
+                    label: 'PDF',
+                    description: 'Siap cetak & share',
+                    color: const Color(0xFFE53E3E),
+                    isSelected: _format == ExportFormat.pdf,
+                    onTap: isLoading
+                        ? null
+                        : () => setState(() => _format = ExportFormat.pdf),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _FormatCard(
+                    icon: Icons.table_chart_rounded,
+                    label: 'XLSX',
+                    description: 'Untuk analisis Excel',
+                    color: const Color(0xFF1A7A4A),
+                    isSelected: _format == ExportFormat.xlsx,
+                    onTap: isLoading
+                        ? null
+                        : () => setState(() => _format = ExportFormat.xlsx),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Tombol export / save / share
+            if (isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              )
+            else ...[
+              SizedBox(
+                height: 52,
+                child: FilledButton.icon(
+                  onPressed: _exportAndSave,
+                  icon: const Icon(Icons.save_alt_rounded),
+                  label: const Text('Simpan di Perangkat'),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _FormatCard(
-                  icon: Icons.table_chart_rounded,
-                  label: 'XLSX',
-                  description: 'Untuk analisis Excel',
-                  color: const Color(0xFF1A7A4A),
-                  isSelected: _format == ExportFormat.xlsx,
-                  onTap: isLoading ? null : () => setState(() => _format = ExportFormat.xlsx),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 52,
+                child: OutlinedButton.icon(
+                  onPressed: _exportAndShare,
+                  icon: const Icon(Icons.share_rounded),
+                  label: const Text('Bagikan Laporan'),
                 ),
               ),
+              const SizedBox(
+                height: 48,
+              ), // Large bottom spacer to prevent overlapping with FAB
             ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Tombol export / save / share
-          if (isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            )
-          else ...[
-            SizedBox(
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: _exportAndShare,
-                icon: const Icon(Icons.share_rounded),
-                label: const Text('Bagikan Laporan'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 52,
-              child: OutlinedButton.icon(
-                onPressed: _exportAndSave,
-                icon: const Icon(Icons.save_alt_rounded),
-                label: const Text('Simpan di Perangkat'),
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -370,7 +386,9 @@ class _FormatCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.08) : AppColors.background,
+          color: isSelected
+              ? color.withValues(alpha: 0.08)
+              : AppColors.background,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? color : AppColors.border,
@@ -380,7 +398,11 @@ class _FormatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: isSelected ? color : AppColors.textSecondary, size: 26),
+            Icon(
+              icon,
+              color: isSelected ? color : AppColors.textSecondary,
+              size: 26,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
@@ -389,10 +411,7 @@ class _FormatCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              description,
-              style: AppTextStyles.bodySmall,
-            ),
+            Text(description, style: AppTextStyles.bodySmall),
           ],
         ),
       ),

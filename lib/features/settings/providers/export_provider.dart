@@ -64,16 +64,24 @@ class ExportNotifier extends AsyncNotifier<ExportState> {
       final txRepo = ref.read(transactionRepositoryProvider);
       final costRepo = ref.read(operationalCostRepositoryProvider);
       final receivableRepo = ref.read(receivableRepositoryProvider);
+      final productRepo = ref.read(productRepositoryProvider);
       final settingsState = await ref.read(settingsProvider.future);
 
       // Ambil semua data secara paralel
       final txFuture = txRepo.getByDateRange(start, end);
       final costFuture = costRepo.getByDateRange(start, end);
       final receivableFuture = receivableRepo.getAll();
+      final productFuture = productRepo.getAll();
 
       final transactions = await txFuture;
       final operationalCosts = await costFuture;
       final receivables = await receivableFuture;
+      final products = await productFuture;
+
+      // Load histories untuk tiap produk secara paralel
+      final historyFutures = products.map((p) => productRepo.getStockHistory(p.id));
+      final historiesLists = await Future.wait(historyFutures);
+      final allHistories = historiesLists.expand((h) => h).toList();
 
       final exportData = ExportData(
         businessName: settingsState.businessName,
@@ -83,6 +91,8 @@ class ExportNotifier extends AsyncNotifier<ExportState> {
         transactions: transactions,
         operationalCosts: operationalCosts,
         receivables: receivables,
+        products: products,
+        stockHistory: allHistories,
       );
 
       final File file;

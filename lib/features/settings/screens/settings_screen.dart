@@ -465,7 +465,10 @@ class SettingsScreen extends ConsumerWidget {
       ),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: EdgeInsets.only(
+            top: 24,
+            bottom: 24 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,6 +854,7 @@ class SettingsScreen extends ConsumerWidget {
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('Tambah Rekening / E-Wallet'),
                   ),
+                  const SizedBox(height: 16), // Spacer untuk mencegah mepet dengan navigasi
                 ],
               ),
             );

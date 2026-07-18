@@ -35,7 +35,15 @@ class ExportService {
   static String _fmtDateTime(DateTime dt) => _dateTimeFormat.format(dt);
 
   static String _periodLabel(DateTime start, DateTime end) =>
-      '${_fmtDate(start)} – ${_fmtDate(end)}';
+      '${_fmtDate(start)} - ${_fmtDate(end)}';
+
+  static String _getMonthYearLabel(DateTime start, DateTime end) {
+    if (start.month == end.month && start.year == end.year) {
+      return DateFormat('MMMM yyyy', 'id_ID').format(start);
+    } else {
+      return '${DateFormat('MMMM yyyy', 'id_ID').format(start)} - ${DateFormat('MMMM yyyy', 'id_ID').format(end)}';
+    }
+  }
 
   // ──────────────────────────────────────────────────────────
   // PDF Generation
@@ -63,10 +71,40 @@ class ExportService {
         ),
         footer: (ctx) => _pdfFooter(ctx, textSecondary),
         build: (ctx) => [
-          // Ringkasan Keuangan
           pw.SizedBox(height: 16),
-          _pdfSectionTitle('Ringkasan Keuangan', brandGreen),
-          pw.SizedBox(height: 8),
+          // Judul Laporan Laba Rugi Centered
+          pw.Center(
+            child: pw.Column(
+              children: [
+                pw.Text(
+                  data.businessName.isNotEmpty ? data.businessName : 'Nama Usaha',
+                  style: pw.TextStyle(
+                    fontSize: 14,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'Laporan Laba Rugi',
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                    color: brandGreen,
+                  ),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'Periode: ${_getMonthYearLabel(data.startDate, data.endDate)}',
+                  style: pw.TextStyle(
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
+                    color: textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 20),
           _pdfSummaryTable(data, brandGreen, brandGreenLight, borderColor),
 
           pw.SizedBox(height: 24),
@@ -216,28 +254,55 @@ class ExportService {
     PdfColor brandGreenLight,
     PdfColor borderColor,
   ) {
+    final grossProfit = data.totalRevenue - data.totalHpp;
+
     final rows = [
-      ['Total Pemasukan', _fmt(data.totalRevenue)],
-      ['Total Biaya Operasional', _fmt(data.totalOperationalCost)],
-      ['Laba Bersih', _fmt(data.netProfit)],
-      ['Piutang Belum Lunas', _fmt(data.totalOutstandingReceivables)],
-      ['Total Transaksi', '${data.transactions.length} transaksi'],
+      // Penjualan
+      ['Penjualan', _fmt(data.totalRevenue), '', false],
+      ['Retur Produk', _fmt(0), '', false],
+      ['  Penjualan Bersih', '', _fmt(data.totalRevenue), true],
+      
+      // HPP Header
+      ['Harga Pokok Penjualan (HPP):', '', '', false],
+      ['  Persediaan Barang (Awal)', _fmt(data.initialInventoryValue), '', false],
+      ['  Pembelian Barang', _fmt(data.purchasesValue), '', false],
+      ['  Persediaan Barang (Akhir)', '(${_fmt(data.endingInventoryValue)})', '', false],
+      ['  Total HPP', '', '(${_fmt(data.totalHpp)})', true],
+      
+      // Laba Kotor
+      ['Laba Kotor (Gross Profit)', '', _fmt(grossProfit), true],
+      
+      // Beban Operasional
+      ['Beban Operasional:', '', '', false],
+      ['  Beban Gaji/Operasional Lain', _fmt(data.totalOperationalCost), '', false],
+      ['  Total Beban Operasional', '', '(${_fmt(data.totalOperationalCost)})', true],
+      
+      // Laba Bersih
+      ['Laba Bersih (Net Profit)', '', _fmt(data.netProfit), true],
     ];
 
     return pw.Table(
+      columnWidths: {
+        0: const pw.FlexColumnWidth(3),
+        1: const pw.FlexColumnWidth(1.5),
+        2: const pw.FlexColumnWidth(1.5),
+      },
       border: pw.TableBorder.all(color: borderColor, width: 0.5),
-      children: rows.asMap().entries.map((entry) {
-        final i = entry.key;
-        final row = entry.value;
-        final isProfitRow = i == 2;
-        final isPositiveProfit = data.netProfit > 0;
+      children: rows.map((row) {
+        final label = row[0] as String;
+        final col1 = row[1] as String;
+        final col2 = row[2] as String;
+        final isBold = row[3] as bool;
+
+        final isHeader = label.endsWith(':');
+        final isNetProfit = label.contains('Laba Bersih');
         
-        final rowBgColor = isProfitRow
-            ? (isPositiveProfit ? brandGreenLight : PdfColor.fromInt(0xFFFEECEC))
-            : (i % 2 == 0 ? PdfColors.white : PdfColor.fromInt(0xFFF9FAFB));
-            
-        final textCol = isProfitRow
-            ? (isPositiveProfit ? brandGreen : PdfColors.red)
+        final rowBgColor = isNetProfit
+            ? (data.netProfit >= 0 ? brandGreenLight : PdfColor.fromInt(0xFFFEECEC))
+            : (isBold ? PdfColor.fromInt(0xFFF9FAFB) : PdfColors.white);
+
+        final textCol = isNetProfit
+            ? (data.netProfit >= 0 ? brandGreen : PdfColors.red)
             : null;
 
         return pw.TableRow(
@@ -245,15 +310,32 @@ class ExportService {
           children: [
             pw.Padding(
               padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: pw.Text(row[0], style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              child: pw.Text(
+                label,
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: (isBold || isHeader) ? pw.FontWeight.bold : pw.FontWeight.normal,
+                ),
+              ),
             ),
             pw.Padding(
               padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: pw.Text(
-                row[1],
+                col1,
                 style: pw.TextStyle(
                   fontSize: 10,
-                  fontWeight: isProfitRow ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  color: textCol,
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: pw.Text(
+                col2,
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
                   color: textCol,
                 ),
               ),
@@ -428,7 +510,7 @@ class ExportService {
     return pw.Table(
       border: pw.TableBorder.all(color: borderColor, width: 0.5),
       columnWidths: {
-        0: const pw.FlexColumnWidth(0.4),
+        0: const pw.FlexColumnWidth(0.8), // Diperlebar agar tidak terpotong
         1: const pw.FlexColumnWidth(2),
         2: const pw.FlexColumnWidth(1.5),
         3: const pw.FlexColumnWidth(1.5),
@@ -509,48 +591,89 @@ class ExportService {
   }
 
   static void _buildSummarySheet(Excel excel, ExportData data) {
-    final sheet = excel['Ringkasan'];
+    final sheet = excel['Laba Rugi'];
 
     // Judul
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
-        TextCellValue('LAPORAN KEUANGAN — ${data.businessName}');
+        TextCellValue(data.businessName.isNotEmpty ? data.businessName : 'Nama Usaha');
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).cellStyle = _boldStyle();
+
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1)).value =
-        TextCellValue('Periode: ${_periodLabel(data.startDate, data.endDate)}');
+        TextCellValue('Laporan Laba Rugi');
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1)).cellStyle = _boldStyle();
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2)).value =
+        TextCellValue('Periode: ${_getMonthYearLabel(data.startDate, data.endDate)}');
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2)).cellStyle = _boldStyle();
+
     if (data.ownerName.isNotEmpty) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2)).value =
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 3)).value =
           TextCellValue('Pemilik: ${data.ownerName}');
     }
 
     // Header tabel
-    _setHeader(sheet, 4, ['Keterangan', 'Nilai (Rp)']);
+    _setHeader(sheet, 5, ['Keterangan', 'Nilai (Rp)', 'Total (Rp)']);
+
+    final grossProfit = data.totalRevenue - data.totalHpp;
 
     final rows = [
-      ['Total Pemasukan', data.totalRevenue],
-      ['Total Biaya Operasional', data.totalOperationalCost],
-      ['Laba Bersih', data.netProfit],
-      ['Piutang Belum Lunas', data.totalOutstandingReceivables],
-      ['Jumlah Transaksi', data.transactions.length],
+      // Penjualan
+      ['Penjualan', data.totalRevenue, null, false],
+      ['Retur Produk', 0, null, false],
+      ['  Penjualan Bersih', null, data.totalRevenue, true],
+      
+      // HPP Header
+      ['Harga Pokok Penjualan (HPP):', null, null, false],
+      ['  Persediaan Barang (Awal)', data.initialInventoryValue, null, false],
+      ['  Pembelian Barang', data.purchasesValue, null, false],
+      ['  Persediaan Barang (Akhir)', -data.endingInventoryValue, null, false],
+      ['  Total HPP', null, -data.totalHpp, true],
+      
+      // Laba Kotor
+      ['Laba Kotor (Gross Profit)', null, grossProfit, true],
+      
+      // Beban Operasional
+      ['Beban Operasional:', null, null, false],
+      ['  Beban Gaji/Operasional Lain', data.totalOperationalCost, null, false],
+      ['  Total Beban Operasional', null, -data.totalOperationalCost, true],
+      
+      // Laba Bersih
+      ['Laba Bersih (Net Profit)', null, data.netProfit, true],
     ];
 
     for (var i = 0; i < rows.length; i++) {
-      final rowIdx = 5 + i;
-      final isProfit = i == 2;
-      final labelCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIdx));
-      labelCell.value = TextCellValue(rows[i][0] as String);
-      if (isProfit) labelCell.cellStyle = _boldStyle();
+      final rowIdx = 6 + i;
+      final label = rows[i][0] as String;
+      final col1 = rows[i][1];
+      final col2 = rows[i][2];
+      final isBold = rows[i][3] as bool;
 
-      final valCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIdx));
-      if (rows[i][1] is int) {
-        valCell.value = IntCellValue(rows[i][1] as int);
-        valCell.cellStyle = isProfit ? _totalStyle() : _moneyStyle();
-      } else {
-        valCell.value = TextCellValue('${rows[i][1]}');
+      final isHeader = label.endsWith(':');
+      final isNetProfit = label.contains('Laba Bersih');
+
+      final labelCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIdx));
+      labelCell.value = TextCellValue(label);
+      if (isBold || isHeader) {
+        labelCell.cellStyle = _boldStyle();
+      }
+
+      if (col1 != null) {
+        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIdx));
+        cell.value = IntCellValue(col1 as int);
+        cell.cellStyle = _moneyStyle();
+      }
+
+      if (col2 != null) {
+        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIdx));
+        cell.value = IntCellValue(col2 as int);
+        cell.cellStyle = isNetProfit ? _totalStyle() : (isBold ? _boldStyle() : _moneyStyle());
       }
     }
 
     // Set column widths
-    sheet.setColumnWidth(0, 30);
+    sheet.setColumnWidth(0, 35);
     sheet.setColumnWidth(1, 20);
+    sheet.setColumnWidth(2, 20);
   }
 
   static void _buildTransactionSheet(Excel excel, ExportData data) {
