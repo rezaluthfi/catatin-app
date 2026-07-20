@@ -18,13 +18,6 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
     return _loadData(RecapState(selectedDate: DateTime.now()));
   }
 
-  String _getMonthName(int month) {
-    return const [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ][month];
-  }
-
   /// Bangun data grafik berdasarkan [ChartScale] yang dipilih.
   /// Semua skala selalu relatif terhadap hari ini (DateTime.now()).
   Future<Map<String, ({int revenue, int netProfit})>> _buildChartData(

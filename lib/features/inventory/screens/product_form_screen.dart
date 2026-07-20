@@ -116,7 +116,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         imageQuality: 85,
       );
       if (pickedFile != null) {
-        await _cropImage(pickedFile.path);
+        if (Platform.isWindows || Platform.isLinux) {
+          setState(() {
+            _selectedImagePath = pickedFile.path;
+          });
+        } else {
+          await _cropImage(pickedFile.path);
+        }
       }
     } catch (e) {
       if (mounted) {
