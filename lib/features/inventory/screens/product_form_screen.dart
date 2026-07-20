@@ -639,13 +639,16 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            isPositive
-                                ? 'Tambah Stok: +${item.stockAdded} pcs'
-                                : 'Kurang Stok: ${item.stockAdded} pcs',
-                            style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: FittedBox(
+                            alignment: Alignment.centerLeft,
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              isPositive
+                                  ? 'Tambah Stok: +${item.stockAdded} pcs'
+                                  : 'Kurang Stok: ${item.stockAdded} pcs',
+                              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                            ),
                           ),
                         ),
                         if (hasPriceDiff)
