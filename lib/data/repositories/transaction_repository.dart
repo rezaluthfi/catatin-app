@@ -68,7 +68,7 @@ class TransactionRepository implements ITransactionRepository {
 
           // 4. Catat ke riwayat stok produk (pengurangan dari transaksi)
           final historyModel = ProductStockHistoryModel(
-            id: _uuid.v4(),
+            id: 'pos_${_uuid.v4()}',
             productId: item.productId,
             purchasePrice: item.purchasePriceAtTime,
             sellingPrice: item.sellingPriceAtTime,

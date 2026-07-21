@@ -169,8 +169,11 @@ class PosNotifier extends Notifier<PosState> {
         );
       }
 
-      // Refresh data inventaris karena stok berkurang
+      // Refresh data inventaris & riwayat stok karena stok berkurang
       ref.invalidate(inventoryProvider);
+      for (final item in transactionItems) {
+        ref.invalidate(productStockHistoryProvider(item.productId));
+      }
       
       // Refresh data piutang jika ada penambahan kasbon
       if (paymentMethod == PaymentMethod.credit) {

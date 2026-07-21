@@ -40,6 +40,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
   String? _selectedImagePath;
   DateTime _selectedDate = DateTime.now();
+  int _historyCurrentPage = 1;
+  static const int _historyPageSize = 10;
 
   @override
   void initState() {
@@ -57,8 +59,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       if (match.isNotEmpty) {
         _existingProduct = match.first;
         _nameController.text = _existingProduct!.name;
-        _purchasePriceController.text = _existingProduct!.purchasePrice.toRupiahNoSymbol();
-        _sellingPriceController.text = _existingProduct!.sellingPrice.toRupiahNoSymbol();
+        _purchasePriceController.text = _existingProduct!.purchasePrice
+            .toRupiahNoSymbol();
+        _sellingPriceController.text = _existingProduct!.sellingPrice
+            .toRupiahNoSymbol();
         _selectedDate = _existingProduct!.updatedAt;
         _dateController.text = _formatDate(_selectedDate);
         _selectedImagePath = _existingProduct!.imagePath;
@@ -137,7 +141,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     try {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: filePath,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Square aspect ratio
+        aspectRatio: const CropAspectRatio(
+          ratioX: 1,
+          ratioY: 1,
+        ), // Square aspect ratio
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Potong Foto Produk',
@@ -182,7 +189,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Ambil dari Kamera'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -190,17 +200,27 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Pilih dari Galeri'),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImage(ImageSource.gallery);
                 },
               ),
-              if (_selectedImagePath != null || _existingProduct?.imagePath != null)
+              if (_selectedImagePath != null ||
+                  _existingProduct?.imagePath != null)
                 ListTile(
-                  leading: const Icon(Icons.delete_outline_rounded, color: AppColors.expense),
-                  title: const Text('Hapus Foto', style: TextStyle(color: AppColors.expense)),
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.expense,
+                  ),
+                  title: const Text(
+                    'Hapus Foto',
+                    style: TextStyle(color: AppColors.expense),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     setState(() {
@@ -237,7 +257,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   color: Colors.black54,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 14),
+                child: const Icon(
+                  Icons.edit_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
               ),
             ),
           ],
@@ -275,18 +299,25 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
     try {
       final name = _nameController.text.trim();
-      final purchasePrice = int.parse(_purchasePriceController.text.replaceAll('.', '').trim());
-      final sellingPrice = int.parse(_sellingPriceController.text.replaceAll('.', '').trim());
+      final purchasePrice = int.parse(
+        _purchasePriceController.text.replaceAll('.', '').trim(),
+      );
+      final sellingPrice = int.parse(
+        _sellingPriceController.text.replaceAll('.', '').trim(),
+      );
       final inputQty = int.parse(_stockController.text.trim());
 
       String? finalImagePath;
       if (_selectedImagePath == '') {
         finalImagePath = null; // Dihapus oleh user
-      } else if (_selectedImagePath != null && _selectedImagePath != _existingProduct?.imagePath) {
+      } else if (_selectedImagePath != null &&
+          _selectedImagePath != _existingProduct?.imagePath) {
         // Salin file ke dokumen lokal aplikasi agar aman
         final appDir = await getApplicationDocumentsDirectory();
         final fileName = 'product_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final savedFile = await File(_selectedImagePath!).copy('${appDir.path}/$fileName');
+        final savedFile = await File(
+          _selectedImagePath!,
+        ).copy('${appDir.path}/$fileName');
         finalImagePath = savedFile.path;
       } else {
         finalImagePath = _existingProduct?.imagePath;
@@ -305,7 +336,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           imagePath: () => finalImagePath,
           updatedAt: _selectedDate,
         );
-        await ref.read(inventoryProvider.notifier).updateProduct(updatedProduct);
+        await ref
+            .read(inventoryProvider.notifier)
+            .updateProduct(updatedProduct);
       } else {
         // Add produk
         if (_selectedEtalaseProduct != null) {
@@ -314,10 +347,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             purchasePrice: purchasePrice,
             sellingPrice: sellingPrice,
             stock: _selectedEtalaseProduct!.stock + delta,
-            imagePath: () => finalImagePath ?? _selectedEtalaseProduct!.imagePath,
+            imagePath: () =>
+                finalImagePath ?? _selectedEtalaseProduct!.imagePath,
             updatedAt: _selectedDate,
           );
-          await ref.read(inventoryProvider.notifier).updateProduct(updatedProduct);
+          await ref
+              .read(inventoryProvider.notifier)
+              .updateProduct(updatedProduct);
         } else {
           // Produk baru
           final newProduct = ProductModel(
@@ -337,11 +373,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_existingProduct != null
-                ? 'Produk berhasil diperbarui!'
-                : (_selectedEtalaseProduct != null
-                    ? 'Stok produk etalase berhasil diperbarui!'
-                    : 'Produk baru berhasil ditambahkan!')),
+            content: Text(
+              _existingProduct != null
+                  ? 'Produk berhasil diperbarui!'
+                  : (_selectedEtalaseProduct != null
+                        ? 'Stok produk etalase berhasil diperbarui!'
+                        : 'Produk baru berhasil ditambahkan!'),
+            ),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -378,13 +416,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => context.pop(),
         ),
         actions: [
           if (isEdit)
             IconButton(
-              icon: const Icon(Icons.delete_outline_rounded, color: AppColors.expense),
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.expense,
+              ),
               onPressed: _showDeleteConfirmation,
             ),
         ],
@@ -426,14 +470,18 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     prefixIcon: Icon(Icons.inventory_2_outlined),
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Nama produk wajib diisi';
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Nama produk wajib diisi';
+                    }
                     return null;
                   },
                 )
               else
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final allProducts = ref.watch(inventoryProvider).valueOrNull?.products ?? [];
+                    final allProducts =
+                        ref.watch(inventoryProvider).valueOrNull?.products ??
+                        [];
                     return RawAutocomplete<ProductModel>(
                       focusNode: FocusNode(),
                       textEditingController: _nameController,
@@ -442,39 +490,52 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                           return const Iterable<ProductModel>.empty();
                         }
                         final query = textEditingValue.text.toLowerCase();
-                        return allProducts.where((p) => p.name.toLowerCase().contains(query));
+                        return allProducts.where(
+                          (p) => p.name.toLowerCase().contains(query),
+                        );
                       },
-                      displayStringForOption: (ProductModel option) => option.name,
+                      displayStringForOption: (ProductModel option) =>
+                          option.name,
                       onSelected: (ProductModel selection) {
                         setState(() {
                           _nameController.text = selection.name;
-                          _purchasePriceController.text = selection.purchasePrice.toRupiahNoSymbol();
-                          _sellingPriceController.text = selection.sellingPrice.toRupiahNoSymbol();
+                          _purchasePriceController.text = selection
+                              .purchasePrice
+                              .toRupiahNoSymbol();
+                          _sellingPriceController.text = selection.sellingPrice
+                              .toRupiahNoSymbol();
                           _selectedEtalaseProduct = selection;
                         });
                       },
-                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                        return TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: const InputDecoration(
-                            hintText: 'Cari atau ketik nama produk...',
-                            prefixIcon: Icon(Icons.inventory_2_outlined),
-                          ),
-                          onChanged: (val) {
-                            final match = allProducts.where(
-                              (p) => p.name.trim().toLowerCase() == val.trim().toLowerCase(),
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onFieldSubmitted) {
+                            return TextFormField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              decoration: const InputDecoration(
+                                hintText: 'Cari atau ketik nama produk...',
+                                prefixIcon: Icon(Icons.inventory_2_outlined),
+                              ),
+                              onChanged: (val) {
+                                final match = allProducts.where(
+                                  (p) =>
+                                      p.name.trim().toLowerCase() ==
+                                      val.trim().toLowerCase(),
+                                );
+                                setState(() {
+                                  _selectedEtalaseProduct = match.isNotEmpty
+                                      ? match.first
+                                      : null;
+                                });
+                              },
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return 'Nama produk wajib diisi';
+                                }
+                                return null;
+                              },
                             );
-                            setState(() {
-                              _selectedEtalaseProduct = match.isNotEmpty ? match.first : null;
-                            });
                           },
-                          validator: (val) {
-                            if (val == null || val.trim().isEmpty) return 'Nama produk wajib diisi';
-                            return null;
-                          },
-                        );
-                      },
                       optionsViewBuilder: (context, onSelected, options) {
                         return Align(
                           alignment: Alignment.topLeft,
@@ -489,12 +550,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                                 shrinkWrap: true,
                                 itemCount: options.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final ProductModel option = options.elementAt(index);
+                                  final ProductModel option = options.elementAt(
+                                    index,
+                                  );
                                   return ListTile(
-                                    title: Text(option.name, style: AppTextStyles.bodyMedium),
+                                    title: Text(
+                                      option.name,
+                                      style: AppTextStyles.bodyMedium,
+                                    ),
                                     subtitle: Text(
                                       'Stok saat ini: ${option.stock} | Modal: ${option.purchasePrice.toRupiah()} | Jual: ${option.sellingPrice.toRupiah()}',
-                                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
                                     ),
                                     onTap: () {
                                       onSelected(option);
@@ -528,8 +596,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                             prefixText: 'Rp',
                           ),
                           validator: (val) {
-                            if (val == null || val.isEmpty) return 'Wajib diisi';
-                            if (int.tryParse(val.replaceAll('.', '')) == null) return 'Harus angka';
+                            if (val == null || val.isEmpty) {
+                              return 'Wajib diisi';
+                            }
+                            if (int.tryParse(val.replaceAll('.', '')) == null) {
+                              return 'Harus angka';
+                            }
                             return null;
                           },
                         ),
@@ -552,8 +624,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                             prefixText: 'Rp',
                           ),
                           validator: (val) {
-                            if (val == null || val.isEmpty) return 'Wajib diisi';
-                            if (int.tryParse(val.replaceAll('.', '')) == null) return 'Harus angka';
+                            if (val == null || val.isEmpty) {
+                              return 'Wajib diisi';
+                            }
+                            if (int.tryParse(val.replaceAll('.', '')) == null) {
+                              return 'Harus angka';
+                            }
                             return null;
                           },
                         ),
@@ -565,30 +641,43 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: _purchasePriceController,
                 builder: (context, value, child) {
-                  final purchasePrice = int.tryParse(value.text.replaceAll('.', ''));
+                  final purchasePrice = int.tryParse(
+                    value.text.replaceAll('.', ''),
+                  );
                   if (purchasePrice == null || purchasePrice <= 0) {
                     return const SizedBox(height: 20);
                   }
                   final margin = purchasePrice * (defaultMargin / 100);
-                  final recommended = ((purchasePrice + margin) / 100).ceil() * 100;
+                  final recommended =
+                      ((purchasePrice + margin) / 100).ceil() * 100;
 
                   return Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 20),
                     child: InkWell(
                       onTap: () {
-                        _sellingPriceController.text = recommended.toRupiahNoSymbol();
+                        _sellingPriceController.text = recommended
+                            .toRupiahNoSymbol();
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 4.0,
+                        ),
                         child: Row(
                           children: [
-                            const Icon(Icons.lightbulb_outline, size: 16, color: AppColors.primary),
+                            const Icon(
+                              Icons.lightbulb_outline,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Rekomendasi Harga Jual: ${recommended.toRupiah()} (Margin $defaultMargin%)',
-                                style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
+                                style: AppTextStyles.labelMedium.copyWith(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           ],
@@ -601,76 +690,120 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
               // Mode Penyesuaian Stok: Jika edit ATAU pilih produk etalase
               if (isEdit || _selectedEtalaseProduct != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Mode Penyesuaian Stok', style: AppTextStyles.labelMedium),
-                          Text(
-                            'Stok saat ini: ${isEdit ? _existingProduct!.stock : _selectedEtalaseProduct!.stock} unit',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Jenis Penyesuaian', style: AppTextStyles.labelMedium),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                      const SizedBox(height: 12),
-                      SegmentedButton<bool>(
-                        segments: const [
-                          ButtonSegment<bool>(
-                            value: true,
-                            label: FittedBox(child: Text('+ Tambah Stok')),
-                            icon: Icon(Icons.add_circle_outline_rounded),
-                          ),
-                          ButtonSegment<bool>(
-                            value: false,
-                            label: FittedBox(child: Text('- Kurang Stok')),
-                            icon: Icon(Icons.remove_circle_outline_rounded),
-                          ),
-                        ],
-                        selected: {_isStockAdd},
-                        onSelectionChanged: (newSelection) {
-                          setState(() {
-                            _isStockAdd = newSelection.first;
-                          });
-                        },
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _isStockAdd ? 'Jumlah Stok Tambahan' : 'Jumlah Stok Yang Dikurangi',
-                        style: AppTextStyles.labelMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _stockController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: _isStockAdd ? 'Mis: 10 (Tambah 10 stok)' : 'Mis: 2 (Kurang 2 stok)',
-                          prefixIcon: Icon(_isStockAdd ? Icons.add_rounded : Icons.remove_rounded),
+                      child: Text(
+                        'Stok saat ini: ${isEdit ? _existingProduct!.stock : _selectedEtalaseProduct!.stock}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
                         ),
-                        validator: (val) {
-                          if (val == null || val.isEmpty) return 'Jumlah stok wajib diisi';
-                          final numVal = int.tryParse(val);
-                          if (numVal == null || numVal <= 0) return 'Masukkan angka lebih dari 0';
-                          final currentStock = isEdit ? _existingProduct!.stock : _selectedEtalaseProduct!.stock;
-                          if (!_isStockAdd && numVal > currentStock) {
-                            return 'Pengurangan melebihi stok yang ada ($currentStock unit)';
-                          }
-                          return null;
-                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<bool>(
+                    showSelectedIcon: true,
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith<Color?>((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.selected)) {
+                          return AppColors.primary;
+                        }
+                        return AppColors.surface;
+                      }),
+                      foregroundColor: WidgetStateProperty.resolveWith<Color?>((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.white;
+                        }
+                        return AppColors.textPrimary;
+                      }),
+                      iconColor: WidgetStateProperty.resolveWith<Color?>((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.white;
+                        }
+                        return AppColors.textPrimary;
+                      }),
+                    ),
+                    segments: const [
+                      ButtonSegment<bool>(
+                        value: true,
+                        label: Text('Tambah Stok (+)'),
+                        icon: Icon(Icons.add_rounded),
+                      ),
+                      ButtonSegment<bool>(
+                        value: false,
+                        label: Text('Kurang Stok (-)'),
+                        icon: Icon(Icons.remove_rounded),
                       ),
                     ],
+                    selected: {_isStockAdd},
+                    onSelectionChanged: (newSelection) {
+                      setState(() {
+                        _isStockAdd = newSelection.first;
+                      });
+                    },
                   ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _isStockAdd
+                      ? 'Jumlah Stok Tambahan'
+                      : 'Jumlah Stok yang Dikurangi',
+                  style: AppTextStyles.labelMedium,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _stockController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: _isStockAdd
+                        ? 'Jumlah barang tambahan (mis: 10)'
+                        : 'Jumlah barang yang dikurangi (mis: 2)',
+                    prefixIcon: Icon(
+                      _isStockAdd
+                          ? Icons.add_circle_outline_rounded
+                          : Icons.remove_circle_outline_rounded,
+                      color: _isStockAdd
+                          ? AppColors.primary
+                          : AppColors.expense,
+                    ),
+                  ),
+                  validator: (val) {
+                    if (val == null || val.isEmpty) {
+                      return 'Jumlah stok wajib diisi';
+                    }
+                    final numVal = int.tryParse(val);
+                    if (numVal == null || numVal <= 0) {
+                      return 'Masukkan angka lebih dari 0';
+                    }
+                    final currentStock = isEdit
+                        ? _existingProduct!.stock
+                        : _selectedEtalaseProduct!.stock;
+                    if (!_isStockAdd && numVal > currentStock) {
+                      return 'Pengurangan melebihi stok yang ada ($currentStock unit)';
+                    }
+                    return null;
+                  },
                 ),
               ] else ...[
                 Text('Stok Awal', style: AppTextStyles.labelMedium),
@@ -683,16 +816,23 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     prefixIcon: Icon(Icons.numbers_rounded),
                   ),
                   validator: (val) {
-                    if (val == null || val.isEmpty) return 'Stok wajib diisi';
+                    if (val == null || val.isEmpty) {
+                      return 'Stok wajib diisi';
+                    }
                     final numVal = int.tryParse(val);
-                    if (numVal == null || numVal < 0) return 'Masukkan angka valid';
+                    if (numVal == null || numVal < 0) {
+                      return 'Masukkan angka valid';
+                    }
                     return null;
                   },
                 ),
               ],
               const SizedBox(height: 20),
 
-              Text(isEdit ? 'Tanggal Perubahan Stok' : 'Tanggal Masuk Stok', style: AppTextStyles.labelMedium),
+              Text(
+                isEdit ? 'Tanggal Perubahan Stok' : 'Tanggal Masuk Stok',
+                style: AppTextStyles.labelMedium,
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _dateController,
@@ -735,7 +875,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   Widget _buildHistorySection() {
     if (_existingProduct == null) return const SizedBox.shrink();
 
-    final historyAsync = ref.watch(productStockHistoryProvider(_existingProduct!.id));
+    final historyAsync = ref.watch(
+      productStockHistoryProvider(_existingProduct!.id),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -745,12 +887,16 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         const SizedBox(height: 24),
         Text(
           'Riwayat Harga & Stok',
-          style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold),
+          style: AppTextStyles.headlineMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           'Catatan perubahan stok dan harga beli produk',
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 16),
         historyAsync.when(
@@ -768,108 +914,206 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   child: Center(
                     child: Text(
                       'Belum ada riwayat stok tercatat',
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
               );
             }
 
-            final hasPriceDiff = historyList.map((h) => h.purchasePrice).toSet().length > 1;
+            final hasPriceDiff =
+                historyList.map((h) => h.purchasePrice).toSet().length > 1;
 
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: historyList.length,
-              itemBuilder: (context, index) {
-                final item = historyList[index];
-                final isPositive = item.stockAdded >= 0;
-                final priceColor = hasPriceDiff ? AppColors.warning : AppColors.textPrimary;
+            final totalPages = (historyList.length / _historyPageSize).ceil();
+            final safePage = _historyCurrentPage > totalPages
+                ? totalPages
+                : (_historyCurrentPage < 1 ? 1 : _historyCurrentPage);
+            final startIndex = (safePage - 1) * _historyPageSize;
+            final endIndex =
+                (startIndex + _historyPageSize < historyList.length)
+                ? startIndex + _historyPageSize
+                : historyList.length;
+            final pageList = historyList.sublist(startIndex, endIndex);
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: AppColors.border),
-                  ),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: (isPositive ? AppColors.primary : AppColors.expense).withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: pageList.length,
+                  itemBuilder: (context, index) {
+                    final item = pageList[index];
+                    final isPositive = item.stockAdded >= 0;
+                    final priceColor = hasPriceDiff
+                        ? AppColors.warning
+                        : AppColors.textPrimary;
+
+                    final isPosTx = item.id.startsWith('pos_');
+                    final IconData iconData;
+                    final Color iconColor;
+                    final String labelText;
+
+                    if (isPositive) {
+                      iconData = Icons.add_rounded;
+                      iconColor = AppColors.income;
+                      labelText = 'Tambah Stok: +${item.stockAdded} pcs';
+                    } else if (isPosTx) {
+                      iconData = Icons.shopping_bag_rounded;
+                      iconColor = AppColors.primary;
+                      labelText = 'Penjualan: ${item.stockAdded} pcs';
+                    } else {
+                      iconData = Icons.remove_rounded;
+                      iconColor = AppColors.expense;
+                      labelText = 'Kurang Stok: ${item.stockAdded} pcs';
+                    }
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: AppColors.border),
                       ),
-                      child: Icon(
-                        isPositive ? Icons.add_rounded : Icons.remove_rounded,
-                        color: isPositive ? AppColors.primary : AppColors.expense,
-                        size: 20,
-                      ),
-                    ),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: FittedBox(
-                            alignment: Alignment.centerLeft,
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              isPositive
-                                  ? 'Tambah Stok: +${item.stockAdded} pcs'
-                                  : 'Kurang Stok: ${item.stockAdded} pcs',
-                              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                            ),
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: iconColor.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
                           ),
+                          child: Icon(iconData, color: iconColor, size: 20),
                         ),
-                        if (hasPriceDiff)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'Beda Harga',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.bold,
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: FittedBox(
+                                alignment: Alignment.centerLeft,
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  labelText,
+                                  style: AppTextStyles.bodyLarge.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tanggal Stok: ${_formatDate(item.date)}',
-                            style: AppTextStyles.bodySmall,
-                          ),
-                          const SizedBox(height: 2),
-                          RichText(
-                            text: TextSpan(
-                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                              children: [
-                                const TextSpan(text: 'Harga Beli: '),
-                                TextSpan(
-                                  text: item.purchasePrice.toRupiah(),
-                                  style: AppTextStyles.bodySmall.copyWith(
+                            if (hasPriceDiff)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warning.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Beda Harga',
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.warning,
                                     fontWeight: FontWeight.bold,
-                                    color: priceColor,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                          ],
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tanggal Stok: ${_formatDate(item.date)}',
+                                style: AppTextStyles.bodySmall,
+                              ),
+                              const SizedBox(height: 2),
+                              RichText(
+                                text: TextSpan(
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  children: [
+                                    const TextSpan(text: 'Harga Beli: '),
+                                    TextSpan(
+                                      text: item.purchasePrice.toRupiah(),
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: priceColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    );
+                  },
+                ),
+                if (totalPages > 1) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: safePage > 1
+                            ? () {
+                                setState(() {
+                                  _historyCurrentPage = safePage - 1;
+                                });
+                              }
+                            : null,
+                        icon: const Icon(Icons.chevron_left_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: safePage > 1
+                              ? AppColors.primaryContainer
+                              : AppColors.surfaceVariant,
+                          foregroundColor: safePage > 1
+                              ? AppColors.primary
+                              : AppColors.textDisabled,
+                        ),
+                        tooltip: 'Halaman Sebelumnya',
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Halaman $safePage dari $totalPages',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      IconButton(
+                        onPressed: safePage < totalPages
+                            ? () {
+                                setState(() {
+                                  _historyCurrentPage = safePage + 1;
+                                });
+                              }
+                            : null,
+                        icon: const Icon(Icons.chevron_right_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: safePage < totalPages
+                              ? AppColors.primaryContainer
+                              : AppColors.surfaceVariant,
+                          foregroundColor: safePage < totalPages
+                              ? AppColors.primary
+                              : AppColors.textDisabled,
+                        ),
+                        tooltip: 'Halaman Selanjutnya',
+                      ),
+                    ],
                   ),
-                );
-              },
+                ],
+              ],
             );
           },
           loading: () => const Center(
@@ -908,7 +1152,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               Navigator.pop(ctx);
               _deleteProduct();
             },
-            child: Text('Hapus', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.expense)),
+            child: Text(
+              'Hapus',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.expense,
+              ),
+            ),
           ),
         ],
       ),
@@ -919,7 +1168,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (_existingProduct == null) return;
     setState(() => _isLoading = true);
     try {
-      await ref.read(inventoryProvider.notifier).deleteProduct(_existingProduct!.id);
+      await ref
+          .read(inventoryProvider.notifier)
+          .deleteProduct(_existingProduct!.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

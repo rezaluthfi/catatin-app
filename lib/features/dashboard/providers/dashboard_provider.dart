@@ -56,10 +56,9 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
 
       // Ambil Transaksi Terbaru Hari Ini (Limit: 3)
       final todayTxs = await txRepo.getByDateRange(start, end);
-      final recentTxs = (List<TransactionModel>.from(todayTxs)
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)))
-          .take(3)
-          .toList();
+      final recentTxs = (List<TransactionModel>.from(
+        todayTxs,
+      )..sort((a, b) => b.createdAt.compareTo(a.createdAt))).take(3).toList();
 
       // Tentukan rentang waktu keseluruhan untuk pre-fetch data grafik
       final int loopCount;
@@ -135,7 +134,7 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
           final date = now.subtract(Duration(days: i));
           startRange = DateTime(date.year, date.month, date.day, 0, 0, 0);
           endRange = DateTime(date.year, date.month, date.day, 23, 59, 59);
-          pointLabel = date.day.toString();
+          pointLabel = '${date.day} ${monthNames[date.month]}';
         } else if (period == DashboardPeriod.threeMonths) {
           final endOfWeek = now.subtract(Duration(days: i * 7));
           final startOfWeek = now.subtract(Duration(days: i * 7 + 6));
@@ -343,7 +342,7 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
         final date = now.subtract(Duration(days: i));
         startRange = DateTime(date.year, date.month, date.day, 0, 0, 0);
         endRange = DateTime(date.year, date.month, date.day, 23, 59, 59);
-        pointLabel = date.day.toString();
+        pointLabel = '${date.day} ${monthNames[date.month]}';
       } else if (period == DashboardPeriod.threeMonths) {
         final endOfWeek = now.subtract(Duration(days: i * 7));
         final startOfWeek = now.subtract(Duration(days: i * 7 + 6));

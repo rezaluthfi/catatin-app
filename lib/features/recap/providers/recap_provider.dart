@@ -7,8 +7,7 @@ import '../../../data/models/operational_cost_model.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 import 'recap_state.dart';
 
-final recapProvider =
-    AsyncNotifierProvider<RecapNotifier, RecapState>(
+final recapProvider = AsyncNotifierProvider<RecapNotifier, RecapState>(
   RecapNotifier.new,
 );
 
@@ -41,12 +40,29 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
     }
 
     final Map<int, String> dayNames = {
-      1: 'Sn', 2: 'Sl', 3: 'Rb', 4: 'Km', 5: 'Jm', 6: 'Sb', 7: 'Mg',
+      1: 'Sn',
+      2: 'Sl',
+      3: 'Rb',
+      4: 'Km',
+      5: 'Jm',
+      6: 'Sb',
+      7: 'Mg',
     };
 
     final monthNames = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
 
     for (int i = loopCount - 1; i >= 0; i--) {
@@ -63,17 +79,35 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
         final date = now.subtract(Duration(days: i));
         startRange = DateTime(date.year, date.month, date.day, 0, 0, 0);
         endRange = DateTime(date.year, date.month, date.day, 23, 59, 59);
-        pointLabel = date.day.toString();
+        pointLabel = '${date.day} ${monthNames[date.month]}';
       } else if (scale == ChartScale.month3) {
         final endOfWeek = now.subtract(Duration(days: i * 7));
         final startOfWeek = now.subtract(Duration(days: i * 7 + 6));
-        startRange = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day, 0, 0, 0);
-        endRange = DateTime(endOfWeek.year, endOfWeek.month, endOfWeek.day, 23, 59, 59);
+        startRange = DateTime(
+          startOfWeek.year,
+          startOfWeek.month,
+          startOfWeek.day,
+          0,
+          0,
+          0,
+        );
+        endRange = DateTime(
+          endOfWeek.year,
+          endOfWeek.month,
+          endOfWeek.day,
+          23,
+          59,
+          59,
+        );
         pointLabel = 'M${12 - i}';
       } else {
         final monthDate = DateTime(now.year, now.month - i, 1);
         startRange = DateTime(monthDate.year, monthDate.month, 1, 0, 0, 0);
-        endRange = DateTime(monthDate.year, monthDate.month + 1, 1).subtract(const Duration(seconds: 1));
+        endRange = DateTime(
+          monthDate.year,
+          monthDate.month + 1,
+          1,
+        ).subtract(const Duration(seconds: 1));
         pointLabel = monthNames[monthDate.month];
       }
 
@@ -81,7 +115,7 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
       final g = await txRepo.getTotalProfitByDateRange(startRange, endRange);
       final o = await opRepo.getTotalByDateRange(startRange, endRange);
       final n = g - o;
-      
+
       chartData[pointLabel] = (revenue: r, netProfit: n);
     }
 
@@ -101,23 +135,38 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
 
       if (currentState.period == RecapPeriod.daily) {
         start = DateTime(
-            selectedDate.year, selectedDate.month, selectedDate.day, 0, 0, 0);
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          0,
+          0,
+          0,
+        );
         end = DateTime(
-            selectedDate.year, selectedDate.month, selectedDate.day, 23, 59, 59);
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          23,
+          59,
+          59,
+        );
       } else if (currentState.period == RecapPeriod.weekly) {
         // Gunakan selectedEndDate jika ada (dari date range picker),
         // fallback ke Senin-Minggu dari selectedDate
         final startDay = currentState.selectedDate;
-        final endDay = currentState.selectedEndDate ??
+        final endDay =
+            currentState.selectedEndDate ??
             currentState.selectedDate.add(const Duration(days: 6));
         start = DateTime(startDay.year, startDay.month, startDay.day, 0, 0, 0);
         end = DateTime(endDay.year, endDay.month, endDay.day, 23, 59, 59);
       } else {
         // Monthly
-        start = DateTime(
-            selectedDate.year, selectedDate.month, 1, 0, 0, 0);
-        end = DateTime(selectedDate.year, selectedDate.month + 1, 1)
-            .subtract(const Duration(seconds: 1));
+        start = DateTime(selectedDate.year, selectedDate.month, 1, 0, 0, 0);
+        end = DateTime(
+          selectedDate.year,
+          selectedDate.month + 1,
+          1,
+        ).subtract(const Duration(seconds: 1));
       }
 
       // Ringkasan keuangan periode
@@ -133,7 +182,7 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
       // Agregasi produk terjual
       final transactionsList = await txRepo.getByDateRange(start, end);
       final Map<String, ({String name, int quantity, int totalAmount})>
-          soldMap = {};
+      soldMap = {};
       for (final tx in transactionsList) {
         for (final item in tx.items) {
           final existing = soldMap[item.productId];
@@ -159,7 +208,10 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
       final chartData = await _buildChartData(currentState.chartScale);
 
       // Total kasbon yang dibuat dalam periode aktif (bukan semua outstanding)
-      final totalReceivables = await receivableRepo.getTotalByDateRange(start, end);
+      final totalReceivables = await receivableRepo.getTotalByDateRange(
+        start,
+        end,
+      );
 
       // Total nilai persediaan: Σ (harga beli × stok)
       final products = await productRepo.getAll();
@@ -204,8 +256,9 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
   }
 
   void changeDate(DateTime date) async {
-    state =
-        AsyncData(state.value!.copyWith(selectedDate: date, isLoading: true));
+    state = AsyncData(
+      state.value!.copyWith(selectedDate: date, isLoading: true),
+    );
     state = AsyncData(await _loadData(state.value!));
   }
 
@@ -260,10 +313,9 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {
-      state = AsyncData(state.value!.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      ));
+      state = AsyncData(
+        state.value!.copyWith(isLoading: false, errorMessage: e.toString()),
+      );
       return false;
     }
   }
@@ -277,10 +329,9 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {
-      state = AsyncData(state.value!.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      ));
+      state = AsyncData(
+        state.value!.copyWith(isLoading: false, errorMessage: e.toString()),
+      );
       return false;
     }
   }
@@ -294,10 +345,9 @@ class RecapNotifier extends AsyncNotifier<RecapState> {
       state = AsyncData(await _loadData(state.value!));
       return true;
     } catch (e) {
-      state = AsyncData(state.value!.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      ));
+      state = AsyncData(
+        state.value!.copyWith(isLoading: false, errorMessage: e.toString()),
+      );
       return false;
     }
   }

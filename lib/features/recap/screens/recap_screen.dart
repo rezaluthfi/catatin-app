@@ -142,26 +142,28 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: (tx.paymentMethod == PaymentMethod.credit
-                                      ? AppColors.secondary
-                                      : (tx.paymentMethod == PaymentMethod.nonCash
-                                          ? AppColors.primary
-                                          : AppColors.income))
-                                  .withValues(alpha: 0.1),
+                              color:
+                                  (tx.paymentMethod == PaymentMethod.credit
+                                          ? AppColors.secondary
+                                          : (tx.paymentMethod ==
+                                                    PaymentMethod.nonCash
+                                                ? AppColors.primary
+                                                : AppColors.income))
+                                      .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               tx.paymentMethod == PaymentMethod.credit
                                   ? 'Kasbon'
                                   : (tx.paymentMethod == PaymentMethod.nonCash
-                                      ? 'Non Tunai'
-                                      : 'Tunai'),
+                                        ? 'Non Tunai'
+                                        : 'Tunai'),
                               style: AppTextStyles.labelSmall.copyWith(
                                 color: tx.paymentMethod == PaymentMethod.credit
                                     ? AppColors.secondary
                                     : (tx.paymentMethod == PaymentMethod.nonCash
-                                        ? AppColors.primary
-                                        : AppColors.income),
+                                          ? AppColors.primary
+                                          : AppColors.income),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -235,8 +237,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                               color: tx.paymentMethod == PaymentMethod.credit
                                   ? AppColors.secondary
                                   : (tx.paymentMethod == PaymentMethod.nonCash
-                                      ? AppColors.primary
-                                      : AppColors.income),
+                                        ? AppColors.primary
+                                        : AppColors.income),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -284,7 +286,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                 ),
                               ),
                             ],
-                            if (customNotes != null && customNotes.isNotEmpty) ...[
+                            if (customNotes != null &&
+                                customNotes.isNotEmpty) ...[
                               const SizedBox(height: 16),
                               Container(
                                 width: double.infinity,
@@ -481,7 +484,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                         child: state.period == RecapPeriod.weekly
                             ? _buildWeeklyDateRange(context, state, ref)
                             : Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.chevron_left),
@@ -507,7 +511,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                             confirmText: 'Pilih',
                                             cancelText: 'Batal',
                                           );
-                                          if (picked != null && context.mounted) {
+                                          if (picked != null &&
+                                              context.mounted) {
                                             ref
                                                 .read(recapProvider.notifier)
                                                 .changeDate(picked);
@@ -518,7 +523,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                             context,
                                             state.selectedDate,
                                           );
-                                          if (picked != null && context.mounted) {
+                                          if (picked != null &&
+                                              context.mounted) {
                                             ref
                                                 .read(recapProvider.notifier)
                                                 .changeDate(picked);
@@ -539,10 +545,10 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                               textAlign: TextAlign.center,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style:
-                                                  AppTextStyles.bodyLarge.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              style: AppTextStyles.bodyLarge
+                                                  .copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                             ),
                                             const SizedBox(width: 6),
                                             const Icon(
@@ -567,7 +573,6 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                               ),
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -649,16 +654,21 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                           children: [
                             _buildTabChip(
                               0,
-                              'Transaksi (${state.transactions.length})',
+                              'Semua',
                             ),
                             const SizedBox(width: 8),
                             _buildTabChip(
                               1,
-                              'Pengeluaran (${state.operationalCosts.length})',
+                              'Transaksi (${state.transactions.length})',
                             ),
                             const SizedBox(width: 8),
                             _buildTabChip(
                               2,
+                              'Pengeluaran (${state.operationalCosts.length})',
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTabChip(
+                              3,
                               'Produk Terjual (${state.soldProducts.length})',
                             ),
                           ],
@@ -667,7 +677,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                       const SizedBox(height: 16),
 
                       // Tab Contents
-                      if (_selectedTab == 0) ...[
+                      if (_selectedTab == 0 || _selectedTab == 1) ...[
                         // Section Riwayat Transaksi
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -749,20 +759,29 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                               tx,
                                             ),
                                         leading: () {
-                                          final txColor = tx.paymentMethod == PaymentMethod.credit
+                                          final txColor =
+                                              tx.paymentMethod ==
+                                                  PaymentMethod.credit
                                               ? AppColors.secondary
-                                              : (tx.paymentMethod == PaymentMethod.nonCash
-                                                  ? AppColors.primary
-                                                  : AppColors.income);
-                                          final txIcon = tx.paymentMethod == PaymentMethod.credit
+                                              : (tx.paymentMethod ==
+                                                        PaymentMethod.nonCash
+                                                    ? AppColors.primary
+                                                    : AppColors.income);
+                                          final txIcon =
+                                              tx.paymentMethod ==
+                                                  PaymentMethod.credit
                                               ? Icons.payments_outlined
-                                              : (tx.paymentMethod == PaymentMethod.nonCash
-                                                  ? Icons.qr_code_2_rounded
-                                                  : Icons.shopping_bag_outlined);
+                                              : (tx.paymentMethod ==
+                                                        PaymentMethod.nonCash
+                                                    ? Icons.qr_code_2_rounded
+                                                    : Icons
+                                                          .shopping_bag_outlined);
                                           return Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
-                                              color: txColor.withValues(alpha: 0.1),
+                                              color: txColor.withValues(
+                                                alpha: 0.1,
+                                              ),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -773,11 +792,13 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                           );
                                         }(),
                                         title: Text(
-                                          tx.paymentMethod == PaymentMethod.credit
+                                          tx.paymentMethod ==
+                                                  PaymentMethod.credit
                                               ? 'Kasbon'
-                                              : (tx.paymentMethod == PaymentMethod.nonCash
-                                                  ? 'Non Tunai'
-                                                  : 'Tunai'),
+                                              : (tx.paymentMethod ==
+                                                        PaymentMethod.nonCash
+                                                    ? 'Non Tunai'
+                                                    : 'Tunai'),
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
                                                 fontWeight: FontWeight.bold,
@@ -797,48 +818,52 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                             ),
                                             () {
                                               final paymentDetail =
-                                                  TransactionNotesParser
-                                                      .getPaymentDetail(
-                                                          tx.notes);
+                                                  TransactionNotesParser.getPaymentDetail(
+                                                    tx.notes,
+                                                  );
                                               final customNotes =
-                                                  TransactionNotesParser
-                                                      .getCustomNotes(tx.notes);
+                                                  TransactionNotesParser.getCustomNotes(
+                                                    tx.notes,
+                                                  );
                                               return Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  if (paymentDetail != null) ...[
+                                                  if (paymentDetail !=
+                                                      null) ...[
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       paymentDetail,
                                                       maxLines: 1,
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                       style: AppTextStyles
                                                           .bodySmall
                                                           .copyWith(
-                                                        color: AppColors.primary,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
+                                                            color: AppColors
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
                                                     ),
                                                   ],
                                                   if (customNotes != null &&
-                                                      customNotes.isNotEmpty) ...[
+                                                      customNotes
+                                                          .isNotEmpty) ...[
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       customNotes,
                                                       maxLines: 1,
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                       style: AppTextStyles
                                                           .bodySmall
                                                           .copyWith(
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
+                                                            color: AppColors
+                                                                .textSecondary,
+                                                            fontStyle: FontStyle
+                                                                .italic,
+                                                          ),
                                                     ),
                                                   ],
                                                 ],
@@ -850,11 +875,15 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                           tx.totalAmount.toRupiah(),
                                           style: AppTextStyles.bodyLarge
                                               .copyWith(
-                                                color: tx.paymentMethod == PaymentMethod.credit
+                                                color:
+                                                    tx.paymentMethod ==
+                                                        PaymentMethod.credit
                                                     ? AppColors.secondary
-                                                    : (tx.paymentMethod == PaymentMethod.nonCash
-                                                        ? AppColors.primary
-                                                        : AppColors.income),
+                                                    : (tx.paymentMethod ==
+                                                              PaymentMethod
+                                                                  .nonCash
+                                                          ? AppColors.primary
+                                                          : AppColors.income),
                                                 fontWeight: FontWeight.bold,
                                               ),
                                         ),
@@ -877,7 +906,9 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                             );
                           }(),
                         ],
-                      ] else if (_selectedTab == 1) ...[
+                      ],
+                      if (_selectedTab == 0) const SizedBox(height: 24),
+                      if (_selectedTab == 0 || _selectedTab == 2) ...[
                         // Section Biaya Operasional / Pengeluaran
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1122,7 +1153,9 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                             );
                           }(),
                         ],
-                      ] else ...[
+                      ],
+                      if (_selectedTab == 0) const SizedBox(height: 24),
+                      if (_selectedTab == 0 || _selectedTab == 3) ...[
                         // Section Produk Terjual
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1268,7 +1301,8 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
   ) {
     final startDate = state.selectedDate;
     final endDate =
-        state.selectedEndDate ?? state.selectedDate.add(const Duration(days: 6));
+        state.selectedEndDate ??
+        state.selectedDate.add(const Duration(days: 6));
 
     Widget dateField({
       required String label,
@@ -1304,17 +1338,16 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                   cancelText: 'Batal',
                 );
                 if (picked != null && context.mounted) {
-                  ref.read(recapProvider.notifier).changeDateRange(
+                  ref
+                      .read(recapProvider.notifier)
+                      .changeDateRange(
                         isStart ? picked : startDate,
                         isStart ? endDate : picked,
                       );
                 }
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 8,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.border),
                   borderRadius: BorderRadius.circular(8),
@@ -1355,7 +1388,9 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
         IconButton(
           icon: const Icon(Icons.chevron_left),
           onPressed: () {
-            ref.read(recapProvider.notifier).changeDateRange(
+            ref
+                .read(recapProvider.notifier)
+                .changeDateRange(
                   startDate.subtract(const Duration(days: 7)),
                   endDate.subtract(const Duration(days: 7)),
                 );
@@ -1373,7 +1408,9 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
         IconButton(
           icon: const Icon(Icons.chevron_right),
           onPressed: () {
-            ref.read(recapProvider.notifier).changeDateRange(
+            ref
+                .read(recapProvider.notifier)
+                .changeDateRange(
                   startDate.add(const Duration(days: 7)),
                   endDate.add(const Duration(days: 7)),
                 );
@@ -1801,10 +1838,10 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
       return '${d.day} ${_getMonthName(d.month)} ${d.year}';
     } else if (state.period == RecapPeriod.weekly) {
       // Tampilkan rentang yang dipilih user (selectedDate – selectedEndDate)
-      final end = state.selectedEndDate ??
+      final end =
+          state.selectedEndDate ??
           state.selectedDate.add(const Duration(days: 6));
-      final startStr =
-          '${d.day} ${_getMonthName(d.month).substring(0, 3)}';
+      final startStr = '${d.day} ${_getMonthName(d.month).substring(0, 3)}';
       final endStr =
           '${end.day} ${_getMonthName(end.month).substring(0, 3)} ${end.year}';
       return '$startStr – $endStr';
@@ -1833,8 +1870,18 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
     int selectedYear = initial.year;
 
     const monthNames = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
 
     return showDialog<DateTime>(
@@ -1851,8 +1898,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  onPressed: () =>
-                      setDialogState(() => selectedYear--),
+                  onPressed: () => setDialogState(() => selectedYear--),
                 ),
                 Text(
                   '$selectedYear',
@@ -1862,8 +1908,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
-                  onPressed: () =>
-                      setDialogState(() => selectedYear++),
+                  onPressed: () => setDialogState(() => selectedYear++),
                 ),
               ],
             ),
@@ -1873,8 +1918,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   childAspectRatio: 2.2,
                   crossAxisSpacing: 8,
@@ -1883,11 +1927,11 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                 itemCount: 12,
                 itemBuilder: (_, index) {
                   final month = index + 1;
-                  final isActive = initial.month == month &&
-                      initial.year == selectedYear;
+                  final isActive =
+                      initial.month == month && initial.year == selectedYear;
                   return InkWell(
-                    onTap: () => Navigator.of(ctx)
-                        .pop(DateTime(selectedYear, month, 1)),
+                    onTap: () =>
+                        Navigator.of(ctx).pop(DateTime(selectedYear, month, 1)),
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       decoration: BoxDecoration(

@@ -176,7 +176,43 @@ class ProductRepository implements IProductRepository {
         whereArgs: [productId],
         orderBy: '${DbConstants.colHistoryDate} DESC, ${DbConstants.colHistoryCreatedAt} DESC',
       );
-      return rows.map(ProductStockHistoryModel.fromMap).toList();
+      final historyList = rows.map(ProductStockHistoryModel.fromMap).toList();
+
+      // Ambil transaksi POS yang menyertakan produk ini untuk riwayat stok lengkap
+      final txRows = await _db.rawQuery(
+        '''SELECT ti.${DbConstants.colTxItemId} as item_id,
+                  ti.${DbConstants.colTxItemProductId} as product_id,
+                  ti.${DbConstants.colTxItemPurchasePriceAtTime} as purchase_price,
+                  ti.${DbConstants.colTxItemSellingPriceAtTime} as selling_price,
+                  ti.${DbConstants.colTxItemQuantity} as quantity,
+                  t.${DbConstants.colTransactionCreatedAt} as created_at
+           FROM ${DbConstants.tableTransactionItems} ti
+           JOIN ${DbConstants.tableTransactions} t ON ti.${DbConstants.colTxItemTransactionId} = t.${DbConstants.colTransactionId}
+           WHERE ti.${DbConstants.colTxItemProductId} = ?''',
+        [productId],
+      );
+
+      for (final txRow in txRows) {
+        final itemId = txRow['item_id'] as String;
+        final posId = 'pos_$itemId';
+        if (!historyList.any((h) => h.id == posId || h.id == itemId)) {
+          final txDate = DateTime.parse(txRow['created_at'] as String);
+          historyList.add(
+            ProductStockHistoryModel(
+              id: posId,
+              productId: productId,
+              purchasePrice: txRow['purchase_price'] as int,
+              sellingPrice: txRow['selling_price'] as int,
+              stockAdded: -(txRow['quantity'] as int),
+              date: txDate,
+              createdAt: txDate,
+            ),
+          );
+        }
+      }
+
+      historyList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return historyList;
     } catch (e) {
       throw DatabaseException('Gagal mengambil riwayat stok produk', originalError: e);
     }
