@@ -432,7 +432,7 @@ class DashboardScreen extends ConsumerWidget {
                               state.netProfitToday.toRupiah(),
                               style: AppTextStyles.headlineLarge.copyWith(
                                 color: state.netProfitToday <= 0
-                                    ? const Color(0xFFE65A50)
+                                    ? const Color(0xFFFF6584)
                                     : Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 32,

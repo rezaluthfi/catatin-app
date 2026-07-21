@@ -34,7 +34,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   final _dateController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isStockAdd = true;
   ProductModel? _existingProduct;
+  ProductModel? _selectedEtalaseProduct;
 
   String? _selectedImagePath;
   DateTime _selectedDate = DateTime.now();
@@ -57,7 +59,6 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         _nameController.text = _existingProduct!.name;
         _purchasePriceController.text = _existingProduct!.purchasePrice.toRupiahNoSymbol();
         _sellingPriceController.text = _existingProduct!.sellingPrice.toRupiahNoSymbol();
-        _stockController.text = _existingProduct!.stock.toString();
         _selectedDate = _existingProduct!.updatedAt;
         _dateController.text = _formatDate(_selectedDate);
         _selectedImagePath = _existingProduct!.imagePath;
@@ -80,11 +81,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   }
 
   Future<void> _selectDate() async {
+    final now = DateTime.now();
+    final initial = _selectedDate.isAfter(now) ? now : _selectedDate;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: initial,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: now,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -274,7 +277,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       final name = _nameController.text.trim();
       final purchasePrice = int.parse(_purchasePriceController.text.replaceAll('.', '').trim());
       final sellingPrice = int.parse(_sellingPriceController.text.replaceAll('.', '').trim());
-      final stock = int.parse(_stockController.text.trim());
+      final inputQty = int.parse(_stockController.text.trim());
 
       String? finalImagePath;
       if (_selectedImagePath == '') {
@@ -289,34 +292,46 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         finalImagePath = _existingProduct?.imagePath;
       }
 
-      final products = ref.read(inventoryProvider).valueOrNull?.products ?? [];
-      final isDuplicate = _existingProduct == null &&
-          products.any((p) => p.name.trim().toLowerCase() == name.toLowerCase());
-
       if (_existingProduct != null) {
-        // Edit
+        // Edit produk
+        final delta = _isStockAdd ? inputQty : -inputQty;
+        final newStock = _existingProduct!.stock + delta;
+
         final updatedProduct = _existingProduct!.copyWith(
           name: name,
           purchasePrice: purchasePrice,
           sellingPrice: sellingPrice,
-          stock: stock,
+          stock: newStock,
           imagePath: () => finalImagePath,
           updatedAt: _selectedDate,
         );
         await ref.read(inventoryProvider.notifier).updateProduct(updatedProduct);
       } else {
-        // Add
-        final newProduct = ProductModel(
-          id: const Uuid().v4(), // Diganti UUID v4 permanen di Repo
-          name: name,
-          purchasePrice: purchasePrice,
-          sellingPrice: sellingPrice,
-          stock: stock,
-          imagePath: finalImagePath,
-          createdAt: _selectedDate,
-          updatedAt: _selectedDate,
-        );
-        await ref.read(inventoryProvider.notifier).addProduct(newProduct);
+        // Add produk
+        if (_selectedEtalaseProduct != null) {
+          final delta = _isStockAdd ? inputQty : -inputQty;
+          final updatedProduct = _selectedEtalaseProduct!.copyWith(
+            purchasePrice: purchasePrice,
+            sellingPrice: sellingPrice,
+            stock: _selectedEtalaseProduct!.stock + delta,
+            imagePath: () => finalImagePath ?? _selectedEtalaseProduct!.imagePath,
+            updatedAt: _selectedDate,
+          );
+          await ref.read(inventoryProvider.notifier).updateProduct(updatedProduct);
+        } else {
+          // Produk baru
+          final newProduct = ProductModel(
+            id: const Uuid().v4(),
+            name: name,
+            purchasePrice: purchasePrice,
+            sellingPrice: sellingPrice,
+            stock: inputQty,
+            imagePath: finalImagePath,
+            createdAt: _selectedDate,
+            updatedAt: _selectedDate,
+          );
+          await ref.read(inventoryProvider.notifier).addProduct(newProduct);
+        }
       }
 
       if (mounted) {
@@ -324,9 +339,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           SnackBar(
             content: Text(_existingProduct != null
                 ? 'Produk berhasil diperbarui!'
-                : (isDuplicate
-                    ? 'Stok berhasil ditambahkan ke produk yang sudah ada!'
-                    : 'Produk berhasil ditambahkan!')),
+                : (_selectedEtalaseProduct != null
+                    ? 'Stok produk etalase berhasil diperbarui!'
+                    : 'Produk baru berhasil ditambahkan!')),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -403,17 +418,97 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
               Text('Nama Produk', style: AppTextStyles.labelMedium),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Mis: Kopi Susu Aren',
-                  prefixIcon: Icon(Icons.inventory_2_outlined),
+              if (isEdit)
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    hintText: 'Mis: Kopi Susu Aren',
+                    prefixIcon: Icon(Icons.inventory_2_outlined),
+                  ),
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return 'Nama produk wajib diisi';
+                    return null;
+                  },
+                )
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final allProducts = ref.watch(inventoryProvider).valueOrNull?.products ?? [];
+                    return RawAutocomplete<ProductModel>(
+                      focusNode: FocusNode(),
+                      textEditingController: _nameController,
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text.trim().isEmpty) {
+                          return const Iterable<ProductModel>.empty();
+                        }
+                        final query = textEditingValue.text.toLowerCase();
+                        return allProducts.where((p) => p.name.toLowerCase().contains(query));
+                      },
+                      displayStringForOption: (ProductModel option) => option.name,
+                      onSelected: (ProductModel selection) {
+                        setState(() {
+                          _nameController.text = selection.name;
+                          _purchasePriceController.text = selection.purchasePrice.toRupiahNoSymbol();
+                          _sellingPriceController.text = selection.sellingPrice.toRupiahNoSymbol();
+                          _selectedEtalaseProduct = selection;
+                        });
+                      },
+                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                        return TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: const InputDecoration(
+                            hintText: 'Cari atau ketik nama produk...',
+                            prefixIcon: Icon(Icons.inventory_2_outlined),
+                          ),
+                          onChanged: (val) {
+                            final match = allProducts.where(
+                              (p) => p.name.trim().toLowerCase() == val.trim().toLowerCase(),
+                            );
+                            setState(() {
+                              _selectedEtalaseProduct = match.isNotEmpty ? match.first : null;
+                            });
+                          },
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) return 'Nama produk wajib diisi';
+                            return null;
+                          },
+                        );
+                      },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.surface,
+                            child: SizedBox(
+                              width: constraints.maxWidth,
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final ProductModel option = options.elementAt(index);
+                                  return ListTile(
+                                    title: Text(option.name, style: AppTextStyles.bodyMedium),
+                                    subtitle: Text(
+                                      'Stok saat ini: ${option.stock} | Modal: ${option.purchasePrice.toRupiah()} | Jual: ${option.sellingPrice.toRupiah()}',
+                                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                                    ),
+                                    onTap: () {
+                                      onSelected(option);
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Nama produk wajib diisi';
-                  return null;
-                },
-              ),
               const SizedBox(height: 20),
 
               Row(
@@ -504,21 +599,97 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 },
               ),
 
-              Text(isEdit ? 'Stok Saat Ini' : 'Stok Awal', style: AppTextStyles.labelMedium),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _stockController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: 'Jumlah stok (mis: 10)',
-                  prefixIcon: Icon(Icons.numbers_rounded),
+              // Mode Penyesuaian Stok: Jika edit ATAU pilih produk etalase
+              if (isEdit || _selectedEtalaseProduct != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Mode Penyesuaian Stok', style: AppTextStyles.labelMedium),
+                          Text(
+                            'Stok saat ini: ${isEdit ? _existingProduct!.stock : _selectedEtalaseProduct!.stock} unit',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment<bool>(
+                            value: true,
+                            label: FittedBox(child: Text('+ Tambah Stok')),
+                            icon: Icon(Icons.add_circle_outline_rounded),
+                          ),
+                          ButtonSegment<bool>(
+                            value: false,
+                            label: FittedBox(child: Text('- Kurang Stok')),
+                            icon: Icon(Icons.remove_circle_outline_rounded),
+                          ),
+                        ],
+                        selected: {_isStockAdd},
+                        onSelectionChanged: (newSelection) {
+                          setState(() {
+                            _isStockAdd = newSelection.first;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _isStockAdd ? 'Jumlah Stok Tambahan' : 'Jumlah Stok Yang Dikurangi',
+                        style: AppTextStyles.labelMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _stockController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: _isStockAdd ? 'Mis: 10 (Tambah 10 stok)' : 'Mis: 2 (Kurang 2 stok)',
+                          prefixIcon: Icon(_isStockAdd ? Icons.add_rounded : Icons.remove_rounded),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'Jumlah stok wajib diisi';
+                          final numVal = int.tryParse(val);
+                          if (numVal == null || numVal <= 0) return 'Masukkan angka lebih dari 0';
+                          final currentStock = isEdit ? _existingProduct!.stock : _selectedEtalaseProduct!.stock;
+                          if (!_isStockAdd && numVal > currentStock) {
+                            return 'Pengurangan melebihi stok yang ada ($currentStock unit)';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Stok wajib diisi';
-                  if (int.tryParse(val) == null) return 'Harus berupa angka';
-                  return null;
-                },
-              ),
+              ] else ...[
+                Text('Stok Awal', style: AppTextStyles.labelMedium),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _stockController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: 'Jumlah stok awal (mis: 10)',
+                    prefixIcon: Icon(Icons.numbers_rounded),
+                  ),
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Stok wajib diisi';
+                    final numVal = int.tryParse(val);
+                    if (numVal == null || numVal < 0) return 'Masukkan angka valid';
+                    return null;
+                  },
+                ),
+              ],
               const SizedBox(height: 20),
 
               Text(isEdit ? 'Tanggal Perubahan Stok' : 'Tanggal Masuk Stok', style: AppTextStyles.labelMedium),

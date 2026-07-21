@@ -433,7 +433,6 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
       ),
       body: stateAsync.when(
         data: (state) {
-          final isProfit = state.netProfit > 0;
           final formattedPeriod = _getFormattedPeriodText(state);
 
           return Column(
@@ -602,9 +601,9 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                 state.netProfit.toRupiah(),
                                 style: AppTextStyles.headlineLarge.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: isProfit
+                                  color: state.netProfit > 0
                                       ? AppColors.income
-                                      : AppColors.expense,
+                                      : const Color(0xFFFF6584),
                                 ),
                               ),
                               const SizedBox(height: 20),

@@ -10,6 +10,7 @@ import '../../core/constants/db_constants.dart';
 import '../../core/database/database_helper.dart';
 import '../../core/errors/app_exception.dart' as app_errors;
 import '../../domain/repositories/i_transaction_repository.dart';
+import '../models/product_stock_history_model.dart';
 import '../models/transaction_item_model.dart';
 import '../models/transaction_model.dart';
 
@@ -63,6 +64,22 @@ class TransactionRepository implements ITransactionRepository {
                    ${DbConstants.colProductUpdatedAt} = ?
                WHERE ${DbConstants.colProductId} = ?''',
             [item.quantity, now.toIso8601String(), item.productId],
+          );
+
+          // 4. Catat ke riwayat stok produk (pengurangan dari transaksi)
+          final historyModel = ProductStockHistoryModel(
+            id: _uuid.v4(),
+            productId: item.productId,
+            purchasePrice: item.purchasePriceAtTime,
+            sellingPrice: item.sellingPriceAtTime,
+            stockAdded: -item.quantity,
+            date: now,
+            createdAt: now,
+          );
+          await txn.insert(
+            DbConstants.tableProductStockHistory,
+            historyModel.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
           );
         }
       });
