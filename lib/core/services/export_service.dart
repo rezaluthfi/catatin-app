@@ -262,10 +262,8 @@ class ExportService {
       
       // HPP Header
       ['Harga Pokok Penjualan (HPP):', '', '', false],
-      ['  Persediaan Barang (Awal)', _fmt(data.initialInventoryValue), '', false],
-      ['  Pembelian Barang', _fmt(data.purchasesValue), '', false],
-      ['  Persediaan Barang (Akhir)', '(${_fmt(data.endingInventoryValue)})', '', false],
-      ['  Total HPP', '', '(${_fmt(data.totalHpp)})', true],
+      ['  Total HPP (Modal Barang Terjual)', '', '(${_fmt(data.totalHpp)})', true],
+      ['Nilai Persediaan Barang (Stok x Harga Beli)', '', _fmt(data.totalInventoryValue), true],
       
       // Laba Kotor
       ['Laba Kotor (Gross Profit)', '', _fmt(grossProfit), true],
@@ -620,10 +618,8 @@ class ExportService {
       
       // HPP Header
       ['Harga Pokok Penjualan (HPP):', null, null, false],
-      ['  Persediaan Barang (Awal)', data.initialInventoryValue, null, false],
-      ['  Pembelian Barang', data.purchasesValue, null, false],
-      ['  Persediaan Barang (Akhir)', -data.endingInventoryValue, null, false],
-      ['  Total HPP', null, -data.totalHpp, true],
+      ['  Total HPP (Modal Barang Terjual)', null, -data.totalHpp, true],
+      ['Nilai Persediaan Barang (Stok x Harga Beli)', null, data.totalInventoryValue, true],
       
       // Laba Kotor
       ['Laba Kotor (Gross Profit)', null, grossProfit, true],

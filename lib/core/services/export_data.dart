@@ -44,40 +44,9 @@ class ExportData {
             ),
       );
 
-  /// Nilai Persediaan Awal (Awal Periode).
-  int get initialInventoryValue {
-    int total = 0;
-    for (final p in products) {
-      // Perubahan stok setelah tanggal mulai periode
-      final adjustmentsAfterStart = stockHistory
-          .where((h) => h.productId == p.id && h.date.isAfter(startDate))
-          .fold(0, (sum, h) => sum + h.stockAdded);
-
-      // Penjualan setelah tanggal mulai periode
-      final salesAfterStart = transactions
-          .where((t) => t.createdAt.isAfter(startDate))
-          .fold(0, (sum, t) => sum + t.items
-              .where((item) => item.productId == p.id)
-              .fold(0, (itemSum, item) => itemSum + item.quantity));
-
-      final initialStock = (p.stock - adjustmentsAfterStart + salesAfterStart).clamp(0, 999999);
-      total += initialStock * p.purchasePrice;
-    }
-    return total;
-  }
-
-  /// Total Pembelian/Penambahan Stok Barang selama periode.
-  int get purchasesValue {
-    return stockHistory
-        .where((h) => h.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-            h.date.isBefore(endDate.add(const Duration(seconds: 1))) &&
-            h.stockAdded > 0)
-        .fold(0, (sum, h) => sum + (h.stockAdded * h.purchasePrice));
-  }
-
-  /// Nilai Persediaan Akhir (Akhir Periode) -> Awal + Pembelian - HPP.
-  int get endingInventoryValue {
-    return (initialInventoryValue + purchasesValue - totalHpp).clamp(0, 999999999);
+  /// Total Nilai Persediaan Barang (Total Stok x Harga Beli).
+  int get totalInventoryValue {
+    return products.fold(0, (sum, p) => sum + (p.stock * p.purchasePrice));
   }
 
   /// Total laba bersih (pemasukan - HPP - biaya operasional).
