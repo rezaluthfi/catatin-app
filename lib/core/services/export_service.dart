@@ -258,9 +258,7 @@ class ExportService {
 
     final rows = [
       // Penjualan
-      ['Penjualan', _fmt(data.totalRevenue), '', false],
-      ['Retur Produk', _fmt(0), '', false],
-      ['  Penjualan Bersih', '', _fmt(data.totalRevenue), true],
+      ['Penjualan', '', _fmt(data.totalRevenue), true],
       
       // HPP Header
       ['Harga Pokok Penjualan (HPP):', '', '', false],
@@ -618,9 +616,7 @@ class ExportService {
 
     final rows = [
       // Penjualan
-      ['Penjualan', data.totalRevenue, null, false],
-      ['Retur Produk', 0, null, false],
-      ['  Penjualan Bersih', null, data.totalRevenue, true],
+      ['Penjualan', null, data.totalRevenue, true],
       
       // HPP Header
       ['Harga Pokok Penjualan (HPP):', null, null, false],
