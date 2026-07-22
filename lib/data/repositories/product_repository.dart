@@ -195,15 +195,27 @@ class ProductRepository implements IProductRepository {
       for (final txRow in txRows) {
         final itemId = txRow['item_id'] as String;
         final posId = 'pos_$itemId';
-        if (!historyList.any((h) => h.id == posId || h.id == itemId)) {
-          final txDate = DateTime.parse(txRow['created_at'] as String);
+        final qty = -(txRow['quantity'] as int);
+        final txDate = DateTime.parse(txRow['created_at'] as String);
+
+        final isAlreadyPresent = historyList.any((h) {
+          if (h.id == posId || h.id == itemId) return true;
+          if (h.id.startsWith('pos_') &&
+              h.stockAdded == qty &&
+              h.createdAt.difference(txDate).inSeconds.abs() <= 5) {
+            return true;
+          }
+          return false;
+        });
+
+        if (!isAlreadyPresent) {
           historyList.add(
             ProductStockHistoryModel(
               id: posId,
               productId: productId,
               purchasePrice: txRow['purchase_price'] as int,
               sellingPrice: txRow['selling_price'] as int,
-              stockAdded: -(txRow['quantity'] as int),
+              stockAdded: qty,
               date: txDate,
               createdAt: txDate,
             ),

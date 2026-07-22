@@ -82,7 +82,8 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
       }
     }
 
-    if (_paymentMethod == PaymentMethod.credit && _customerNameController.text.trim().isEmpty) {
+    if (_paymentMethod == PaymentMethod.credit &&
+        _customerNameController.text.trim().isEmpty) {
       return;
     }
 
@@ -94,8 +95,12 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
               ? _customerNameController.text.trim()
               : null,
           dueDate: _paymentMethod == PaymentMethod.credit ? _dueDate : null,
-          nonCashType: _paymentMethod == PaymentMethod.nonCash ? _nonCashType : null,
-          bankAccount: _paymentMethod == PaymentMethod.nonCash ? _selectedBankAccount : null,
+          nonCashType: _paymentMethod == PaymentMethod.nonCash
+              ? _nonCashType
+              : null,
+          bankAccount: _paymentMethod == PaymentMethod.nonCash
+              ? _selectedBankAccount
+              : null,
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
@@ -190,11 +195,17 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.receipt_long_rounded, size: 20, color: AppColors.primary),
+                            const Icon(
+                              Icons.receipt_long_rounded,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Ringkasan Transaksi',
-                              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -210,15 +221,20 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           item.product.name,
-                                          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                         Text(
                                           '${item.quantity} x ${item.product.sellingPrice.toRupiah()}',
@@ -229,7 +245,9 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                                   ),
                                   Text(
                                     item.subtotal.toRupiah(),
-                                    style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -244,7 +262,9 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                           children: [
                             Text(
                               'Total Tagihan',
-                              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
                               totalAmount.toRupiah(),
@@ -292,7 +312,8 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                       setState(() {
                         _paymentMethod = newSelection.first;
                         _submitted = false;
-                        if (_paymentMethod == PaymentMethod.credit || _paymentMethod == PaymentMethod.nonCash) {
+                        if (_paymentMethod == PaymentMethod.credit ||
+                            _paymentMethod == PaymentMethod.nonCash) {
                           _cashReceived = 0;
                           _cashController.clear();
                         }
@@ -318,13 +339,14 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        prefixText: 'Rp ',
+                        prefixText: 'Rp',
                         prefixStyle: AppTextStyles.headingMedium,
-                        errorText: _submitted && _cashController.text.trim().isEmpty
+                        errorText:
+                            _submitted && _cashController.text.trim().isEmpty
                             ? 'Nominal uang diterima wajib diisi'
                             : (_submitted && _cashReceived < totalAmount
-                                ? 'Uang tunai kurang dari total tagihan'
-                                : null),
+                                  ? 'Uang tunai kurang dari total tagihan'
+                                  : null),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -349,7 +371,7 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                           Flexible(
                             child: Text(
                               !hasEnteredCash
-                                  ? 'Rp 0'
+                                  ? 'Rp0'
                                   : (isSuccess
                                         ? change.toRupiah()
                                         : 'Uang Kurang'),
@@ -394,14 +416,18 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                     ),
                     const SizedBox(height: 16),
                     () {
-                      final settingsState = ref.watch(settingsProvider).valueOrNull;
+                      final settingsState = ref
+                          .watch(settingsProvider)
+                          .valueOrNull;
                       final accounts = settingsState?.bankAccounts ?? [];
 
                       if (accounts.isEmpty) {
                         return InkWell(
                           onTap: () {
                             Navigator.pop(context); // Tutup bottom sheet
-                            context.go(AppRoutes.settings); // Navigasi ke Pengaturan
+                            context.go(
+                              AppRoutes.settings,
+                            ); // Navigasi ke Pengaturan
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
@@ -415,25 +441,31 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.warning_amber_rounded,
-                                    color: AppColors.expense),
+                                const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: AppColors.expense,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Belum ada rekening/e-wallet terdaftar.',
-                                        style: AppTextStyles.bodyMedium.copyWith(
-                                          color: AppColors.expense,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              color: AppColors.expense,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
                                         'Ketuk di sini untuk mendaftarkan di profil/pengaturan.',
                                         style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.expense.withValues(alpha: 0.8),
+                                          color: AppColors.expense.withValues(
+                                            alpha: 0.8,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -484,7 +516,9 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        errorText: _submitted && _customerNameController.text.trim().isEmpty
+                        errorText:
+                            _submitted &&
+                                _customerNameController.text.trim().isEmpty
                             ? 'Nama pelanggan wajib diisi'
                             : null,
                       ),
@@ -501,9 +535,13 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                       onTap: () async {
                         final date = await showDatePicker(
                           context: context,
-                          initialDate: _dueDate ?? DateTime.now().add(const Duration(days: 7)),
+                          initialDate:
+                              _dueDate ??
+                              DateTime.now().add(const Duration(days: 7)),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                         );
                         if (date != null) {
                           setState(() {
@@ -562,8 +600,11 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
                   const SizedBox(height: 24),
                   Consumer(
                     builder: (context, ref, child) {
-                      final settingsState = ref.watch(settingsProvider).valueOrNull;
-                      final hasNoAccounts = _paymentMethod == PaymentMethod.nonCash &&
+                      final settingsState = ref
+                          .watch(settingsProvider)
+                          .valueOrNull;
+                      final hasNoAccounts =
+                          _paymentMethod == PaymentMethod.nonCash &&
                           (settingsState?.bankAccounts ?? []).isEmpty;
                       return FilledButton(
                         onPressed: posState.isLoading || hasNoAccounts

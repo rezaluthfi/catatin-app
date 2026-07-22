@@ -3,8 +3,8 @@
 /// Penggunaan:
 /// ```dart
 /// final price = 15000;
-/// print(price.toRupiah()); // → 'Rp 15.000'
-/// print(price.toRupiahCompact()); // → 'Rp 15rb'
+/// print(price.toRupiah()); // → 'Rp15.000'
+/// print(price.toRupiahCompact()); // → 'Rp15rb'
 /// ```
 import 'package:intl/intl.dart';
 
@@ -15,10 +15,7 @@ extension CurrencyExtension on int {
     decimalDigits: 0,
   );
 
-  static final _formatterNoSymbol = NumberFormat(
-    '#,###',
-    'id_ID',
-  );
+  static final _formatterNoSymbol = NumberFormat('#,###', 'id_ID');
 
   /// Format ke Rupiah penuh: `Rp15.000`
   String toRupiah() => _formatter.format(this);
