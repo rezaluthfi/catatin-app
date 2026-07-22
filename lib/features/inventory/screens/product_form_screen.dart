@@ -305,7 +305,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       final sellingPrice = int.parse(
         _sellingPriceController.text.replaceAll('.', '').trim(),
       );
-      final inputQty = int.parse(_stockController.text.trim());
+      final inputQty = int.tryParse(_stockController.text.trim()) ?? 0;
 
       String? finalImagePath;
       if (_selectedImagePath == '') {
@@ -795,8 +795,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: _isStockAdd
-                        ? 'Jumlah barang tambahan (mis: 10)'
-                        : 'Jumlah barang yang dikurangi (mis: 2)',
+                        ? 'Jumlah barang tambahan (opsional)'
+                        : 'Jumlah barang yang dikurangi (opsional)',
                     prefixIcon: Icon(
                       _isStockAdd
                           ? Icons.add_circle_outline_rounded
@@ -808,7 +808,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   ),
                   validator: (val) {
                     if (val == null || val.isEmpty) {
-                      return 'Jumlah stok wajib diisi';
+                      return null;
                     }
                     final numVal = int.tryParse(val);
                     if (numVal == null || numVal <= 0) {
