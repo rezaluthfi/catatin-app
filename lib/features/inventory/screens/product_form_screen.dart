@@ -744,16 +744,34 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         return AppColors.textPrimary;
                       }),
                     ),
-                    segments: const [
+                    segments: [
                       ButtonSegment<bool>(
                         value: true,
-                        label: Text('Tambah Stok (+)'),
-                        icon: Icon(Icons.add_rounded),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Tambah Stok (+)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        icon: const Icon(Icons.add_rounded, size: 16),
                       ),
                       ButtonSegment<bool>(
                         value: false,
-                        label: Text('Kurang Stok (-)'),
-                        icon: Icon(Icons.remove_rounded),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Kurang Stok (-)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        icon: const Icon(Icons.remove_rounded, size: 16),
                       ),
                     ],
                     selected: {_isStockAdd},
