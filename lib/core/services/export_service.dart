@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'export_data.dart';
 
 class ExportService {
@@ -30,7 +31,13 @@ class ExportService {
   static final _dateFormat = DateFormat('dd/MM/yyyy', 'id_ID');
   static final _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm', 'id_ID');
 
-  static String _fmt(int amount) => _rupiah.format(amount);
+  static String _fmt(int amount) {
+    return _rupiah
+        .format(amount)
+        .replaceAll('Rp ', 'Rp')
+        .replaceAll('Rp\u00a0', 'Rp');
+  }
+
   static String _fmtDate(DateTime dt) => _dateFormat.format(dt);
   static String _fmtDateTime(DateTime dt) => _dateTimeFormat.format(dt);
 
@@ -58,13 +65,26 @@ class ExportService {
     const textSecondary = PdfColor.fromInt(0xFF6B7280);
     const borderColor = PdfColor.fromInt(0xFFE5E7EB);
 
+    pw.MemoryImage? logoImage;
+    try {
+      final logoBytes = await rootBundle.load(
+        'assets/images/logo_bg_primary.jpeg',
+      );
+      logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    } catch (_) {}
+
     // ── Cover / Ringkasan ────────────────────────────────────
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
-        header: (ctx) =>
-            _pdfHeader(data, brandGreen, brandGreenLight, textSecondary),
+        header: (ctx) => _pdfHeader(
+          data,
+          brandGreen,
+          brandGreenLight,
+          textSecondary,
+          logoImage,
+        ),
         footer: (ctx) => _pdfFooter(ctx, textSecondary),
         build: (ctx) => [
           pw.SizedBox(height: 16),
@@ -177,6 +197,7 @@ class ExportService {
     PdfColor brandGreen,
     PdfColor brandGreenLight,
     PdfColor textSecondary,
+    pw.ImageProvider? logoImage,
   ) {
     return pw.Container(
       padding: const pw.EdgeInsets.only(bottom: 12),
@@ -188,22 +209,35 @@ class ExportService {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Text(
-                'CatatIn',
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
-                  color: brandGreen,
+              if (logoImage != null) ...[
+                pw.Container(
+                  width: 32,
+                  height: 32,
+                  margin: const pw.EdgeInsets.only(right: 8),
+                  child: pw.Image(logoImage),
                 ),
-              ),
-              pw.Text(
-                data.businessName.isNotEmpty
-                    ? data.businessName
-                    : 'Laporan Keuangan',
-                style: pw.TextStyle(fontSize: 11, color: textSecondary),
+              ],
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'CatatIn',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
+                      color: brandGreen,
+                    ),
+                  ),
+                  pw.Text(
+                    data.businessName.isNotEmpty
+                        ? data.businessName
+                        : 'Laporan Keuangan',
+                    style: pw.TextStyle(fontSize: 10, color: textSecondary),
+                  ),
+                ],
               ),
             ],
           ),
@@ -238,7 +272,7 @@ class ExportService {
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 8),
       child: pw.Text(
-        'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount}  •  Dibuat oleh CatatIn',
+        'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount} - Dibuat oleh CatatIn',
         style: pw.TextStyle(fontSize: 9, color: textSecondary),
       ),
     );
