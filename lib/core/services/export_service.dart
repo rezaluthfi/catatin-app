@@ -268,12 +268,27 @@ class ExportService {
   }
 
   static pw.Widget _pdfFooter(pw.Context ctx, PdfColor textSecondary) {
+    final now = DateTime.now();
+    final dateStr = DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(now);
     return pw.Container(
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 8),
-      child: pw.Text(
-        'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount} - Dibuat oleh CatatIn',
-        style: pw.TextStyle(fontSize: 9, color: textSecondary),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount}',
+            style: pw.TextStyle(fontSize: 9, color: textSecondary),
+          ),
+          pw.Text(
+            'Dibuat oleh CatatIn - $dateStr',
+            style: pw.TextStyle(fontSize: 9, color: textSecondary),
+          ),
+          pw.Text(
+            '© KKN-PPM UGM Alor Carita 2026',
+            style: pw.TextStyle(fontSize: 9, color: textSecondary),
+          ),
+        ],
       ),
     );
   }
