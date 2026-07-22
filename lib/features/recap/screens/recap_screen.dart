@@ -608,7 +608,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: state.netProfit > 0
                                       ? AppColors.income
-                                      : const Color(0xFFFF6584),
+                                      : AppColors.expense,
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -652,10 +652,7 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
                         physics: const BouncingScrollPhysics(),
                         child: Row(
                           children: [
-                            _buildTabChip(
-                              0,
-                              'Semua',
-                            ),
+                            _buildTabChip(0, 'Semua'),
                             const SizedBox(width: 8),
                             _buildTabChip(
                               1,
