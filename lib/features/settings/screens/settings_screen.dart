@@ -1,5 +1,4 @@
 /// Settings Screen — Profil Usaha, Keamanan, Backup & Restore, Tentang.
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -31,155 +30,165 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
-      body: stateAsync.when(
-        data: (state) => ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
-            // -- Avatar & Nama Usaha -----------------------------
-            _buildProfileHeader(context, ref, state),
+      body: SafeArea(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: stateAsync.when(
+              data: (state) => ListView(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                children: [
+                  // -- Avatar & Nama Usaha -----------------------------
+                  _buildProfileHeader(context, ref, state),
 
-            const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-            // -- Seksi Profil Usaha ------------------------------
-            _buildSectionHeader('Profil Usaha'),
-            _buildTile(
-              icon: Icons.store_rounded,
-              iconColor: AppColors.primary,
-              title: 'Nama Usaha',
-              subtitle: state.businessName.isEmpty
-                  ? 'Belum diatur'
-                  : state.businessName,
-              onTap: () => _showEditDialog(
-                context,
-                ref,
-                title: 'Nama Usaha',
-                currentValue: state.businessName,
-                hint: 'Masukkan nama usaha Anda',
-                onSave: (val) =>
-                    ref.read(settingsProvider.notifier).updateBusinessName(val),
+                  // -- Seksi Profil Usaha ------------------------------
+                  _buildSectionHeader('Profil Usaha'),
+                  _buildTile(
+                    icon: Icons.store_rounded,
+                    iconColor: AppColors.primary,
+                    title: 'Nama Usaha',
+                    subtitle: state.businessName.isEmpty
+                        ? 'Belum diatur'
+                        : state.businessName,
+                    onTap: () => _showEditDialog(
+                      context,
+                      ref,
+                      title: 'Nama Usaha',
+                      currentValue: state.businessName,
+                      hint: 'Masukkan nama usaha Anda',
+                      onSave: (val) => ref
+                          .read(settingsProvider.notifier)
+                          .updateBusinessName(val),
+                    ),
+                  ),
+                  _buildTile(
+                    icon: Icons.person_rounded,
+                    iconColor: AppColors.primary,
+                    title: 'Nama Pemilik',
+                    subtitle: state.ownerName.isEmpty
+                        ? 'Belum diatur'
+                        : state.ownerName,
+                    onTap: () => _showEditDialog(
+                      context,
+                      ref,
+                      title: 'Nama Pemilik',
+                      currentValue: state.ownerName,
+                      hint: 'Masukkan nama pemilik usaha',
+                      onSave: (val) => ref
+                          .read(settingsProvider.notifier)
+                          .updateOwnerName(val),
+                    ),
+                  ),
+                  _buildTile(
+                    icon: Icons.percent_rounded,
+                    iconColor: AppColors.primary,
+                    title: 'Margin Keuntungan',
+                    subtitle: '${state.defaultMargin}%',
+                    onTap: () => _showEditDialog(
+                      context,
+                      ref,
+                      title: 'Atur Margin Keuntungan (%)',
+                      currentValue: state.defaultMargin.toString(),
+                      hint: 'Masukkan persentase margin (mis: 30)',
+                      keyboardType: TextInputType.number,
+                      onSave: (val) async {
+                        final margin = int.tryParse(val) ?? 30;
+                        await ref
+                            .read(settingsProvider.notifier)
+                            .updateDefaultMargin(margin);
+                      },
+                    ),
+                  ),
+                  _buildTile(
+                    icon: Icons.account_balance_wallet_rounded,
+                    iconColor: AppColors.primary,
+                    title: 'Rekening & E-Wallet',
+                    subtitle:
+                        '${state.bankAccounts.length} rekening/e-wallet terdaftar',
+                    onTap: () => _showManageBankAccountsSheet(context, ref, state),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // -- Seksi Keamanan ----------------------------------
+                  _buildSectionHeader('Keamanan'),
+                  _buildTile(
+                    icon: Icons.lock_outline_rounded,
+                    iconColor: AppColors.secondary,
+                    title: 'Ubah PIN',
+                    subtitle: 'Ganti PIN untuk membuka aplikasi',
+                    onTap: () => context.push(AppRoutes.changePin),
+                  ),
+                  _buildTile(
+                    icon: Icons.security_rounded,
+                    iconColor: state.hasSecurityQuestion
+                        ? AppColors.primary
+                        : AppColors.expense,
+                    title: 'Pertanyaan Keamanan',
+                    subtitle: state.hasSecurityQuestion
+                        ? 'Pertanyaan aktif: "${state.securityQuestion}"'
+                        : 'Belum diatur! Atur sekarang untuk memulihkan PIN jika lupa.',
+                    onTap: () => _showSecurityQuestionDialog(context, ref, state),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // -- Seksi Data & Backup -----------------------------
+                  _buildSectionHeader('Data & Backup'),
+                  _buildTile(
+                    icon: Icons.upload_file_rounded,
+                    iconColor: AppColors.primary,
+                    title: 'Backup Data',
+                    subtitle: 'Ekspor semua data ke file JSON',
+                    isLoading: state.isExporting,
+                    onTap: () => _showBackupOptions(context, ref),
+                  ),
+                  _buildTile(
+                    icon: Icons.download_rounded,
+                    iconColor: AppColors.secondary,
+                    title: 'Pulihkan Data',
+                    subtitle: 'Impor data dari file backup',
+                    isLoading: state.isImporting,
+                    onTap: () => _doImport(context, ref),
+                  ),
+                  _buildTile(
+                    icon: Icons.summarize_rounded,
+                    iconColor: AppColors.primary,
+                    title: 'Export Laporan',
+                    subtitle: 'Unduh laporan keuangan dalam format PDF atau XLSX',
+                    onTap: () => _showExportSheet(context),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // -- Seksi Tentang -----------------------------------
+                  _buildSectionHeader('Tentang'),
+                  _buildTile(
+                    icon: Icons.info_outline_rounded,
+                    iconColor: AppColors.textSecondary,
+                    title: 'Versi Aplikasi',
+                    subtitle: AppConstants.appVersion,
+                    onTap: null,
+                  ),
+                  _buildTile(
+                    icon: Icons.favorite_outline_rounded,
+                    iconColor: AppColors.expense,
+                    title: 'Tentang CatatIn',
+                    subtitle: AppConstants.appDeveloper,
+                    onTap: null,
+                  ),
+                  const SizedBox(height: 32),
+                  const AppFooter(),
+                ],
               ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Gagal memuat: $e')),
             ),
-            _buildTile(
-              icon: Icons.person_rounded,
-              iconColor: AppColors.info,
-              title: 'Nama Pemilik',
-              subtitle: state.ownerName.isEmpty
-                  ? 'Belum diatur'
-                  : state.ownerName,
-              onTap: () => _showEditDialog(
-                context,
-                ref,
-                title: 'Nama Pemilik',
-                currentValue: state.ownerName,
-                hint: 'Masukkan nama pemilik usaha',
-                onSave: (val) =>
-                    ref.read(settingsProvider.notifier).updateOwnerName(val),
-              ),
-            ),
-            _buildTile(
-              icon: Icons.percent_rounded,
-              iconColor: AppColors.primary,
-              title: 'Margin Keuntungan',
-              subtitle: '${state.defaultMargin}%',
-              onTap: () => _showEditDialog(
-                context,
-                ref,
-                title: 'Atur Margin Keuntungan (%)',
-                currentValue: state.defaultMargin.toString(),
-                hint: 'Masukkan persentase margin (mis: 30)',
-                keyboardType: TextInputType.number,
-                onSave: (val) async {
-                  final margin = int.tryParse(val) ?? 30;
-                  await ref
-                      .read(settingsProvider.notifier)
-                      .updateDefaultMargin(margin);
-                },
-              ),
-            ),
-            _buildTile(
-              icon: Icons.account_balance_wallet_rounded,
-              iconColor: AppColors.primary,
-              title: 'Rekening & E-Wallet',
-              subtitle:
-                  '${state.bankAccounts.length} rekening/e-wallet terdaftar',
-              onTap: () => _showManageBankAccountsSheet(context, ref, state),
-            ),
-
-            const SizedBox(height: 8),
-
-            // -- Seksi Keamanan ----------------------------------
-            _buildSectionHeader('Keamanan'),
-            _buildTile(
-              icon: Icons.lock_outline_rounded,
-              iconColor: AppColors.warning,
-              title: 'Ubah PIN',
-              subtitle: 'Ganti PIN untuk membuka aplikasi',
-              onTap: () => context.push(AppRoutes.changePin),
-            ),
-            _buildTile(
-              icon: Icons.security_rounded,
-              iconColor: state.hasSecurityQuestion
-                  ? AppColors.info
-                  : AppColors.expense,
-              title: 'Pertanyaan Keamanan',
-              subtitle: state.hasSecurityQuestion
-                  ? 'Pertanyaan aktif: "${state.securityQuestion}"'
-                  : 'Belum diatur! Atur sekarang untuk memulihkan PIN jika lupa.',
-              onTap: () => _showSecurityQuestionDialog(context, ref, state),
-            ),
-
-            const SizedBox(height: 8),
-
-            // -- Seksi Data --------------------------------------
-            _buildSectionHeader('Data & Backup'),
-            _buildTile(
-              icon: Icons.upload_file_rounded,
-              iconColor: AppColors.primary,
-              title: 'Backup Data',
-              subtitle: 'Ekspor semua data ke file JSON',
-              isLoading: state.isExporting,
-              onTap: () => _showBackupOptions(context, ref),
-            ),
-            _buildTile(
-              icon: Icons.download_rounded,
-              iconColor: AppColors.secondary,
-              title: 'Pulihkan Data',
-              subtitle: 'Impor data dari file backup',
-              isLoading: state.isImporting,
-              onTap: () => _doImport(context, ref),
-            ),
-            _buildTile(
-              icon: Icons.summarize_rounded,
-              iconColor: AppColors.info,
-              title: 'Export Laporan',
-              subtitle: 'Unduh laporan keuangan dalam format PDF atau XLSX',
-              onTap: () => _showExportSheet(context),
-            ),
-
-            const SizedBox(height: 8),
-
-            // -- Seksi Tentang -----------------------------------
-            _buildSectionHeader('Tentang Aplikasi'),
-            _buildTile(
-              icon: Icons.info_outline_rounded,
-              iconColor: AppColors.textSecondary,
-              title: 'Versi Aplikasi',
-              subtitle: AppConstants.appVersion,
-              onTap: null,
-            ),
-            _buildTile(
-              icon: Icons.favorite_outline_rounded,
-              iconColor: AppColors.expense,
-              title: 'Tentang CatatIn',
-              subtitle: AppConstants.appDeveloper,
-              onTap: null,
-            ),
-            const SizedBox(height: 32),
-            const AppFooter(),
-          ],
+          ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Gagal memuat: $e')),
       ),
     );
   }
@@ -372,6 +381,7 @@ class SettingsScreen extends ConsumerWidget {
   void _showExportSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const ExportSheet(),
@@ -459,84 +469,91 @@ class SettingsScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            top: 24,
-            bottom: 24 + MediaQuery.of(context).padding.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  'Pilih Metode Backup',
-                  style: AppTextStyles.headlineSmall,
-                ),
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.save_alt_rounded,
-                    color: AppColors.primary,
-                  ),
-                ),
-                title: Text(
-                  'Simpan di Perangkat (Lokal)',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: const Text(
-                  'Simpan file backup secara lokal ke memori perangkat',
-                ),
-                onTap: () async {
-                  Navigator.pop(context);
-                  _doSaveLocal(context, ref);
-                },
+              padding: EdgeInsets.only(
+                top: 24,
+                bottom: 24 + MediaQuery.of(context).padding.bottom,
               ),
-              const Divider(height: 16),
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      'Pilih Metode Backup',
+                      style: AppTextStyles.headlineSmall,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.share_rounded,
-                    color: AppColors.primary,
+                  const SizedBox(height: 16),
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.save_alt_rounded,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    title: Text(
+                      'Simpan di Perangkat (Lokal)',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Simpan file backup secara lokal ke memori perangkat',
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      _doSaveLocal(context, ref);
+                    },
                   ),
-                ),
-                title: Text(
-                  'Bagikan Berkas (Share)',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const Divider(height: 16),
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.share_rounded,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    title: Text(
+                      'Bagikan Berkas (Share)',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Kirim file backup melalui WhatsApp, Email, Drive, dll.',
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _doExport(context, ref);
+                    },
                   ),
-                ),
-                subtitle: const Text(
-                  'Kirim file backup melalui WhatsApp, Email, Drive, dll.',
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _doExport(context, ref);
-                },
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -544,6 +561,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _doSaveLocal(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final jsonString = await ref
           .read(settingsProvider.notifier)
@@ -555,30 +573,32 @@ class SettingsScreen extends ConsumerWidget {
       final fileName =
           '${AppConstants.exportFileName}_$timestamp${AppConstants.exportFileExtension}';
 
-      final bytes = utf8.encode(jsonString);
       final path = await FilePicker.platform.saveFile(
         dialogTitle: 'Simpan Backup Data',
         fileName: fileName,
-        bytes: bytes,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
       );
 
-      if (path != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Backup berhasil disimpan di perangkat!'),
+      if (path != null) {
+        final targetPath = path.endsWith('.json') ? path : '$path.json';
+        final savedFile = File(targetPath);
+        await savedFile.writeAsString(jsonString);
+
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Backup berhasil disimpan di ${savedFile.path}'),
             backgroundColor: AppColors.primary,
           ),
         );
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal menyimpan backup: $e'),
-            backgroundColor: AppColors.expense,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Gagal menyimpan backup: $e'),
+          backgroundColor: AppColors.expense,
+        ),
+      );
     }
   }
 
@@ -703,162 +723,223 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        return Consumer(
-          builder: (consumerContext, ref, child) {
-            final currentSettings =
-                ref.watch(settingsProvider).valueOrNull ?? state;
-            final accounts = currentSettings.bankAccounts;
-
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                24,
-                24,
-                24,
-                32 +
-                    MediaQuery.of(consumerContext).viewInsets.bottom +
-                    MediaQuery.of(consumerContext).padding.bottom,
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Kelola Rekening & E-Wallet',
-                        style: AppTextStyles.headingMedium.copyWith(
-                          fontWeight: FontWeight.bold,
+              child: Consumer(
+                builder: (consumerContext, ref, child) {
+                  final currentSettings =
+                      ref.watch(settingsProvider).valueOrNull ?? state;
+                  final accounts = currentSettings.bankAccounts;
+
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      24,
+                      24,
+                      32 +
+                          MediaQuery.of(consumerContext).viewInsets.bottom +
+                          MediaQuery.of(consumerContext).padding.bottom,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Kelola Rekening & E-Wallet',
+                              style: AppTextStyles.headingMedium.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded),
+                              onPressed: () => Navigator.pop(sheetContext),
+                            ),
+                          ],
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => Navigator.pop(sheetContext),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (accounts.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Belum ada rekening/e-wallet terdaftar.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    )
-                  else
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(consumerContext).size.height * 0.4,
-                      ),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: accounts.length,
-                        itemBuilder: (itemContext, index) {
-                          final item = accounts[index];
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(item, style: AppTextStyles.bodyLarge),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
+                        const SizedBox(height: 16),
+                        if (accounts.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
                               children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    color: AppColors.textSecondary,
-                                    size: 20,
-                                  ),
-                                  onPressed: () =>
-                                      _showAddOrEditBankAccountDialog(
-                                        context,
-                                        ref,
-                                        accounts,
-                                        editingAccount: item,
-                                        index: index,
-                                      ),
+                                const Icon(
+                                  Icons.account_balance_outlined,
+                                  size: 40,
+                                  color: AppColors.textSecondary,
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: AppColors.expense,
-                                    size: 20,
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Belum Ada Rekening',
+                                  style: AppTextStyles.labelLarge.copyWith(
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  onPressed: () async {
-                                    final confirmed = await showDialog<bool>(
-                                      context: consumerContext,
-                                      builder: (dialogCtx) => AlertDialog(
-                                        title: const Text('Hapus Rekening'),
-                                        content: Text(
-                                          'Apakah Anda yakin ingin menghapus rekening "$item"?',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(dialogCtx, false),
-                                            child: const Text('Batal'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(dialogCtx, true),
-                                            child: const Text(
-                                              'Hapus',
-                                              style: TextStyle(
-                                                color: AppColors.expense,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (confirmed == true) {
-                                      final updated = List<String>.from(
-                                        accounts,
-                                      )..removeAt(index);
-                                      await ref
-                                          .read(settingsProvider.notifier)
-                                          .updateBankAccounts(updated);
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Rekening/E-Wallet berhasil dihapus',
-                                            ),
-                                            backgroundColor: AppColors.primary,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tambahkan nomor rekening atau e-wallet toko Anda.',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
+                          )
+                        else
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 280),
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: accounts.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 8),
+                              itemBuilder: (context, index) {
+                                final acc = accounts[index];
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.background,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColors.border,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 4,
+                                    ),
+                                    leading: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary
+                                            .withValues(alpha: 0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.account_balance_wallet_rounded,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      acc,
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.edit_outlined,
+                                            size: 20,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                          onPressed: () =>
+                                              _showAddOrEditBankAccountDialog(
+                                            context,
+                                            ref,
+                                            accounts,
+                                            editingAccount: acc,
+                                            index: index,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete_outline_rounded,
+                                            size: 20,
+                                            color: AppColors.expense,
+                                          ),
+                                          onPressed: () async {
+                                            final confirmed = await showDialog<bool>(
+                                              context: consumerContext,
+                                              builder: (dialogCtx) => AlertDialog(
+                                                title: const Text('Hapus Rekening'),
+                                                content: Text(
+                                                  'Apakah Anda yakin ingin menghapus rekening "$acc"?',
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(dialogCtx, false),
+                                                    child: const Text('Batal'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(dialogCtx, true),
+                                                    child: const Text(
+                                                      'Hapus',
+                                                      style: TextStyle(
+                                                        color: AppColors.expense,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            if (confirmed == true) {
+                                              final updated = List<String>.from(accounts)..removeAt(index);
+                                              await ref
+                                                  .read(settingsProvider.notifier)
+                                                  .updateBankAccounts(updated);
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Rekening/E-Wallet berhasil dihapus'),
+                                                    backgroundColor: AppColors.primary,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          onPressed: () => _showAddOrEditBankAccountDialog(
+                            context,
+                            ref,
+                            accounts,
+                          ),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Tambah Rekening / E-Wallet'),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                  const SizedBox(height: 24),
-                  FilledButton.icon(
-                    onPressed: () =>
-                        _showAddOrEditBankAccountDialog(context, ref, accounts),
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Tambah Rekening / E-Wallet'),
-                  ),
-                  const SizedBox(height: 16), // Spacer untuk mencegah mepet dengan navigasi
-                ],
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );

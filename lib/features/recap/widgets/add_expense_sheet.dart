@@ -132,10 +132,17 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     final recapState = ref.watch(recapProvider);
     final isLoading = recapState.value?.isLoading ?? false;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 600,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
@@ -260,6 +267,8 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 }
