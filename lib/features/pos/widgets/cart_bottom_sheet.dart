@@ -78,7 +78,7 @@ class CartBottomSheet extends ConsumerWidget {
               separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final item = cartItems[index];
-                return _CartItemRow(item: item);
+                return CartItemRow(item: item);
               },
             ),
           ),
@@ -120,15 +120,15 @@ class CartBottomSheet extends ConsumerWidget {
   }
 }
 
-class _CartItemRow extends ConsumerStatefulWidget {
-  const _CartItemRow({required this.item});
+class CartItemRow extends ConsumerStatefulWidget {
+  const CartItemRow({super.key, required this.item});
   final CartItemModel item;
 
   @override
-  ConsumerState<_CartItemRow> createState() => _CartItemRowState();
+  ConsumerState<CartItemRow> createState() => _CartItemRowState();
 }
 
-class _CartItemRowState extends ConsumerState<_CartItemRow> {
+class _CartItemRowState extends ConsumerState<CartItemRow> {
   late TextEditingController _qtyController;
 
   @override
@@ -140,7 +140,7 @@ class _CartItemRowState extends ConsumerState<_CartItemRow> {
   }
 
   @override
-  void didUpdateWidget(covariant _CartItemRow oldWidget) {
+  void didUpdateWidget(covariant CartItemRow oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.item.quantity != widget.item.quantity) {
       _qtyController.text = widget.item.quantity.toString();

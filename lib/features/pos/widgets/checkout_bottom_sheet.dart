@@ -136,10 +136,17 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
     final isError = hasEnteredCash && change < 0;
     final isSuccess = hasEnteredCash && change >= 0;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
-      ),
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 640,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+          ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
@@ -629,6 +636,8 @@ class _CheckoutBottomSheetState extends ConsumerState<CheckoutBottomSheet> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 }
