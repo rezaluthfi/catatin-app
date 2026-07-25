@@ -8,11 +8,12 @@ import 'dart:io';
 
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' show join;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'app_directory_service.dart';
 import 'export_data.dart';
 
 class ExportService {
@@ -182,10 +183,10 @@ class ExportService {
       ),
     );
 
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await AppDirectoryService.getTempExportsDirectory();
     final filename =
         'CatatIn_Laporan_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf';
-    final file = File('${dir.path}/$filename');
+    final file = File(join(dir.path, filename));
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -688,10 +689,10 @@ class ExportService {
     _buildOperationalSheet(excel, data);
     _buildReceivableSheet(excel, data);
 
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await AppDirectoryService.getTempExportsDirectory();
     final filename =
         'CatatIn_Laporan_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx';
-    final file = File('${dir.path}/$filename');
+    final file = File(join(dir.path, filename));
     final bytes = excel.save();
     if (bytes != null) await file.writeAsBytes(bytes);
     return file;

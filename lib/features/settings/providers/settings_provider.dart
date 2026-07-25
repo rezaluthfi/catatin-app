@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' show join;
 import 'package:share_plus/share_plus.dart';
+
+import '../../../core/services/app_directory_service.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/pin_hasher.dart';
@@ -93,14 +95,14 @@ class SettingsNotifier extends AsyncNotifier<SettingsState> {
       final repo = ref.read(settingsRepositoryProvider);
       final jsonString = await repo.exportToJson();
 
-      final dir = await getApplicationDocumentsDirectory();
+      final dir = await AppDirectoryService.getAppDirectory();
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
           .substring(0, 19);
       final fileName =
           '${AppConstants.exportFileName}_$timestamp${AppConstants.exportFileExtension}';
-      final file = File('${dir.path}/$fileName');
+      final file = File(join(dir.path, fileName));
       await file.writeAsString(jsonString);
 
       // Share the file

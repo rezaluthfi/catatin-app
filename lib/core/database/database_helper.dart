@@ -1,10 +1,12 @@
 // Singleton helper untuk mengelola koneksi database SQLite.
 // Menggunakan pola Singleton agar hanya ada satu instance koneksi database
 // di seluruh siklus hidup aplikasi, mencegah konflik akses concurrent.
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' show join;
 
 import '../constants/db_constants.dart';
+import '../services/app_directory_service.dart';
 import 'app_database.dart';
 
 class DatabaseHelper {
@@ -23,8 +25,19 @@ class DatabaseHelper {
 
   /// Inisialisasi database — dipanggil sekali saat pertama kali diakses.
   Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, DbConstants.dbName);
+    final appDir = await AppDirectoryService.getAppDirectory();
+    final path = join(appDir.path, DbConstants.dbName);
+
+    // Migrasi database lama dari getDatabasesPath jika ada
+    try {
+      final oldDbPath = await getDatabasesPath();
+      final oldPath = join(oldDbPath, DbConstants.dbName);
+      final oldFile = File(oldPath);
+      final newFile = File(path);
+      if (await oldFile.exists() && !await newFile.exists()) {
+        await oldFile.copy(path);
+      }
+    } catch (_) {}
 
     return await openDatabase(
       path,
