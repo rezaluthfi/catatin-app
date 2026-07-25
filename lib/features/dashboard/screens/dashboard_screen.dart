@@ -323,8 +323,12 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: stateAsync.when(
-          data: (state) {
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: stateAsync.when(
+              data: (state) {
             final isLowStock = state.lowStockProducts.isNotEmpty;
             final businessName = state.businessName;
             final initial = businessName.isNotEmpty
@@ -848,8 +852,10 @@ class DashboardScreen extends ConsumerWidget {
           error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _buildQuickActionCard(
     BuildContext context, {

@@ -434,8 +434,13 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
       ),
-      body: stateAsync.when(
-        data: (state) {
+      body: SafeArea(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: stateAsync.when(
+              data: (state) {
           final formattedPeriod = _getFormattedPeriodText(state);
 
           return Column(
@@ -1286,8 +1291,11 @@ class _RecapScreenState extends ConsumerState<RecapScreen> {
         loading: () => ShimmerLoading(type: ShimmerType.recap),
         error: (err, stack) => Center(child: Text('Terjadi kesalahan: $err')),
       ),
-    );
-  }
+    ),
+  ),
+),
+);
+}
 
   /// Date navigator khusus mode Mingguan: dua DatePicker (Mulai & Selesai)
   /// masing-masing identik dengan gaya harian (showDatePicker biasa).

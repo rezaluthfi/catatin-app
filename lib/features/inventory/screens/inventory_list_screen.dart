@@ -65,11 +65,11 @@ class InventoryListScreen extends ConsumerWidget {
                         ),
                         sliver: SliverGrid(
                           gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 220,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
-                            childAspectRatio: 0.6,
+                            childAspectRatio: 0.65,
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
