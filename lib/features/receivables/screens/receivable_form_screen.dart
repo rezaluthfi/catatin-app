@@ -77,13 +77,17 @@ class _ReceivableFormScreenState extends ConsumerState<ReceivableFormScreen> {
     if (!mounted) return;
 
     if (success) {
-      context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Piutang berhasil ditambahkan!'),
           backgroundColor: AppColors.primary,
         ),
       );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.pop();
+        }
+      });
     } else {
       final errorMsg = ref.read(receivableProvider).value?.errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(

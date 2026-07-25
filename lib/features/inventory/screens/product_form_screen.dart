@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' show join;
 import 'package:image_cropper/image_cropper.dart';
+
+import '../../../core/services/app_directory_service.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
@@ -183,58 +185,72 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   }
 
   void _showImagePickerOptions() {
+    final isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.camera_alt_outlined,
-                  color: AppColors.primary,
-                ),
-                title: const Text('Ambil dari Kamera'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ImageSource.camera);
-                },
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.photo_library_outlined,
-                  color: AppColors.primary,
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isDesktop)
+                      ListTile(
+                        leading: const Icon(
+                          Icons.camera_alt_outlined,
+                          color: AppColors.primary,
+                        ),
+                        title: const Text('Ambil dari Kamera'),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _pickImage(ImageSource.camera);
+                        },
+                      ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.photo_library_outlined,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(
+                        isDesktop ? 'Pilih dari Berkas Komputer' : 'Pilih dari Galeri',
+                      ),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _pickImage(ImageSource.gallery);
+                      },
+                    ),
+                    if (_selectedImagePath != null ||
+                        _existingProduct?.imagePath != null)
+                      ListTile(
+                        leading: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColors.expense,
+                        ),
+                        title: const Text(
+                          'Hapus Foto',
+                          style: TextStyle(color: AppColors.expense),
+                        ),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          setState(() {
+                            _selectedImagePath = ''; // Menandai dihapus
+                          });
+                        },
+                      ),
+                  ],
                 ),
-                title: const Text('Pilih dari Galeri'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ImageSource.gallery);
-                },
               ),
-              if (_selectedImagePath != null ||
-                  _existingProduct?.imagePath != null)
-                ListTile(
-                  leading: const Icon(
-                    Icons.delete_outline_rounded,
-                    color: AppColors.expense,
-                  ),
-                  title: const Text(
-                    'Hapus Foto',
-                    style: TextStyle(color: AppColors.expense),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    setState(() {
-                      _selectedImagePath = ''; // Menandai dihapus
-                    });
-                  },
-                ),
-            ],
+            ),
           ),
         );
       },
@@ -318,12 +334,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         finalImagePath = null; // Dihapus oleh user
       } else if (_selectedImagePath != null &&
           _selectedImagePath != _existingProduct?.imagePath) {
-        // Salin file ke dokumen lokal aplikasi agar aman
-        final appDir = await getApplicationDocumentsDirectory();
+        // Salin file ke folder produk aplikasi agar aman
+        final imgDir = await AppDirectoryService.getProductImagesDirectory();
         final fileName = 'product_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final savedFile = await File(
           _selectedImagePath!,
-        ).copy('${appDir.path}/$fileName');
+        ).copy(join(imgDir.path, fileName));
         finalImagePath = savedFile.path;
       } else {
         finalImagePath = _existingProduct?.imagePath;
@@ -389,7 +405,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             backgroundColor: AppColors.primary,
           ),
         );
-        context.pop(); // Kembali ke list
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.pop(); // Kembali ke list
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -440,11 +460,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         ],
       ),
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
               // -- INPUT FOTO PRODUK --
               Center(
                 child: GestureDetector(
@@ -893,8 +917,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _buildHistorySection() {
     if (_existingProduct == null) return const SizedBox.shrink();
@@ -1202,7 +1228,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             backgroundColor: AppColors.primary,
           ),
         );
-        context.pop(); // Kembali ke list
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.pop(); // Kembali ke list
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
