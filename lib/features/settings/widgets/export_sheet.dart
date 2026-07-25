@@ -119,7 +119,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
 
     // Share the file
     final settingsState = await ref.read(settingsProvider.future);
-    await Share.shareXFiles(
+    final result = await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'Laporan Keuangan ${settingsState.businessName}',
       text:
@@ -129,8 +129,12 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     );
 
     if (!mounted) return;
-    Navigator.pop(context);
-    _showSuccessSnackBar('Laporan berhasil dibagikan!');
+    
+    if (result.status == ShareResultStatus.success || 
+        result.status == ShareResultStatus.unavailable) {
+      Navigator.pop(context);
+      _showSuccessSnackBar('Laporan berhasil dibagikan!');
+    }
   }
 
   Future<void> _exportAndSave() async {

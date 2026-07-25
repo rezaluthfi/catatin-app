@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'export_data.dart';
 
 class ExportService {
@@ -23,14 +24,20 @@ class ExportService {
 
   static final _rupiah = NumberFormat.currency(
     locale: 'id_ID',
-    symbol: 'Rp ',
+    symbol: 'Rp',
     decimalDigits: 0,
   );
 
   static final _dateFormat = DateFormat('dd/MM/yyyy', 'id_ID');
   static final _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm', 'id_ID');
 
-  static String _fmt(int amount) => _rupiah.format(amount);
+  static String _fmt(int amount) {
+    return _rupiah
+        .format(amount)
+        .replaceAll('Rp ', 'Rp')
+        .replaceAll('Rp\u00a0', 'Rp');
+  }
+
   static String _fmtDate(DateTime dt) => _dateFormat.format(dt);
   static String _fmtDateTime(DateTime dt) => _dateTimeFormat.format(dt);
 
@@ -58,6 +65,14 @@ class ExportService {
     const textSecondary = PdfColor.fromInt(0xFF6B7280);
     const borderColor = PdfColor.fromInt(0xFFE5E7EB);
 
+    pw.MemoryImage? logoImage;
+    try {
+      final logoBytes = await rootBundle.load(
+        'assets/images/logo_bg_primary.jpeg',
+      );
+      logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    } catch (_) {}
+
     // ── Cover / Ringkasan ────────────────────────────────────
     pdf.addPage(
       pw.MultiPage(
@@ -68,6 +83,7 @@ class ExportService {
           brandGreen,
           brandGreenLight,
           textSecondary,
+          logoImage,
         ),
         footer: (ctx) => _pdfFooter(ctx, textSecondary),
         build: (ctx) => [
@@ -77,7 +93,9 @@ class ExportService {
             child: pw.Column(
               children: [
                 pw.Text(
-                  data.businessName.isNotEmpty ? data.businessName : 'Nama Usaha',
+                  data.businessName.isNotEmpty
+                      ? data.businessName
+                      : 'Nama Usaha',
                   style: pw.TextStyle(
                     fontSize: 14,
                     fontWeight: pw.FontWeight.bold,
@@ -113,9 +131,18 @@ class ExportService {
           _pdfSectionTitle('Riwayat Transaksi', brandGreen),
           pw.SizedBox(height: 8),
           if (data.transactions.isEmpty)
-            _pdfEmptyNote('Tidak ada transaksi pada periode ini.', textSecondary)
+            _pdfEmptyNote(
+              'Tidak ada transaksi pada periode ini.',
+              textSecondary,
+            )
           else
-            _pdfTransactionTable(data, brandGreen, brandGreenLight, borderColor, textSecondary),
+            _pdfTransactionTable(
+              data,
+              brandGreen,
+              brandGreenLight,
+              borderColor,
+              textSecondary,
+            ),
 
           pw.SizedBox(height: 24),
 
@@ -123,9 +150,18 @@ class ExportService {
           _pdfSectionTitle('Biaya Operasional', brandGreen),
           pw.SizedBox(height: 8),
           if (data.operationalCosts.isEmpty)
-            _pdfEmptyNote('Tidak ada biaya operasional pada periode ini.', textSecondary)
+            _pdfEmptyNote(
+              'Tidak ada biaya operasional pada periode ini.',
+              textSecondary,
+            )
           else
-            _pdfOperationalTable(data, brandGreen, brandGreenLight, borderColor, textSecondary),
+            _pdfOperationalTable(
+              data,
+              brandGreen,
+              brandGreenLight,
+              borderColor,
+              textSecondary,
+            ),
 
           pw.SizedBox(height: 24),
 
@@ -135,7 +171,13 @@ class ExportService {
           if (data.receivables.isEmpty)
             _pdfEmptyNote('Tidak ada data piutang.', textSecondary)
           else
-            _pdfReceivableTable(data, brandGreen, brandGreenLight, borderColor, textSecondary),
+            _pdfReceivableTable(
+              data,
+              brandGreen,
+              brandGreenLight,
+              borderColor,
+              textSecondary,
+            ),
         ],
       ),
     );
@@ -155,6 +197,7 @@ class ExportService {
     PdfColor brandGreen,
     PdfColor brandGreenLight,
     PdfColor textSecondary,
+    pw.ImageProvider? logoImage,
   ) {
     return pw.Container(
       padding: const pw.EdgeInsets.only(bottom: 12),
@@ -166,20 +209,35 @@ class ExportService {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Text(
-                'CatatIn',
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
-                  color: brandGreen,
+              if (logoImage != null) ...[
+                pw.Container(
+                  width: 32,
+                  height: 32,
+                  margin: const pw.EdgeInsets.only(right: 8),
+                  child: pw.Image(logoImage),
                 ),
-              ),
-              pw.Text(
-                data.businessName.isNotEmpty ? data.businessName : 'Laporan Keuangan',
-                style: pw.TextStyle(fontSize: 11, color: textSecondary),
+              ],
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'CatatIn',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
+                      color: brandGreen,
+                    ),
+                  ),
+                  pw.Text(
+                    data.businessName.isNotEmpty
+                        ? data.businessName
+                        : 'Laporan Keuangan',
+                    style: pw.TextStyle(fontSize: 10, color: textSecondary),
+                  ),
+                ],
               ),
             ],
           ),
@@ -210,12 +268,27 @@ class ExportService {
   }
 
   static pw.Widget _pdfFooter(pw.Context ctx, PdfColor textSecondary) {
+    final now = DateTime.now();
+    final dateStr = DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(now);
     return pw.Container(
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 8),
-      child: pw.Text(
-        'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount}  •  Dibuat oleh CatatIn',
-        style: pw.TextStyle(fontSize: 9, color: textSecondary),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            'Halaman ${ctx.pageNumber} dari ${ctx.pagesCount}',
+            style: pw.TextStyle(fontSize: 9, color: textSecondary),
+          ),
+          pw.Text(
+            'Dibuat oleh CatatIn - $dateStr',
+            style: pw.TextStyle(fontSize: 9, color: textSecondary),
+          ),
+          pw.Text(
+            '© KKN-PPM UGM Alor Carita 2026',
+            style: pw.TextStyle(fontSize: 9, color: textSecondary),
+          ),
+        ],
       ),
     );
   }
@@ -243,7 +316,11 @@ class ExportService {
       padding: const pw.EdgeInsets.symmetric(vertical: 8),
       child: pw.Text(
         text,
-        style: pw.TextStyle(fontSize: 10, color: textSecondary, fontStyle: pw.FontStyle.italic),
+        style: pw.TextStyle(
+          fontSize: 10,
+          color: textSecondary,
+          fontStyle: pw.FontStyle.italic,
+        ),
       ),
     );
   }
@@ -258,25 +335,41 @@ class ExportService {
 
     final rows = [
       // Penjualan
-      ['Penjualan', _fmt(data.totalRevenue), '', false],
-      ['Retur Produk', _fmt(0), '', false],
-      ['  Penjualan Bersih', '', _fmt(data.totalRevenue), true],
-      
+      ['Penjualan', '', _fmt(data.totalRevenue), true],
+
       // HPP Header
       ['Harga Pokok Penjualan (HPP):', '', '', false],
-      ['  Persediaan Barang (Awal)', _fmt(data.initialInventoryValue), '', false],
-      ['  Pembelian Barang', _fmt(data.purchasesValue), '', false],
-      ['  Persediaan Barang (Akhir)', '(${_fmt(data.endingInventoryValue)})', '', false],
-      ['  Total HPP', '', '(${_fmt(data.totalHpp)})', true],
-      
+      [
+        '  Total HPP (Modal Barang Terjual)',
+        '',
+        '(${_fmt(data.totalHpp)})',
+        true,
+      ],
+      [
+        'Nilai Persediaan Barang (Stok x Harga Beli)',
+        '',
+        _fmt(data.totalInventoryValue),
+        true,
+      ],
+
       // Laba Kotor
       ['Laba Kotor (Gross Profit)', '', _fmt(grossProfit), true],
-      
+
       // Beban Operasional
       ['Beban Operasional:', '', '', false],
-      ['  Beban Gaji/Operasional Lain', _fmt(data.totalOperationalCost), '', false],
-      ['  Total Beban Operasional', '', '(${_fmt(data.totalOperationalCost)})', true],
-      
+      [
+        '  Beban Gaji/Operasional Lain',
+        _fmt(data.totalOperationalCost),
+        '',
+        false,
+      ],
+      [
+        '  Total Beban Operasional',
+        '',
+        '(${_fmt(data.totalOperationalCost)})',
+        true,
+      ],
+
       // Laba Bersih
       ['Laba Bersih (Net Profit)', '', _fmt(data.netProfit), true],
     ];
@@ -296,9 +389,11 @@ class ExportService {
 
         final isHeader = label.endsWith(':');
         final isNetProfit = label.contains('Laba Bersih');
-        
+
         final rowBgColor = isNetProfit
-            ? (data.netProfit >= 0 ? brandGreenLight : PdfColor.fromInt(0xFFFEECEC))
+            ? (data.netProfit >= 0
+                  ? brandGreenLight
+                  : PdfColor.fromInt(0xFFFEECEC))
             : (isBold ? PdfColor.fromInt(0xFFF9FAFB) : PdfColors.white);
 
         final textCol = isNetProfit
@@ -309,33 +404,48 @@ class ExportService {
           decoration: pw.BoxDecoration(color: rowBgColor),
           children: [
             pw.Padding(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
               child: pw.Text(
                 label,
                 style: pw.TextStyle(
                   fontSize: 10,
-                  fontWeight: (isBold || isHeader) ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  fontWeight: (isBold || isHeader)
+                      ? pw.FontWeight.bold
+                      : pw.FontWeight.normal,
                 ),
               ),
             ),
             pw.Padding(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
               child: pw.Text(
                 col1,
                 style: pw.TextStyle(
                   fontSize: 10,
-                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  fontWeight: isBold
+                      ? pw.FontWeight.bold
+                      : pw.FontWeight.normal,
                   color: textCol,
                 ),
               ),
             ),
             pw.Padding(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
               child: pw.Text(
                 col2,
                 style: pw.TextStyle(
                   fontSize: 10,
-                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  fontWeight: isBold
+                      ? pw.FontWeight.bold
+                      : pw.FontWeight.normal,
                   color: textCol,
                 ),
               ),
@@ -353,7 +463,14 @@ class ExportService {
     PdfColor borderColor,
     PdfColor textSecondary,
   ) {
-    final headers = ['No', 'Tanggal & Waktu', 'Produk', 'Total', 'Pembayaran', 'Catatan'];
+    final headers = [
+      'No',
+      'Tanggal & Waktu',
+      'Produk',
+      'Total',
+      'Pembayaran',
+      'Catatan',
+    ];
     final colWidths = [
       pw.FlexColumnWidth(0.5),
       pw.FlexColumnWidth(2),
@@ -366,17 +483,22 @@ class ExportService {
     final headerRow = pw.TableRow(
       decoration: pw.BoxDecoration(color: brandGreen),
       children: headers
-          .map((h) => pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-                child: pw.Text(
-                  h,
-                  style: pw.TextStyle(
-                    fontSize: 9,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white,
-                  ),
+          .map(
+            (h) => pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 5,
+              ),
+              child: pw.Text(
+                h,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.white,
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
 
@@ -385,7 +507,9 @@ class ExportService {
       final tx = entry.value;
       final productList = tx.items.isEmpty
           ? '-'
-          : tx.items.map((item) => '${item.productName} (×${item.quantity})').join(', ');
+          : tx.items
+                .map((item) => '${item.productName} (×${item.quantity})')
+                .join(', ');
       return pw.TableRow(
         decoration: pw.BoxDecoration(
           color: i % 2 == 0 ? PdfColors.white : PdfColor.fromInt(0xFFF9FAFB),
@@ -403,7 +527,9 @@ class ExportService {
 
     return pw.Table(
       border: pw.TableBorder.all(color: borderColor, width: 0.5),
-      columnWidths: {for (var i = 0; i < colWidths.length; i++) i: colWidths[i]},
+      columnWidths: {
+        for (var i = 0; i < colWidths.length; i++) i: colWidths[i],
+      },
       children: [headerRow, ...dataRows],
     );
   }
@@ -420,17 +546,22 @@ class ExportService {
     final headerRow = pw.TableRow(
       decoration: pw.BoxDecoration(color: brandGreen),
       children: headers
-          .map((h) => pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-                child: pw.Text(
-                  h,
-                  style: pw.TextStyle(
-                    fontSize: 9,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white,
-                  ),
+          .map(
+            (h) => pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 5,
+              ),
+              child: pw.Text(
+                h,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.white,
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
 
@@ -469,22 +600,35 @@ class ExportService {
     PdfColor borderColor,
     PdfColor textSecondary,
   ) {
-    final headers = ['No', 'Pelanggan', 'Tagihan', 'Dibayar', 'Sisa', 'Status', 'Jatuh Tempo'];
+    final headers = [
+      'No',
+      'Pelanggan',
+      'Tagihan',
+      'Dibayar',
+      'Sisa',
+      'Status',
+      'Jatuh Tempo',
+    ];
 
     final headerRow = pw.TableRow(
       decoration: pw.BoxDecoration(color: brandGreen),
       children: headers
-          .map((h) => pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-                child: pw.Text(
-                  h,
-                  style: pw.TextStyle(
-                    fontSize: 9,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white,
-                  ),
+          .map(
+            (h) => pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 5,
+              ),
+              child: pw.Text(
+                h,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.white,
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
 
@@ -569,9 +713,7 @@ class ExportService {
   }
 
   static CellStyle _moneyStyle() {
-    return CellStyle(
-      numberFormat: NumFormat.custom(formatCode: '#,##0'),
-    );
+    return CellStyle(numberFormat: NumFormat.custom(formatCode: '#,##0'));
   }
 
   static CellStyle _totalStyle() {
@@ -584,7 +726,9 @@ class ExportService {
 
   static void _setHeader(Sheet sheet, int row, List<String> headers) {
     for (var col = 0; col < headers.length; col++) {
-      final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row));
+      final cell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
+      );
       cell.value = TextCellValue(headers[col]);
       cell.cellStyle = _headerStyle();
     }
@@ -594,21 +738,39 @@ class ExportService {
     final sheet = excel['Laba Rugi'];
 
     // Judul
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
-        TextCellValue(data.businessName.isNotEmpty ? data.businessName : 'Nama Usaha');
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).cellStyle = _boldStyle();
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+        .value = TextCellValue(
+      data.businessName.isNotEmpty ? data.businessName : 'Nama Usaha',
+    );
+    sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+            .cellStyle =
+        _boldStyle();
 
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1)).value =
         TextCellValue('Laporan Laba Rugi');
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1)).cellStyle = _boldStyle();
+    sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1))
+            .cellStyle =
+        _boldStyle();
 
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2)).value =
-        TextCellValue('Periode: ${_getMonthYearLabel(data.startDate, data.endDate)}');
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2)).cellStyle = _boldStyle();
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2))
+        .value = TextCellValue(
+      'Periode: ${_getMonthYearLabel(data.startDate, data.endDate)}',
+    );
+    sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2))
+            .cellStyle =
+        _boldStyle();
 
     if (data.ownerName.isNotEmpty) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 3)).value =
-          TextCellValue('Pemilik: ${data.ownerName}');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 3))
+          .value = TextCellValue(
+        'Pemilik: ${data.ownerName}',
+      );
     }
 
     // Header tabel
@@ -618,25 +780,26 @@ class ExportService {
 
     final rows = [
       // Penjualan
-      ['Penjualan', data.totalRevenue, null, false],
-      ['Retur Produk', 0, null, false],
-      ['  Penjualan Bersih', null, data.totalRevenue, true],
-      
+      ['Penjualan', null, data.totalRevenue, true],
+
       // HPP Header
       ['Harga Pokok Penjualan (HPP):', null, null, false],
-      ['  Persediaan Barang (Awal)', data.initialInventoryValue, null, false],
-      ['  Pembelian Barang', data.purchasesValue, null, false],
-      ['  Persediaan Barang (Akhir)', -data.endingInventoryValue, null, false],
-      ['  Total HPP', null, -data.totalHpp, true],
-      
+      ['  Total HPP (Modal Barang Terjual)', null, -data.totalHpp, true],
+      [
+        'Nilai Persediaan Barang (Stok x Harga Beli)',
+        null,
+        data.totalInventoryValue,
+        true,
+      ],
+
       // Laba Kotor
       ['Laba Kotor (Gross Profit)', null, grossProfit, true],
-      
+
       // Beban Operasional
       ['Beban Operasional:', null, null, false],
       ['  Beban Gaji/Operasional Lain', data.totalOperationalCost, null, false],
       ['  Total Beban Operasional', null, -data.totalOperationalCost, true],
-      
+
       // Laba Bersih
       ['Laba Bersih (Net Profit)', null, data.netProfit, true],
     ];
@@ -651,22 +814,30 @@ class ExportService {
       final isHeader = label.endsWith(':');
       final isNetProfit = label.contains('Laba Bersih');
 
-      final labelCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIdx));
+      final labelCell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIdx),
+      );
       labelCell.value = TextCellValue(label);
       if (isBold || isHeader) {
         labelCell.cellStyle = _boldStyle();
       }
 
       if (col1 != null) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIdx));
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIdx),
+        );
         cell.value = IntCellValue(col1 as int);
         cell.cellStyle = _moneyStyle();
       }
 
       if (col2 != null) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIdx));
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIdx),
+        );
         cell.value = IntCellValue(col2 as int);
-        cell.cellStyle = isNetProfit ? _totalStyle() : (isBold ? _boldStyle() : _moneyStyle());
+        cell.cellStyle = isNetProfit
+            ? _totalStyle()
+            : (isBold ? _boldStyle() : _moneyStyle());
       }
     }
 
@@ -680,8 +851,14 @@ class ExportService {
     final sheet = excel['Transaksi'];
 
     _setHeader(sheet, 0, [
-      'No', 'Tanggal', 'Waktu', 'Produk', 'Qty Total',
-      'Total (Rp)', 'Metode Bayar', 'Catatan',
+      'No',
+      'Tanggal',
+      'Waktu',
+      'Produk',
+      'Qty Total',
+      'Total (Rp)',
+      'Metode Bayar',
+      'Catatan',
     ]);
 
     for (var i = 0; i < data.transactions.length; i++) {
@@ -689,7 +866,9 @@ class ExportService {
       final rowIdx = i + 1;
       final productList = tx.items.isEmpty
           ? '-'
-          : tx.items.map((item) => '${item.productName} ×${item.quantity}').join(', ');
+          : tx.items
+                .map((item) => '${item.productName} ×${item.quantity}')
+                .join(', ');
       final totalQty = tx.items.fold(0, (sum, item) => sum + item.quantity);
 
       final row = [
@@ -704,7 +883,9 @@ class ExportService {
       ];
 
       for (var col = 0; col < row.length; col++) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIdx));
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIdx),
+        );
         cell.value = row[col];
         if (col == 5) cell.cellStyle = _moneyStyle();
       }
@@ -713,9 +894,14 @@ class ExportService {
     // Baris total
     if (data.transactions.isNotEmpty) {
       final totalRow = data.transactions.length + 1;
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: totalRow)).value =
-          TextCellValue('TOTAL');
-      final totalCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: totalRow));
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: totalRow))
+          .value = TextCellValue(
+        'TOTAL',
+      );
+      final totalCell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: totalRow),
+      );
       totalCell.value = IntCellValue(data.totalRevenue);
       totalCell.cellStyle = _totalStyle();
     }
@@ -745,7 +931,9 @@ class ExportService {
         IntCellValue(cost.amount),
       ];
       for (var col = 0; col < row.length; col++) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIdx));
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIdx),
+        );
         cell.value = row[col];
         if (col == 3) cell.cellStyle = _moneyStyle();
       }
@@ -753,9 +941,14 @@ class ExportService {
 
     if (data.operationalCosts.isNotEmpty) {
       final totalRow = data.operationalCosts.length + 1;
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: totalRow)).value =
-          TextCellValue('TOTAL');
-      final totalCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: totalRow));
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: totalRow))
+          .value = TextCellValue(
+        'TOTAL',
+      );
+      final totalCell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: totalRow),
+      );
       totalCell.value = IntCellValue(data.totalOperationalCost);
       totalCell.cellStyle = _totalStyle();
     }
@@ -770,8 +963,14 @@ class ExportService {
     final sheet = excel['Piutang'];
 
     _setHeader(sheet, 0, [
-      'No', 'Nama Pelanggan', 'Total Tagihan (Rp)', 'Sudah Dibayar (Rp)',
-      'Sisa Utang (Rp)', 'Status', 'Jatuh Tempo', 'Catatan',
+      'No',
+      'Nama Pelanggan',
+      'Total Tagihan (Rp)',
+      'Sudah Dibayar (Rp)',
+      'Sisa Utang (Rp)',
+      'Status',
+      'Jatuh Tempo',
+      'Catatan',
     ]);
 
     for (var i = 0; i < data.receivables.length; i++) {
@@ -788,7 +987,9 @@ class ExportService {
         TextCellValue(r.notes ?? '-'),
       ];
       for (var col = 0; col < row.length; col++) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIdx));
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIdx),
+        );
         cell.value = row[col];
         if (col == 2 || col == 3 || col == 4) cell.cellStyle = _moneyStyle();
       }

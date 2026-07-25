@@ -176,7 +176,55 @@ class ProductRepository implements IProductRepository {
         whereArgs: [productId],
         orderBy: '${DbConstants.colHistoryDate} DESC, ${DbConstants.colHistoryCreatedAt} DESC',
       );
-      return rows.map(ProductStockHistoryModel.fromMap).toList();
+      final historyList = rows.map(ProductStockHistoryModel.fromMap).toList();
+
+      // Ambil transaksi POS yang menyertakan produk ini untuk riwayat stok lengkap
+      final txRows = await _db.rawQuery(
+        '''SELECT ti.${DbConstants.colTxItemId} as item_id,
+                  ti.${DbConstants.colTxItemProductId} as product_id,
+                  ti.${DbConstants.colTxItemPurchasePriceAtTime} as purchase_price,
+                  ti.${DbConstants.colTxItemSellingPriceAtTime} as selling_price,
+                  ti.${DbConstants.colTxItemQuantity} as quantity,
+                  t.${DbConstants.colTransactionCreatedAt} as created_at
+           FROM ${DbConstants.tableTransactionItems} ti
+           JOIN ${DbConstants.tableTransactions} t ON ti.${DbConstants.colTxItemTransactionId} = t.${DbConstants.colTransactionId}
+           WHERE ti.${DbConstants.colTxItemProductId} = ?''',
+        [productId],
+      );
+
+      for (final txRow in txRows) {
+        final itemId = txRow['item_id'] as String;
+        final posId = 'pos_$itemId';
+        final qty = -(txRow['quantity'] as int);
+        final txDate = DateTime.parse(txRow['created_at'] as String);
+
+        final isAlreadyPresent = historyList.any((h) {
+          if (h.id == posId || h.id == itemId) return true;
+          if (h.id.startsWith('pos_') &&
+              h.stockAdded == qty &&
+              h.createdAt.difference(txDate).inSeconds.abs() <= 5) {
+            return true;
+          }
+          return false;
+        });
+
+        if (!isAlreadyPresent) {
+          historyList.add(
+            ProductStockHistoryModel(
+              id: posId,
+              productId: productId,
+              purchasePrice: txRow['purchase_price'] as int,
+              sellingPrice: txRow['selling_price'] as int,
+              stockAdded: qty,
+              date: txDate,
+              createdAt: txDate,
+            ),
+          );
+        }
+      }
+
+      historyList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return historyList;
     } catch (e) {
       throw DatabaseException('Gagal mengambil riwayat stok produk', originalError: e);
     }

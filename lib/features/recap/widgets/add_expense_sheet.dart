@@ -109,7 +109,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
             label: 'LIHAT',
             textColor: Colors.white,
             onPressed: () {
-              router.go('${AppRoutes.recap}?tab=1');
+              router.go('${AppRoutes.recap}?tab=2');
             },
           ),
         ),

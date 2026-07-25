@@ -150,7 +150,9 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
   Future<void> _onFinish() async {
     setState(() => _isLoading = true);
 
-    await ref.read(authProvider.notifier).setupPin(
+    await ref
+        .read(authProvider.notifier)
+        .setupPin(
           pin: _newPin,
           businessName: _businessNameController.text.trim(),
           ownerName: _ownerNameController.text.trim(),
@@ -237,22 +239,22 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
         children: [
           // Tombol back (sembunyikan di step pertama)
           if (_currentStep > 0 && _currentStep < 3)
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: _prevStep,
-            )
+            IconButton(icon: const Icon(Icons.arrow_back), onPressed: _prevStep)
           else
             const SizedBox(width: 48),
 
           const Spacer(),
 
-          Text(
-            'CatatIn',
-            style: AppTextStyles.headlineMedium.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          if (_currentStep > 0)
+            Text(
+              'CatatIn',
+              style: AppTextStyles.headlineMedium.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          else
+            const SizedBox.shrink(),
 
           const Spacer(),
           const SizedBox(width: 48),
@@ -325,27 +327,56 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            Text('Selamat Datang! 👋', style: AppTextStyles.displayMedium),
+            Center(
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'assets/images/logo_bg_primary.jpeg',
+                      height: 90,
+                      width: 90,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'CatatIn',
+                    style: AppTextStyles.headingLarge.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: Text(
+                'Selamat Datang! 👋',
+                style: AppTextStyles.displayMedium,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(
-              'Pertama, ceritakan sedikit tentang usaha kamu.',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+            Center(
+              child: Text(
+                'Pertama, ceritakan sedikit tentang usaha kamu.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             const SizedBox(height: 32),
 
             // Nama usaha
-            Text(
-              'Nama Usaha',
-              style: AppTextStyles.labelMedium,
-            ),
+            Text('Nama Usaha', style: AppTextStyles.labelMedium),
             const SizedBox(height: 8),
             TextFormField(
               controller: _businessNameController,
               decoration: const InputDecoration(
                 hintText: 'contoh: Warung Bu Sari',
-                prefixIcon: Icon(Icons.store_rounded),
+                prefixIcon: Icon(Icons.store_rounded, color: AppColors.primary),
               ),
               textCapitalization: TextCapitalization.words,
               validator: (value) {
@@ -358,16 +389,16 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
             const SizedBox(height: 20),
 
             // Nama pemilik
-            Text(
-              'Nama Pemilik',
-              style: AppTextStyles.labelMedium,
-            ),
+            Text('Nama Pemilik', style: AppTextStyles.labelMedium),
             const SizedBox(height: 8),
             TextFormField(
               controller: _ownerNameController,
               decoration: const InputDecoration(
                 hintText: 'contoh: Bu Sari',
-                prefixIcon: Icon(Icons.person_rounded),
+                prefixIcon: Icon(
+                  Icons.person_rounded,
+                  color: AppColors.primary,
+                ),
               ),
               textCapitalization: TextCapitalization.words,
               validator: (value) {
@@ -422,7 +453,10 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Buat PIN Keamanan', style: AppTextStyles.headlineLarge),
+                    Text(
+                      'Buat PIN Keamanan',
+                      style: AppTextStyles.headlineLarge,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'PIN 6 digit untuk melindungi data keuangan kamu.',
@@ -503,7 +537,9 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
                 duration: const Duration(milliseconds: 200),
                 child: Text(
                   'PIN tidak cocok. Coba lagi.',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.expense),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.expense,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -556,11 +592,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
               items: AppConstants.securityQuestions.map((q) {
                 return DropdownMenuItem(
                   value: q,
-                  child: Text(
-                    q,
-                    maxLines: 2,
-                    overflow: TextOverflow.visible,
-                  ),
+                  child: Text(q, maxLines: 2, overflow: TextOverflow.visible),
                 );
               }).toList(),
               onChanged: (val) => setState(() => _selectedQuestion = val),
@@ -590,8 +622,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
           // Opsi lewati
           CheckboxListTile(
             value: _skipSecurity,
-            onChanged: (val) =>
-                setState(() => _skipSecurity = val ?? false),
+            onChanged: (val) => setState(() => _skipSecurity = val ?? false),
             title: Text(
               'Lewati — saya tidak ingin mengatur pertanyaan keamanan',
               style: AppTextStyles.bodySmall,
@@ -609,8 +640,11 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: AppColors.warning, size: 20),
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppColors.warning,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -632,7 +666,8 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen>
               onPressed: _isLoading
                   ? null
                   : () {
-                      final canFinish = _skipSecurity ||
+                      final canFinish =
+                          _skipSecurity ||
                           (_selectedQuestion != null &&
                               _answerController.text.trim().isNotEmpty);
                       if (!canFinish) {
