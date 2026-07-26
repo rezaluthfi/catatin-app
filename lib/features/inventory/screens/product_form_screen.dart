@@ -30,6 +30,7 @@ class ProductFormScreen extends ConsumerStatefulWidget {
 class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
   final _purchasePriceController = TextEditingController();
   final _sellingPriceController = TextEditingController();
   final _stockController = TextEditingController();
@@ -75,6 +76,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _nameFocusNode.dispose();
     _purchasePriceController.dispose();
     _sellingPriceController.dispose();
     _stockController.dispose();
@@ -513,7 +515,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         ref.watch(inventoryProvider).valueOrNull?.products ??
                         [];
                     return RawAutocomplete<ProductModel>(
-                      focusNode: FocusNode(),
+                      focusNode: _nameFocusNode,
                       textEditingController: _nameController,
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         if (textEditingValue.text.trim().isEmpty) {
