@@ -16,7 +16,7 @@ import '../../../app/theme/app_text_styles.dart';
 /// ```
 ///
 /// Slot kiri-bawah bisa diisi widget custom via [bottomLeftChild].
-class PinKeypadWidget extends StatelessWidget {
+class PinKeypadWidget extends StatefulWidget {
   const PinKeypadWidget({
     super.key,
     required this.onDigitPressed,
@@ -42,9 +42,77 @@ class PinKeypadWidget extends StatelessWidget {
   final bool enabled;
 
   @override
+  State<PinKeypadWidget> createState() => _PinKeypadWidgetState();
+}
+
+class _PinKeypadWidgetState extends State<PinKeypadWidget> {
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+    super.dispose();
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (!widget.enabled || event is! KeyDownEvent) return false;
+
+    if (event.logicalKey == LogicalKeyboardKey.backspace ||
+        event.logicalKey == LogicalKeyboardKey.delete) {
+      widget.onBackspacePressed();
+      return true;
+    }
+
+    final char = event.character;
+    if (char != null && RegExp(r'^[0-9]$').hasMatch(char)) {
+      widget.onDigitPressed(char);
+      return true;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.numpad0) {
+      widget.onDigitPressed('0');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad1) {
+      widget.onDigitPressed('1');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad2) {
+      widget.onDigitPressed('2');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad3) {
+      widget.onDigitPressed('3');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad4) {
+      widget.onDigitPressed('4');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad5) {
+      widget.onDigitPressed('5');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad6) {
+      widget.onDigitPressed('6');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad7) {
+      widget.onDigitPressed('7');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad8) {
+      widget.onDigitPressed('8');
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.numpad9) {
+      widget.onDigitPressed('9');
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final double activeKeySize = keySize ?? (screenHeight < 680 ? 56.0 : 72.0);
+    final double activeKeySize =
+        widget.keySize ?? (screenHeight < 680 ? 56.0 : 72.0);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -69,8 +137,8 @@ class PinKeypadWidget extends StatelessWidget {
           child: _DigitKey(
             digit: d,
             size: activeKeySize,
-            enabled: enabled,
-            onPressed: () => onDigitPressed(d),
+            enabled: widget.enabled,
+            onPressed: () => widget.onDigitPressed(d),
           ),
         );
       }).toList(),
@@ -85,8 +153,8 @@ class PinKeypadWidget extends StatelessWidget {
         SizedBox(
           width: activeKeySize + 32,
           height: activeKeySize,
-          child: bottomLeftChild != null
-              ? Center(child: bottomLeftChild)
+          child: widget.bottomLeftChild != null
+              ? Center(child: widget.bottomLeftChild)
               : const SizedBox.shrink(),
         ),
 
@@ -96,8 +164,8 @@ class PinKeypadWidget extends StatelessWidget {
           child: _DigitKey(
             digit: '0',
             size: activeKeySize,
-            enabled: enabled,
-            onPressed: () => onDigitPressed('0'),
+            enabled: widget.enabled,
+            onPressed: () => widget.onDigitPressed('0'),
           ),
         ),
 
@@ -108,8 +176,8 @@ class PinKeypadWidget extends StatelessWidget {
           child: Center(
             child: _BackspaceKey(
               size: activeKeySize,
-              enabled: enabled,
-              onPressed: onBackspacePressed,
+              enabled: widget.enabled,
+              onPressed: widget.onBackspacePressed,
             ),
           ),
         ),
