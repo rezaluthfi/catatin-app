@@ -58,7 +58,23 @@ class ExportService {
   // ──────────────────────────────────────────────────────────
 
   static Future<File> generatePdf(ExportData data) async {
-    final pdf = pw.Document();
+    pw.Font? googleSansFont;
+    pw.Font? googleSansBoldFont;
+    try {
+      final regData = await rootBundle.load('assets/fonts/GoogleSans-Regular.ttf');
+      final boldData = await rootBundle.load('assets/fonts/GoogleSans-Bold.ttf');
+      googleSansFont = pw.Font.ttf(regData);
+      googleSansBoldFont = pw.Font.ttf(boldData);
+    } catch (_) {}
+
+    final pdf = pw.Document(
+      theme: googleSansFont != null && googleSansBoldFont != null
+          ? pw.ThemeData.withFont(
+              base: googleSansFont,
+              bold: googleSansBoldFont,
+            )
+          : null,
+    );
 
     // Warna brand
     const brandGreen = PdfColor.fromInt(0xFF198D8D);
@@ -681,13 +697,13 @@ class ExportService {
   static Future<File> generateXlsx(ExportData data) async {
     final excel = Excel.createExcel();
 
-    // Hapus sheet default "Sheet1" yang dibuat otomatis
-    excel.delete('Sheet1');
-
     _buildSummarySheet(excel, data);
     _buildTransactionSheet(excel, data);
     _buildOperationalSheet(excel, data);
     _buildReceivableSheet(excel, data);
+
+    // Hapus sheet default "Sheet1" setelah sheet lain dibuat
+    excel.delete('Sheet1');
 
     final dir = await AppDirectoryService.getTempExportsDirectory();
     final filename =
